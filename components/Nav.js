@@ -1,35 +1,13 @@
 import { ChevronDown, LogOut, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { useAuth } from "../lib/AuthContext";
 
 export default function Nav() {
-  const [user, setUser] = useState(null);
+  const { user, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
-  const router = useRouter();
-
-  useEffect(() => {
-    let mounted = true;
-    (async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!mounted) {
-        return;
-      }
-      setUser(data?.session?.user ?? null);
-    })();
-    const { data: listener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
-      }
-    );
-    return () => {
-      mounted = false;
-      listener?.subscription?.unsubscribe();
-    };
-  }, []);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -42,11 +20,6 @@ export default function Nav() {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const signOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/auth");
-  };
 
   return (
     <nav className="bg-white border-b border-gray-200 shadow-sm">

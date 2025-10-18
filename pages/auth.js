@@ -1,9 +1,11 @@
 import { Github } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import { useAuth } from "../lib/AuthContext";
 import { supabase } from "../lib/supabaseClient";
 
 export default function Auth() {
+  const { user } = useAuth();
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -13,14 +15,10 @@ export default function Auth() {
 
   // Quick redirect if already logged in
   useEffect(() => {
-    const checkSession = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (data?.session) {
-        router.push("/dids");
-      }
-    };
-    checkSession();
-  }, [router]);
+    if (user) {
+      router.push("/dids");
+    }
+  }, [user, router]);
 
   const handleEmailAuth = async (e) => {
     e.preventDefault();

@@ -1,38 +1,26 @@
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import DidList from "../components/DidList";
+import { useAuth } from "../lib/AuthContext";
 import { supabase } from "../lib/supabaseClient";
 
 export default function Dids() {
+  const { user, loading: authLoading } = useAuth();
   const [dids, setDids] = useState([]);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
   const router = useRouter();
 
   useEffect(() => {
-    let mounted = true;
+    if (!authLoading && !user) {
+      router.push("/auth");
+      return;
+    }
 
-    const init = async () => {
-      const { data } = await supabase.auth.getSession();
-      const session = data?.session;
-      if (!session) {
-        router.push("/auth");
-        return;
-      }
-      await fetchDids();
-      // Optional: realtime subscription for todos table broadcasts (requires DB trigger or broadcast usage)
-      // const channel = supabase.channel('public:todos').on('broadcast', { event: 'INSERT' }, payload => {
-      //   fetchTodos()
-      // }).subscribe()
-      // cleanup would unsubscribe
-    };
-
-    init();
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    if (user) {
+      fetchDids();
+    }
+  }, [user, authLoading, router]);
 
   const fetchDids = async () => {
     setLoading(true);

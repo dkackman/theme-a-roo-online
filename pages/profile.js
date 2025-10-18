@@ -1,36 +1,24 @@
 import { Github, Mail } from "lucide-react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { useEffect } from "react";
+import { useAuth } from "../lib/AuthContext";
 
 export default function Profile() {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    const getUser = async () => {
-      const { data } = await supabase.auth.getSession();
-      if (!data?.session) {
-        router.push("/auth");
-        return;
-      }
-      setUser(data.session.user);
-      setLoading(false);
-    };
-    getUser();
-  }, [router]);
+    if (!loading && !user) {
+      router.push("/auth");
+    }
+  }, [user, loading, router]);
 
-  if (loading) {
+  if (loading || !user) {
     return (
       <div className="flex justify-center items-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent"></div>
       </div>
     );
-  }
-
-  if (!user) {
-    return null;
   }
 
   return (
