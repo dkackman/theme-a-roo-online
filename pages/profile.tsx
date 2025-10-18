@@ -2,9 +2,20 @@ import { Github, Mail } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useAuth } from "../lib/AuthContext";
+import type { UserRole } from "../lib/types";
+
+const getRoleBadgeClass = (role: UserRole): string => {
+  if (role === "admin") {
+    return "inline-block px-3 py-1 rounded-full font-medium bg-purple-100 text-purple-700";
+  }
+  if (role === "creator") {
+    return "inline-block px-3 py-1 rounded-full font-medium bg-blue-100 text-blue-700";
+  }
+  return "inline-block px-3 py-1 rounded-full font-medium bg-gray-100 text-gray-700";
+};
 
 export default function Profile() {
-  const { user, loading } = useAuth();
+  const { user, role, loading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -44,6 +55,18 @@ export default function Profile() {
             </label>
             <div className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 font-mono text-sm">
               {user.id}
+            </div>
+          </div>
+
+          {/* User Role */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Role
+            </label>
+            <div className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
+              <span className={getRoleBadgeClass(role)}>
+                {role.charAt(0).toUpperCase() + role.slice(1)}
+              </span>
             </div>
           </div>
 

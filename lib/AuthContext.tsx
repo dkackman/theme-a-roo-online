@@ -8,10 +8,14 @@ import {
   type ReactNode,
 } from "react";
 import { supabase } from "./supabaseClient";
+import type { UserRole } from "./types";
 
 interface AuthContextType {
   user: User | null;
+  role: UserRole;
   loading: boolean;
+  isAdmin: boolean;
+  isCreator: boolean;
   signOut: () => Promise<void>;
 }
 
@@ -23,6 +27,7 @@ interface AuthProviderProps {
 
 export const AuthProvider = ({ children }: AuthProviderProps) => {
   const [user, setUser] = useState<User | null>(null);
+  const [role, setRole] = useState<UserRole>("user");
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -34,6 +39,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
           data: { session },
         } = await supabase.auth.getSession();
         setUser(session?.user ?? null);
+        // Extract role from JWT app_metadata
+        const userRole =
+          (session?.user?.app_metadata?.role as UserRole) ?? "user";
+        setRole(userRole);
       } catch (error) {
         console.error("Error getting session:", error);
       } finally {
@@ -48,6 +57,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
+      // Update role from JWT
+      const userRole =
+        (session?.user?.app_metadata?.role as UserRole) ?? "user";
+      setRole(userRole);
       setLoading(false);
     });
 
@@ -64,7 +77,10 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
 
   const value: AuthContextType = {
     user,
+    role,
     loading,
+    isAdmin: role === "admin",
+    isCreator: role === "creator",
     signOut,
   };
 

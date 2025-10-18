@@ -3,9 +3,20 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { useAuth } from "../lib/AuthContext";
+import type { UserRole } from "../lib/types";
+
+const getRoleBadgeClass = (role: UserRole): string => {
+  if (role === "admin") {
+    return "text-xs px-2 py-0.5 rounded-full font-medium bg-purple-100 text-purple-700";
+  }
+  if (role === "creator") {
+    return "text-xs px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700";
+  }
+  return "text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100 text-gray-700";
+};
 
 export default function Nav() {
-  const { user, signOut } = useAuth();
+  const { user, role, isAdmin, signOut } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -56,6 +67,16 @@ export default function Nav() {
             >
               DIDs
             </Link>
+
+            {/* Admin-only link */}
+            {isAdmin && (
+              <Link
+                href="/admin"
+                className="text-gray-700 hover:text-indigo-600 font-medium transition-colors"
+              >
+                Admin
+              </Link>
+            )}
           </div>
           <div className="flex items-center gap-4">
             {user ? (
@@ -85,11 +106,17 @@ export default function Nav() {
                       <p className="text-sm font-medium text-gray-900 truncate">
                         {user.email}
                       </p>
-                      <p className="text-xs text-gray-500 mt-0.5">
-                        {user.identities?.some((i) => i.provider === "github")
-                          ? "GitHub Account"
-                          : "Email Account"}
-                      </p>
+                      <div className="flex items-center gap-2 mt-1">
+                        <p className="text-xs text-gray-500">
+                          {user.identities?.some((i) => i.provider === "github")
+                            ? "GitHub Account"
+                            : "Email Account"}
+                        </p>
+                        {/* Role Badge */}
+                        <span className={getRoleBadgeClass(role)}>
+                          {role.charAt(0).toUpperCase() + role.slice(1)}
+                        </span>
+                      </div>
                     </div>
 
                     <Link
