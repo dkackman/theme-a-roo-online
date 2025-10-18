@@ -172,7 +172,11 @@ export default function Admin() {
                         </span>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {new Date(userProfile.created_at).toLocaleDateString()}
+                        {userProfile.created_at
+                          ? new Date(
+                              userProfile.created_at
+                            ).toLocaleDateString()
+                          : "N/A"}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {userProfile.last_sign_in_at
