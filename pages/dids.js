@@ -41,10 +41,7 @@ export default function Dids() {
     if (!title) {
       return;
     }
-    const { data, error } = await supabase
-      .from("dids")
-      .insert([{ title }])
-      .select();
+    const { error } = await supabase.from("dids").insert([{ title }]).select();
     if (error) {
       console.error(error);
     } else {

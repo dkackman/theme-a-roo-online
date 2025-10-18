@@ -28,7 +28,7 @@ export default function Auth() {
     try {
       if (isSignUp) {
         // Sign up
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
           email,
           password,
         });
@@ -38,7 +38,7 @@ export default function Auth() {
         setMessage("Success! Check your email to confirm your account.");
       } else {
         // Sign in
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
           email,
           password,
         });
@@ -129,7 +129,9 @@ export default function Auth() {
             type="submit"
             disabled={loading}
           >
-            {loading ? "Loading..." : isSignUp ? "Sign Up" : "Sign In"}
+            {loading && "Loading..."}
+            {!loading && isSignUp && "Sign Up"}
+            {!loading && !isSignUp && "Sign In"}
           </button>
         </form>
 
@@ -174,12 +176,12 @@ export default function Auth() {
         {/* Message Display */}
         {message && (
           <div
-            className={`mt-6 p-4 rounded-lg ${
+            className={
               message.includes("Success") ||
               message.includes("Check your email")
-                ? "bg-green-50 border border-green-200 text-green-800"
-                : "bg-red-50 border border-red-200 text-red-800"
-            }`}
+                ? "mt-6 p-4 rounded-lg bg-green-50 border border-green-200 text-green-800"
+                : "mt-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800"
+            }
           >
             <p className="text-sm font-medium">{message}</p>
           </div>
