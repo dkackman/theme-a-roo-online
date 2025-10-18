@@ -1,5 +1,7 @@
 import { ClipboardList } from "lucide-react";
 import type { Database } from "../lib/database.types";
+import { Button } from "./ui/button";
+import { Checkbox } from "./ui/checkbox";
 
 type Did = Database["public"]["Tables"]["dids"]["Row"];
 
@@ -16,7 +18,7 @@ export default function DidList({
 }: DidListProps) {
   if (!dids.length) {
     return (
-      <div className="text-center py-12 text-gray-500">
+      <div className="text-center py-12">
         <ClipboardList className="mx-auto h-12 w-12 text-gray-400" />
         <p className="mt-4 text-lg font-medium">No DIDs yet</p>
         <p className="mt-1 text-sm">Add your first DID to get started!</p>
@@ -29,27 +31,23 @@ export default function DidList({
       {dids.map((d) => (
         <li
           key={d.id}
-          className="py-4 flex items-center gap-4 hover:bg-gray-50 px-4 -mx-4 rounded-lg transition-colors"
+          className="py-4 flex items- center gap-4 hover:bg-gray-50 px-4 -mx-4 rounded-lg transition-colors"
         >
-          <input
-            type="checkbox"
+          <Checkbox
             checked={d.is_complete ?? false}
+            onCheckedChange={() => onToggle(d)}
             onChange={() => onToggle(d)}
-            className="h-5 w-5 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500 cursor-pointer"
           />
           <span
             className={`flex-1 ${
-              d.is_complete ? "line-through text-gray-400" : "text-gray-900"
+              d.is_complete ? "line-through text-gray-400" : ""
             }`}
           >
             {d.title}
           </span>
-          <button
-            onClick={() => onDelete(d.id)}
-            className="px-4 py-2 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 rounded-lg transition-colors"
-          >
+          <Button onClick={() => onDelete(d.id)} variant="destructive">
             Delete
-          </button>
+          </Button>
         </li>
       ))}
     </ul>

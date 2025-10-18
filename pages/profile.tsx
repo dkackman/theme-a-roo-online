@@ -11,7 +11,7 @@ const getRoleBadgeClass = (role: UserRole): string => {
   if (role === "creator") {
     return "inline-block px-3 py-1 rounded-full font-medium bg-blue-100 text-blue-700";
   }
-  return "inline-block px-3 py-1 rounded-full font-medium bg-gray-100 text-gray-700";
+  return "inline-block px-3 py-1 rounded-full font-medium bg-gray-100";
 };
 
 export default function Profile() {
@@ -34,15 +34,13 @@ export default function Profile() {
 
   return (
     <div className="max-w-2xl mx-auto">
-      <div className="bg-white rounded-2xl shadow-xl p-10">
-        <h1 className="text-3xl font-bold text-gray-900 mb-8">Profile</h1>
+      <div className="rounded-2xl shadow-xl p-10">
+        <h1 className="text-3xl font-bold mb-8">Profile</h1>
 
         <div className="space-y-6">
           {/* Email */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Email
-            </label>
+            <label className="block text-sm font-medium mb-2">Email</label>
             <div className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
               {user.email}
             </div>
@@ -50,9 +48,7 @@ export default function Profile() {
 
           {/* User ID */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              User ID
-            </label>
+            <label className="block text-sm font-medium mb-2">User ID</label>
             <div className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 font-mono text-sm">
               {user.id}
             </div>
@@ -60,9 +56,7 @@ export default function Profile() {
 
           {/* User Role */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Role
-            </label>
+            <label className="block text-sm font-medium mb-2">Role</label>
             <div className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
               <span className={getRoleBadgeClass(role)}>
                 {role.charAt(0).toUpperCase() + role.slice(1)}
@@ -72,7 +66,7 @@ export default function Profile() {
 
           {/* Auth Provider(s) */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2">
               Sign-in Methods
             </label>
             <div className="space-y-2">
@@ -86,7 +80,7 @@ export default function Profile() {
                       <div className="flex items-center gap-2">
                         <Github className="w-5 h-5" />
                         <span>GitHub</span>
-                        <span className="ml-auto text-xs text-gray-500">
+                        <span className="ml-auto text-xs">
                           {identity.identity_data?.user_name ||
                             identity.identity_data?.email}
                         </span>
@@ -112,7 +106,7 @@ export default function Profile() {
 
           {/* Account Created */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2">
               Account Created
             </label>
             <div className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
@@ -129,7 +123,7 @@ export default function Profile() {
           {/* Last Sign In */}
           {user.last_sign_in_at && (
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium mb-2">
                 Last Sign In
               </label>
               <div className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">

@@ -83,9 +83,9 @@ export default function Auth() {
 
   return (
     <div className="max-w-md mx-auto">
-      <div className="bg-white rounded-2xl shadow-xl p-8">
+      <div className="rounded-2xl shadow-xl p-8">
         <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">
+          <h2 className="text-3xl font-bold mb-2">
             {isSignUp ? "Create Account" : "Welcome Back"}
           </h2>
           <p className="text-gray-600">
@@ -96,7 +96,7 @@ export default function Auth() {
         {/* Email/Password Form */}
         <form onSubmit={handleEmailAuth} className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium mb-2">
               Email Address
             </label>
             <input
@@ -113,9 +113,7 @@ export default function Auth() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Password
-            </label>
+            <label className="block text-sm font-medium mb-2">Password</label>
             <input
               className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
               type="password"
@@ -131,7 +129,7 @@ export default function Auth() {
           </div>
 
           <button
-            className="w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full text-white font-semibold py-3 px-4 rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
             type="submit"
             disabled={loading}
           >
@@ -147,9 +145,7 @@ export default function Auth() {
             <div className="w-full border-t border-gray-300"></div>
           </div>
           <div className="relative flex justify-center text-sm">
-            <span className="px-2 bg-white text-gray-500">
-              Or continue with
-            </span>
+            <span className="px-2">Or continue with</span>
           </div>
         </div>
 

@@ -14,7 +14,7 @@ const getRoleBadgeClass = (role: string | null): string => {
   if (role === "creator") {
     return "px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-700";
   }
-  return "px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-700";
+  return "px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100";
 };
 
 export default function Admin() {
@@ -84,10 +84,8 @@ export default function Admin() {
     <AdminOnly>
       <div className="space-y-6">
         {/* Header */}
-        <div className="bg-white rounded-2xl shadow-xl p-10">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Admin Dashboard
-          </h1>
+        <div className="rounded-2xl shadow-xl p-10">
+          <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
           <p className="text-gray-600">
             Manage users and content across the platform
           </p>
@@ -95,26 +93,18 @@ export default function Admin() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-sm font-medium text-gray-500 uppercase">
-              Total DIDs
-            </h3>
-            <p className="text-3xl font-bold text-gray-900 mt-2">
-              {stats.totalDids}
-            </p>
+          <div className="rounded-xl shadow-lg p-6">
+            <h3 className="text-sm font-medium uppercase">Total DIDs</h3>
+            <p className="text-3xl font-bold mt-2">{stats.totalDids}</p>
           </div>
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-sm font-medium text-gray-500 uppercase">
-              Completed DIDs
-            </h3>
+          <div className="rounded-xl shadow-lg p-6">
+            <h3 className="text-sm font-medium uppercase">Completed DIDs</h3>
             <p className="text-3xl font-bold text-green-600 mt-2">
               {stats.completedDids}
             </p>
           </div>
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h3 className="text-sm font-medium text-gray-500 uppercase">
-              Active Users
-            </h3>
+          <div className="rounded-xl shadow-lg p-6">
+            <h3 className="text-sm font-medium uppercase">Active Users</h3>
             <p className="text-3xl font-bold text-indigo-600 mt-2">
               {stats.totalUsers}
             </p>
@@ -122,8 +112,8 @@ export default function Admin() {
         </div>
 
         {/* All Users Table */}
-        <div className="bg-white rounded-2xl shadow-xl p-10">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">All Users</h2>
+        <div className="rounded-2xl shadow-xl p-10">
+          <h2 className="text-2xl font-bold mb-6">All Users</h2>
 
           {loading ? (
             <div className="text-center py-12">
@@ -135,27 +125,27 @@ export default function Admin() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                       Email
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                       Role
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                       Joined
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                       Last Sign In
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                       Status
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200">
                   {allUsers.map((userProfile) => (
                     <tr key={userProfile.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm ">
                         {userProfile.email}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -166,14 +156,14 @@ export default function Admin() {
                             (userProfile.role || "user").slice(1)}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {userProfile.created_at
                           ? new Date(
                               userProfile.created_at
                             ).toLocaleDateString()
                           : "N/A"}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {userProfile.last_sign_in_at
                           ? new Date(
                               userProfile.last_sign_in_at
@@ -199,7 +189,7 @@ export default function Admin() {
               </table>
 
               {allUsers.length === 0 && (
-                <div className="text-center py-12 text-gray-500">
+                <div className="text-center py-12">
                   <p>No users in the system yet</p>
                 </div>
               )}
@@ -208,8 +198,8 @@ export default function Admin() {
         </div>
 
         {/* All DIDs Table */}
-        <div className="bg-white rounded-2xl shadow-xl p-10">
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">All DIDs</h2>
+        <div className="rounded-2xl shadow-xl p-10">
+          <h2 className="text-2xl font-bold mb-6">All DIDs</h2>
 
           {loading ? (
             <div className="text-center py-12">
@@ -221,27 +211,27 @@ export default function Admin() {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                       Title
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                       Status
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                       User ID
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                       Created
                     </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200">
                   {allDids.map((did) => (
                     <tr key={did.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm ">
                         {did.title}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
@@ -255,10 +245,10 @@ export default function Admin() {
                           {did.is_complete ? "Complete" : "Pending"}
                         </span>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-xs text-gray-500 font-mono">
+                      <td className="px-6 py-4 whitespace-nowrap text-xs font-mono">
                         {did.user_id.substring(0, 8)}...
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
                         {did.created_at
                           ? new Date(did.created_at).toLocaleDateString()
                           : "N/A"}
@@ -277,7 +267,7 @@ export default function Admin() {
               </table>
 
               {allDids.length === 0 && (
-                <div className="text-center py-12 text-gray-500">
+                <div className="text-center py-12">
                   <p>No DIDs in the system yet</p>
                 </div>
               )}

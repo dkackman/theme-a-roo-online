@@ -1,3 +1,5 @@
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { useRouter } from "next/router";
 import {
   useCallback,
@@ -87,25 +89,21 @@ export default function Dids() {
 
   return (
     <div>
-      <div className="bg-white rounded-2xl shadow-xl p-10">
-        <h2 className="text-3xl font-bold text-gray-900 mb-6">DIDs</h2>
+      <div className="rounded-2xl shadow-xl p-10">
+        <h2 className="text-3xl font-bold mb-6">DIDs</h2>
 
         <form onSubmit={addDid} className="mb-8">
           <div className="flex gap-3">
-            <input
+            <Input
               placeholder="Add a new DID..."
               value={title}
               onChange={(e: ChangeEvent<HTMLInputElement>) =>
                 setTitle(e.target.value)
               }
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
             />
-            <button
-              type="submit"
-              className="px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 focus:ring-4 focus:ring-indigo-300 transition-all whitespace-nowrap"
-            >
+            <Button type="submit" variant="default">
               Add DID
-            </button>
+            </Button>
           </div>
         </form>
 
