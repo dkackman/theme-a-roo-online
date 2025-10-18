@@ -46,7 +46,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button";
 
     // Get current theme styles from body data attribute
-    const themeStyles = document.body.getAttribute("data-theme-styles") || "";
+    const themeStyles =
+      typeof document !== "undefined"
+        ? document.body.getAttribute("data-theme-styles") || ""
+        : "";
 
     return (
       <Comp
