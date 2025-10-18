@@ -9,7 +9,6 @@ import "../styles/globals.css";
 
 // Map routes to page titles
 const pageTitles: Record<string, string> = {
-  "/": "Home",
   "/auth": "Sign In",
   "/dids": "DIDs",
   "/profile": "Profile",
@@ -19,8 +18,8 @@ const pageTitles: Record<string, string> = {
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   const router = useRouter();
-  const pageTitle = pageTitles[router.pathname] || "Page";
-  const fullTitle = `${pageTitle} - Theme-a-roo Online`;
+  const pageTitle = pageTitles[router.pathname];
+  const fullTitle = `${pageTitle ? `${pageTitle} - ` : ""}Theme-a-roo Online`;
 
   return (
     <AuthProvider>
