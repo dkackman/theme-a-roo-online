@@ -1,15 +1,39 @@
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useState,
+  type ChangeEvent,
+  type FormEvent,
+} from "react";
 import DidList from "../components/DidList";
 import { useAuth } from "../lib/AuthContext";
+import type { Database } from "../lib/database.types";
 import { supabase } from "../lib/supabaseClient";
+
+type Did = Database["public"]["Tables"]["dids"]["Row"];
+type DidInsert = Database["public"]["Tables"]["dids"]["Insert"];
 
 export default function Dids() {
   const { user, loading: authLoading } = useAuth();
-  const [dids, setDids] = useState([]);
+  const [dids, setDids] = useState<Did[]>([]);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
   const router = useRouter();
+
+  const fetchDids = useCallback(async () => {
+    setLoading(true);
+    const { data, error } = await supabase
+      .from("dids")
+      .select("*")
+      .order("created_at", { ascending: false });
+    if (error) {
+      console.error("Error fetching dids", error);
+    } else {
+      setDids(data || []);
+    }
+    setLoading(false);
+  }, []);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -20,28 +44,15 @@ export default function Dids() {
     if (user) {
       fetchDids();
     }
-  }, [user, authLoading, router]);
+  }, [user, authLoading, router, fetchDids]);
 
-  const fetchDids = async () => {
-    setLoading(true);
-    const { data, error } = await supabase
-      .from("dids")
-      .select("*")
-      .order("created_at", { ascending: false });
-    if (error) {
-      console.error("Error fetching dids", error);
-    } else {
-      setDids(data);
-    }
-    setLoading(false);
-  };
-
-  const addDid = async (e) => {
+  const addDid = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!title) {
+    if (!title || !user) {
       return;
     }
-    const { error } = await supabase.from("dids").insert([{ title }]).select();
+    const newDid: DidInsert = { title, user_id: user.id };
+    const { error } = await supabase.from("dids").insert(newDid).select();
     if (error) {
       console.error(error);
     } else {
@@ -50,7 +61,7 @@ export default function Dids() {
     }
   };
 
-  const toggleComplete = async (did) => {
+  const toggleComplete = async (did: Did) => {
     const { error } = await supabase
       .from("dids")
       .update({ is_complete: !did.is_complete })
@@ -62,7 +73,7 @@ export default function Dids() {
     }
   };
 
-  const deleteDid = async (id) => {
+  const deleteDid = async (id: string) => {
     const { error } = await supabase.from("dids").delete().eq("id", id);
     if (error) {
       console.error(error);
@@ -81,7 +92,9 @@ export default function Dids() {
             <input
               placeholder="Add a new DID..."
               value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setTitle(e.target.value)
+              }
               className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all outline-none"
             />
             <button

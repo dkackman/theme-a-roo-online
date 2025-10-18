@@ -1,6 +1,19 @@
 import { ClipboardList } from "lucide-react";
+import type { Database } from "../lib/database.types";
 
-export default function DidList({ dids = [], onToggle, onDelete }) {
+type Did = Database["public"]["Tables"]["dids"]["Row"];
+
+interface DidListProps {
+  dids?: Did[];
+  onToggle: (did: Did) => void;
+  onDelete: (id: string) => void;
+}
+
+export default function DidList({
+  dids = [],
+  onToggle,
+  onDelete,
+}: DidListProps) {
   if (!dids.length) {
     return (
       <div className="text-center py-12 text-gray-500">
@@ -20,7 +33,7 @@ export default function DidList({ dids = [], onToggle, onDelete }) {
         >
           <input
             type="checkbox"
-            checked={d.is_complete}
+            checked={d.is_complete ?? false}
             onChange={() => onToggle(d)}
             className="h-5 w-5 text-indigo-600 rounded focus:ring-2 focus:ring-indigo-500 cursor-pointer"
           />

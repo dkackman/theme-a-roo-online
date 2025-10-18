@@ -1,6 +1,6 @@
 import { Github } from "lucide-react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { useAuth } from "../lib/AuthContext";
 import { supabase } from "../lib/supabaseClient";
 
@@ -20,7 +20,7 @@ export default function Auth() {
     }
   }, [user, router]);
 
-  const handleEmailAuth = async (e) => {
+  const handleEmailAuth = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage("");
     setLoading(true);
@@ -48,7 +48,8 @@ export default function Auth() {
         router.push("/dids");
       }
     } catch (err) {
-      setMessage(err.message || "An error occurred");
+      const error = err as Error;
+      setMessage(error.message || "An error occurred");
     } finally {
       setLoading(false);
     }
@@ -74,7 +75,8 @@ export default function Auth() {
         throw error;
       }
     } catch (err) {
-      setMessage(err.message || "An error occurred");
+      const error = err as Error;
+      setMessage(error.message || "An error occurred");
       setLoading(false);
     }
   };
@@ -102,7 +104,9 @@ export default function Auth() {
               type="email"
               placeholder="you@example.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setEmail(e.target.value)
+              }
               required
               disabled={loading}
             />
@@ -117,7 +121,9 @@ export default function Auth() {
               type="password"
               placeholder="••••••••"
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setPassword(e.target.value)
+              }
               required
               disabled={loading}
               minLength={6}

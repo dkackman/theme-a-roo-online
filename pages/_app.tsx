@@ -1,8 +1,9 @@
+import type { AppProps } from "next/app";
 import Layout from "../components/Layout";
 import { AuthProvider } from "../lib/AuthContext";
 import "../styles/globals.css";
 
-function MyApp({ Component, pageProps }) {
+export default function MyApp({ Component, pageProps }: AppProps) {
   return (
     <AuthProvider>
       <Layout>
@@ -11,5 +12,3 @@ function MyApp({ Component, pageProps }) {
     </AuthProvider>
   );
 }
-
-export default MyApp;

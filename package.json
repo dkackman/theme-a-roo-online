@@ -8,8 +8,8 @@
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
-    "format": "prettier --write \"**/*.{js,jsx,json,md}\"",
-    "format:check": "prettier --check \"**/*.{js,jsx,json,md}\""
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "format:check": "prettier --check \"**/*.{js,jsx,ts,tsx,json,md}\""
   },
   "author": "dkackman",
   "license": "Apache-2.0",
@@ -25,12 +25,12 @@
     "roo"
   ],
   "dependencies": {
-    "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.75.1",
     "lucide-react": "^0.546.0",
     "next": "^15.5.6",
     "react": "^19.2.0",
-    "react-dom": "^19.2.0"
+    "react-dom": "^19.2.0",
+    "supabase": "^2.51.0"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.14",

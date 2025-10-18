@@ -1,11 +1,28 @@
+import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
-import { createContext, useContext, useEffect, useState } from "react";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import { supabase } from "./supabaseClient";
 
-const AuthContext = createContext({});
+interface AuthContextType {
+  user: User | null;
+  loading: boolean;
+  signOut: () => Promise<void>;
+}
 
-export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
+
+interface AuthProviderProps {
+  children: ReactNode;
+}
+
+export const AuthProvider = ({ children }: AuthProviderProps) => {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
@@ -32,24 +49,20 @@ export const AuthProvider = ({ children }) => {
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user ?? null);
       setLoading(false);
-
-      // Refresh the page to sync server-side auth state
-      if (_event === "SIGNED_IN" || _event === "SIGNED_OUT") {
-        router.refresh?.();
-      }
     });
 
     return () => {
       subscription?.unsubscribe();
     };
-  }, [router]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Only run once on mount
 
   const signOut = async () => {
     await supabase.auth.signOut();
     router.push("/auth");
   };
 
-  const value = {
+  const value: AuthContextType = {
     user,
     loading,
     signOut,
@@ -58,7 +71,7 @@ export const AuthProvider = ({ children }) => {
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };
 
-export const useAuth = () => {
+export const useAuth = (): AuthContextType => {
   const context = useContext(AuthContext);
   if (context === undefined) {
     throw new Error("useAuth must be used within an AuthProvider");
