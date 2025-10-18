@@ -1,4 +1,4 @@
-import { ChevronDown, LogOut, User } from "lucide-react";
+import { ChevronDown, LogOut, Settings, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
@@ -126,6 +126,15 @@ export default function Nav() {
                     >
                       <User className="w-4 h-4" />
                       Profile
+                    </Link>
+
+                    <Link
+                      href="/settings"
+                      onClick={() => setDropdownOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+                    >
+                      <Settings className="w-4 h-4" />
+                      Settings
                     </Link>
 
                     <button

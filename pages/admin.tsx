@@ -1,4 +1,3 @@
-import Head from "next/head";
 import { useEffect, useState } from "react";
 import { AdminOnly } from "../components/RoleProtected";
 import { useAuth } from "../lib/AuthContext";
@@ -83,10 +82,6 @@ export default function Admin() {
 
   return (
     <AdminOnly>
-      <Head>
-        <title>Admin Dashboard - Theme-a-roo Online</title>
-      </Head>
-
       <div className="space-y-6">
         {/* Header */}
         <div className="bg-white rounded-2xl shadow-xl p-10">
