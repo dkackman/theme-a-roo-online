@@ -53,10 +53,16 @@ export default function Auth() {
     setMessage("");
     setLoading(true);
     try {
+      // Use the current origin for redirect (works for both local and production)
+      const redirectUrl =
+        typeof window !== "undefined"
+          ? `${window.location.origin}/dids`
+          : "/dids";
+
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",
         options: {
-          redirectTo: `${window.location.origin}/dids`,
+          redirectTo: redirectUrl,
         },
       });
       if (error) throw error;
