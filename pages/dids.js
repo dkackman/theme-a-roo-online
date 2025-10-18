@@ -50,7 +50,9 @@ export default function Dids() {
 
   const addDid = async (e) => {
     e.preventDefault();
-    if (!title) return;
+    if (!title) {
+      return;
+    }
     const { data, error } = await supabase
       .from("dids")
       .insert([{ title }])
@@ -68,14 +70,20 @@ export default function Dids() {
       .from("dids")
       .update({ is_complete: !did.is_complete })
       .eq("id", did.id);
-    if (error) console.error(error);
-    else fetchDids();
+    if (error) {
+      console.error(error);
+    } else {
+      fetchDids();
+    }
   };
 
   const deleteDid = async (id) => {
     const { error } = await supabase.from("dids").delete().eq("id", id);
-    if (error) console.error(error);
-    else fetchDids();
+    if (error) {
+      console.error(error);
+    } else {
+      fetchDids();
+    }
   };
 
   return (

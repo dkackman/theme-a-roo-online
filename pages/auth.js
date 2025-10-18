@@ -14,7 +14,9 @@ export default function Auth() {
   useEffect(() => {
     const checkSession = async () => {
       const { data } = await supabase.auth.getSession();
-      if (data?.session) router.push("/dids");
+      if (data?.session) {
+        router.push("/dids");
+      }
     };
     checkSession();
   }, [router]);
@@ -31,7 +33,9 @@ export default function Auth() {
           email,
           password,
         });
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
         setMessage("Success! Check your email to confirm your account.");
       } else {
         // Sign in
@@ -39,7 +43,9 @@ export default function Auth() {
           email,
           password,
         });
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
         router.push("/dids");
       }
     } catch (err) {
@@ -65,7 +71,9 @@ export default function Auth() {
           redirectTo: redirectUrl,
         },
       });
-      if (error) throw error;
+      if (error) {
+        throw error;
+      }
     } catch (err) {
       setMessage(err.message || "An error occurred");
       setLoading(false);
