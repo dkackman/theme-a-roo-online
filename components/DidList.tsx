@@ -1,6 +1,16 @@
 import { ClipboardList, Copy, Pencil, Trash2 } from "lucide-react";
 import { useState, type ChangeEvent } from "react";
 import type { Database } from "../lib/database.types";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "./ui/alert-dialog";
 import { Button } from "./ui/button";
 import { Field, FieldGroup, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
@@ -21,6 +31,12 @@ import {
   SheetTitle,
 } from "./ui/sheet";
 import { Textarea } from "./ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "./ui/tooltip";
 
 type Did = Database["public"]["Tables"]["dids"]["Row"];
 
@@ -55,6 +71,7 @@ export default function DidList({
 }: DidListProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [editingDid, setEditingDid] = useState<Did | null>(null);
+  const [deletingDid, setDeletingDid] = useState<Did | null>(null);
   const [editName, setEditName] = useState("");
   const [editLauncherId, setEditLauncherId] = useState("");
   const [editNotes, setEditNotes] = useState("");
@@ -106,6 +123,14 @@ export default function DidList({
     } finally {
       setIsSaving(false);
     }
+  };
+
+  const handleDelete = async () => {
+    if (!deletingDid) {
+      return;
+    }
+    await onDelete(deletingDid.id);
+    setDeletingDid(null);
   };
 
   if (!dids.length) {
@@ -196,7 +221,7 @@ export default function DidList({
                   Edit
                 </Button>
                 <Button
-                  onClick={() => onDelete(d.id)}
+                  onClick={() => setDeletingDid(d)}
                   variant="destructive"
                   size="sm"
                 >
@@ -208,6 +233,60 @@ export default function DidList({
           </li>
         ))}
       </ul>
+
+      {/* Delete Confirmation Dialog */}
+      <TooltipProvider>
+        <AlertDialog
+          open={!!deletingDid}
+          onOpenChange={(open) => !open && setDeletingDid(null)}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This will permanently delete:{" "}
+                {deletingDid?.name ? (
+                  <>
+                    <span className="font-semibold">{deletingDid.name}</span>
+                    <br />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <code className="text-xs cursor-help inline-block max-w-[400px] truncate align-bottom">
+                          {deletingDid.launcher_id}
+                        </code>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-md break-all">
+                        {deletingDid.launcher_id}
+                      </TooltipContent>
+                    </Tooltip>
+                  </>
+                ) : (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <code className="text-xs cursor-help inline-block max-w-[400px] truncate align-bottom">
+                        {deletingDid?.launcher_id}
+                      </code>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-md break-all">
+                      {deletingDid?.launcher_id}
+                    </TooltipContent>
+                  </Tooltip>
+                )}{" "}
+                <div className="mt-4"> This action cannot be undone. </div>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </TooltipProvider>
 
       {/* Edit Sheet */}
       <Sheet
