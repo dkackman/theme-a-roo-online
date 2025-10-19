@@ -1,4 +1,10 @@
-import { Card, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Settings as SettingsIcon } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
@@ -39,8 +45,13 @@ export default function Settings() {
         <Card>
           <CardHeader>
             <CardTitle>Theme</CardTitle>
+            <CardDescription>
+              Choose your preferred theme for the application.
+            </CardDescription>
           </CardHeader>
-          <ThemeSelector />
+          <CardContent>
+            <ThemeSelector />
+          </CardContent>
         </Card>
       </div>
     </div>

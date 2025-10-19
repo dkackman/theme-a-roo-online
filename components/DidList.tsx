@@ -2,8 +2,8 @@ import { ClipboardList, Copy, Pencil, Trash2 } from "lucide-react";
 import { useState, type ChangeEvent } from "react";
 import type { Database } from "../lib/database.types";
 import { Button } from "./ui/button";
+import { Field, FieldGroup, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import {
   Select,
   SelectContent,
@@ -29,7 +29,12 @@ interface DidListProps {
   onDelete: (id: string) => void;
   onUpdate?: (
     id: string,
-    updates: { launcher_id: string; notes: string | null; network: number }
+    updates: {
+      name: string | null;
+      launcher_id: string;
+      notes: string | null;
+      network: number;
+    }
   ) => Promise<void>;
 }
 
@@ -50,6 +55,7 @@ export default function DidList({
 }: DidListProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [editingDid, setEditingDid] = useState<Did | null>(null);
+  const [editName, setEditName] = useState("");
   const [editLauncherId, setEditLauncherId] = useState("");
   const [editNotes, setEditNotes] = useState("");
   const [editNetwork, setEditNetwork] = useState<number>(0);
@@ -67,6 +73,7 @@ export default function DidList({
 
   const openEditSheet = (did: Did) => {
     setEditingDid(did);
+    setEditName(did.name || "");
     setEditLauncherId(did.launcher_id);
     setEditNotes(did.notes || "");
     setEditNetwork(did.network);
@@ -74,6 +81,7 @@ export default function DidList({
 
   const closeEditSheet = () => {
     setEditingDid(null);
+    setEditName("");
     setEditLauncherId("");
     setEditNotes("");
     setEditNetwork(0);
@@ -87,6 +95,7 @@ export default function DidList({
     setIsSaving(true);
     try {
       await onUpdate(editingDid.id, {
+        name: editName.trim() || null,
         launcher_id: editLauncherId,
         notes: editNotes.trim() || null,
         network: editNetwork,
@@ -120,6 +129,16 @@ export default function DidList({
             className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
           >
             <div className="space-y-3">
+              {/* Name */}
+              {d.name && (
+                <div>
+                  <label className="block text-xs font-medium text-muted-foreground mb-1">
+                    Name
+                  </label>
+                  <p className="text-sm font-semibold">{d.name}</p>
+                </div>
+              )}
+
               {/* Launcher ID */}
               <div className="flex items-center gap-2">
                 <div className="flex-1 min-w-0">
@@ -202,45 +221,58 @@ export default function DidList({
               Make changes to your DID information here.
             </SheetDescription>
           </SheetHeader>
-          <div className="space-y-4 px-6 py-6">
-            <div className="space-y-2">
-              <Label htmlFor="launcher_id">Launcher ID</Label>
-              <Input
-                id="launcher_id"
-                value={editLauncherId}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setEditLauncherId(e.target.value)
-                }
-                placeholder="Enter launcher ID"
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="network">Network</Label>
-              <Select
-                value={editNetwork.toString()}
-                onValueChange={(value) => setEditNetwork(parseInt(value, 10))}
-              >
-                <SelectTrigger id="network">
-                  <SelectValue placeholder="Select network" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0">Mainnet</SelectItem>
-                  <SelectItem value="1">Testnet</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="notes">Notes</Label>
-              <Textarea
-                id="notes"
-                value={editNotes}
-                onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                  setEditNotes(e.target.value)
-                }
-                placeholder="Add notes (optional)"
-                rows={5}
-              />
-            </div>
+          <div className="px-6 py-6">
+            <FieldGroup className="gap-4">
+              <Field>
+                <FieldLabel htmlFor="name">Name</FieldLabel>
+                <Input
+                  id="name"
+                  value={editName}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    setEditName(e.target.value)
+                  }
+                  placeholder="Enter a name (optional)"
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="launcher_id">Launcher ID</FieldLabel>
+                <Input
+                  id="launcher_id"
+                  value={editLauncherId}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                    setEditLauncherId(e.target.value)
+                  }
+                  placeholder="Enter launcher ID"
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="network">Network</FieldLabel>
+                <Select
+                  value={editNetwork.toString()}
+                  onValueChange={(value) => setEditNetwork(parseInt(value, 10))}
+                >
+                  <SelectTrigger id="network">
+                    <SelectValue placeholder="Select network" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0">Mainnet</SelectItem>
+                    <SelectItem value="1">Testnet</SelectItem>
+                  </SelectContent>
+                </Select>
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="notes">Notes</FieldLabel>
+                <Textarea
+                  id="notes"
+                  value={editNotes}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                    setEditNotes(e.target.value)
+                  }
+                  placeholder="Add notes (optional)"
+                  rows={5}
+                />
+              </Field>
+            </FieldGroup>
           </div>
           <SheetFooter className="px-6 pb-6">
             <SheetClose asChild>

@@ -1,6 +1,6 @@
 import { Github, Mail } from "lucide-react";
+import { Field, FieldGroup, FieldLabel } from "../components/ui/field";
 import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
 import { useAuth } from "../lib/AuthContext";
 import type { UserRole } from "../lib/types";
 
@@ -45,36 +45,36 @@ export default function UserProfile() {
         <p className="text-muted-foreground">Your account information</p>
       </div>
 
-      <div className="space-y-6">
+      <FieldGroup className="gap-4">
         {/* Email */}
-        <div className="space-y-2">
-          <Label>Email</Label>
+        <Field>
+          <FieldLabel>Email</FieldLabel>
           <Input value={user.email || ""} readOnly className="bg-muted" />
-        </div>
+        </Field>
 
         {/* User ID */}
-        <div className="space-y-2">
-          <Label>User ID</Label>
+        <Field>
+          <FieldLabel>User ID</FieldLabel>
           <Input
             value={user.id}
             readOnly
             className="bg-muted font-mono text-sm"
           />
-        </div>
+        </Field>
 
         {/* User Role */}
-        <div className="space-y-2">
-          <Label>Role</Label>
+        <Field>
+          <FieldLabel>Role</FieldLabel>
           <div className="px-4 py-3 bg-muted rounded-lg border">
             <span className={getRoleBadgeClass(role)}>
               {role.charAt(0).toUpperCase() + role.slice(1)}
             </span>
           </div>
-        </div>
+        </Field>
 
         {/* Auth Provider(s) */}
-        <div className="space-y-2">
-          <Label>Sign-in Methods</Label>
+        <Field>
+          <FieldLabel>Sign-in Methods</FieldLabel>
           <div className="space-y-2">
             {user.identities && user.identities.length > 0 ? (
               user.identities.map((identity) => (
@@ -108,11 +108,11 @@ export default function UserProfile() {
               </div>
             )}
           </div>
-        </div>
+        </Field>
 
         {/* Account Created */}
-        <div className="space-y-2">
-          <Label>Account Created</Label>
+        <Field>
+          <FieldLabel>Account Created</FieldLabel>
           <Input
             value={new Date(user.created_at).toLocaleDateString("en-US", {
               year: "numeric",
@@ -124,12 +124,12 @@ export default function UserProfile() {
             readOnly
             className="bg-muted"
           />
-        </div>
+        </Field>
 
         {/* Last Sign In */}
         {user.last_sign_in_at && (
-          <div className="space-y-2">
-            <Label>Last Sign In</Label>
+          <Field>
+            <FieldLabel>Last Sign In</FieldLabel>
             <Input
               value={new Date(user.last_sign_in_at).toLocaleDateString(
                 "en-US",
@@ -144,9 +144,9 @@ export default function UserProfile() {
               readOnly
               className="bg-muted"
             />
-          </div>
+          </Field>
         )}
-      </div>
+      </FieldGroup>
     </div>
   );
 }

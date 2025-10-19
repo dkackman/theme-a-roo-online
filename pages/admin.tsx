@@ -216,11 +216,11 @@ export default function Admin() {
         {/* Header */}
         <Card>
           <CardHeader>
-            <CardTitle className="text-base">Admin Dashboard</CardTitle>
+            <CardTitle>Admin Dashboard</CardTitle>
+            <CardDescription>
+              Manage users and content across the platform
+            </CardDescription>
           </CardHeader>
-          <CardDescription className="space-y-4 ml-8 pb-8">
-            Manage users and content across the platform
-          </CardDescription>
         </Card>
 
         {/* Stats Cards */}

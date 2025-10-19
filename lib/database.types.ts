@@ -20,6 +20,7 @@ export type Database = {
           id: string
           launcher_id: string
           metadata: Json | null
+          name: string | null
           network: number
           notes: string | null
           updated_at: string | null
@@ -30,6 +31,7 @@ export type Database = {
           id?: string
           launcher_id: string
           metadata?: Json | null
+          name?: string | null
           network?: number
           notes?: string | null
           updated_at?: string | null
@@ -40,6 +42,7 @@ export type Database = {
           id?: string
           launcher_id?: string
           metadata?: Json | null
+          name?: string | null
           network?: number
           notes?: string | null
           updated_at?: string | null

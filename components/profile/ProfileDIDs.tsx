@@ -72,7 +72,12 @@ export default function ProfileDIDs() {
 
   const updateDid = async (
     id: string,
-    updates: { launcher_id: string; notes: string | null; network: number }
+    updates: {
+      name: string | null;
+      launcher_id: string;
+      notes: string | null;
+      network: number;
+    }
   ) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - Type inference issue with Supabase client
