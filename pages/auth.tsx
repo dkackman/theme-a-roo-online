@@ -16,7 +16,7 @@ export default function Auth() {
   // Quick redirect if already logged in
   useEffect(() => {
     if (user) {
-      router.push("/dids");
+      router.push("/");
     }
   }, [user, router]);
 
@@ -45,7 +45,7 @@ export default function Auth() {
         if (error) {
           throw error;
         }
-        router.push("/dids");
+        router.push("/");
       }
     } catch (err) {
       const error = err as Error;
@@ -61,9 +61,7 @@ export default function Auth() {
     try {
       // Use the current origin for redirect (works for both local and production)
       const redirectUrl =
-        typeof window !== "undefined"
-          ? `${window.location.origin}/dids`
-          : "/dids";
+        typeof window !== "undefined" ? `${window.location.origin}/` : "/";
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: "github",

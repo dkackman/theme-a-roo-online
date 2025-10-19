@@ -14,7 +14,7 @@ import { AuthProvider } from "../lib/AuthContext";
 // Map routes to page titles
 const pageTitles: Record<string, string> = {
   "/auth": "Sign In",
-  "/dids": "DIDs",
+  "/theme-editor": "Theme Editor",
   "/profile": "Profile",
   "/settings": "Settings",
   "/admin": "Admin Dashboard",
