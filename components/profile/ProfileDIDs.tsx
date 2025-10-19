@@ -7,6 +7,7 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from "react";
+import { toast } from "sonner";
 import { useAuth } from "../../lib/AuthContext";
 import type { Database } from "../../lib/database.types";
 import { supabase } from "../../lib/supabaseClient";
@@ -55,7 +56,18 @@ export default function ProfileDIDs() {
     const { error } = await supabase.from("dids").insert(newDid).select();
     if (error) {
       console.error(error);
+      // Check for duplicate key error
+      if (error.code === "23505") {
+        toast.error("Duplicate DID", {
+          description: "This launcher ID already exists in your DIDs.",
+        });
+      } else {
+        toast.error("Failed to add DID", {
+          description: error.message || "An unexpected error occurred.",
+        });
+      }
     } else {
+      toast.success("DID added successfully");
       setLauncherId("");
       fetchDids();
     }
@@ -65,7 +77,11 @@ export default function ProfileDIDs() {
     const { error } = await supabase.from("dids").delete().eq("id", id);
     if (error) {
       console.error(error);
+      toast.error("Failed to delete DID", {
+        description: error.message || "An unexpected error occurred.",
+      });
     } else {
+      toast.success("DID deleted successfully");
       fetchDids();
     }
   };
@@ -85,8 +101,19 @@ export default function ProfileDIDs() {
 
     if (error) {
       console.error("Error updating DID:", error);
+      // Check for duplicate key error
+      if (error.code === "23505") {
+        toast.error("Duplicate DID", {
+          description: "This launcher ID already exists in your DIDs.",
+        });
+      } else {
+        toast.error("Failed to update DID", {
+          description: error.message || "An unexpected error occurred.",
+        });
+      }
       throw error;
     } else {
+      toast.success("DID updated successfully");
       fetchDids();
     }
   };
