@@ -40,7 +40,7 @@ export default function Nav() {
         <div className="flex justify-between items-center h-16">
           <div className="flex items-center gap-6">
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-2" legacyBehavior>
+            <Link href="/" className="flex items-center gap-2">
               <Image
                 src="/kangaroo.png"
                 alt="Theme-a-roo"
@@ -58,7 +58,7 @@ export default function Nav() {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <Link href="/" legacyBehavior passHref>
+                  <Link href="/">
                     <NavigationMenuLink
                       className={navigationMenuTriggerStyle()}
                       active={router.pathname === "/"}
@@ -68,7 +68,7 @@ export default function Nav() {
                   </Link>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <Link href="/theme-editor" legacyBehavior passHref>
+                  <Link href="/theme-editor">
                     <NavigationMenuLink
                       className={navigationMenuTriggerStyle()}
                       active={router.pathname === "/theme-editor"}
@@ -79,7 +79,7 @@ export default function Nav() {
                 </NavigationMenuItem>
                 {isAdmin && (
                   <NavigationMenuItem>
-                    <Link href="/admin" legacyBehavior passHref>
+                    <Link href="/admin">
                       <NavigationMenuLink
                         className={navigationMenuTriggerStyle()}
                         active={router.pathname === "/admin"}
@@ -124,13 +124,21 @@ export default function Nav() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link href="/profile" className="flex items-center gap-3" legacyBehavior>
+                    <Link
+                      href="/profile"
+                      className="flex items-center gap-3"
+                      legacyBehavior
+                    >
                       <User className="w-4 h-4" />
                       Profile
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link href="/settings" className="flex items-center gap-3" legacyBehavior>
+                    <Link
+                      href="/settings"
+                      className="flex items-center gap-3"
+                      legacyBehavior
+                    >
                       <Settings className="w-4 h-4" />
                       Settings
                     </Link>
