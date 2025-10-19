@@ -4,12 +4,14 @@ import { useCallback, useState } from "react";
 import { Theme, ThemeProvider } from "theme-o-rama";
 
 // Discover custom themes for this app
+// eslint-disable-next-line require-await
 async function discoverThemes(): Promise<Theme[]> {
   // Return app-specific themes
   return [] as Theme[];
 }
 
 // Image resolver for theme background images
+// eslint-disable-next-line require-await
 async function resolveThemeImage(
   themeName: string,
   imagePath: string
