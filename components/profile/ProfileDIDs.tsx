@@ -49,7 +49,7 @@ export default function ProfileDIDs() {
     if (!launcherId || !user) {
       return;
     }
-    const newDid = { launcher_id: launcherId, user_id: user.id };
+    const newDid = { launcher_id: launcherId, user_id: user.id, network: 0 };
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - Type inference issue with Supabase client
     const { error } = await supabase.from("dids").insert(newDid).select();
@@ -72,7 +72,7 @@ export default function ProfileDIDs() {
 
   const updateDid = async (
     id: string,
-    updates: { launcher_id: string; notes: string | null }
+    updates: { launcher_id: string; notes: string | null; network: number }
   ) => {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore - Type inference issue with Supabase client

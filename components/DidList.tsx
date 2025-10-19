@@ -5,6 +5,13 @@ import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
+import {
   Sheet,
   SheetClose,
   SheetContent,
@@ -22,9 +29,19 @@ interface DidListProps {
   onDelete: (id: string) => void;
   onUpdate?: (
     id: string,
-    updates: { launcher_id: string; notes: string | null }
+    updates: { launcher_id: string; notes: string | null; network: number }
   ) => Promise<void>;
 }
+
+const getNetworkLabel = (network: number): string => {
+  return network === 0 ? "Mainnet" : "Testnet";
+};
+
+const getNetworkBadgeClass = (network: number): string => {
+  return network === 0
+    ? "text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700"
+    : "text-xs px-2 py-0.5 rounded-full font-medium bg-yellow-100 text-yellow-700";
+};
 
 export default function DidList({
   dids = [],
@@ -35,6 +52,7 @@ export default function DidList({
   const [editingDid, setEditingDid] = useState<Did | null>(null);
   const [editLauncherId, setEditLauncherId] = useState("");
   const [editNotes, setEditNotes] = useState("");
+  const [editNetwork, setEditNetwork] = useState<number>(0);
   const [isSaving, setIsSaving] = useState(false);
 
   const copyToClipboard = async (text: string, id: string) => {
@@ -51,12 +69,14 @@ export default function DidList({
     setEditingDid(did);
     setEditLauncherId(did.launcher_id);
     setEditNotes(did.notes || "");
+    setEditNetwork(did.network);
   };
 
   const closeEditSheet = () => {
     setEditingDid(null);
     setEditLauncherId("");
     setEditNotes("");
+    setEditNetwork(0);
   };
 
   const handleSave = async () => {
@@ -69,6 +89,7 @@ export default function DidList({
       await onUpdate(editingDid.id, {
         launcher_id: editLauncherId,
         notes: editNotes.trim() || null,
+        network: editNetwork,
       });
       closeEditSheet();
     } catch (err) {
@@ -123,6 +144,16 @@ export default function DidList({
                     </Button>
                   </div>
                 </div>
+              </div>
+
+              {/* Network */}
+              <div>
+                <label className="block text-xs font-medium text-muted-foreground mb-1">
+                  Network
+                </label>
+                <span className={getNetworkBadgeClass(d.network)}>
+                  {getNetworkLabel(d.network)}
+                </span>
               </div>
 
               {/* Notes */}
@@ -182,6 +213,21 @@ export default function DidList({
                 }
                 placeholder="Enter launcher ID"
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="network">Network</Label>
+              <Select
+                value={editNetwork.toString()}
+                onValueChange={(value) => setEditNetwork(parseInt(value, 10))}
+              >
+                <SelectTrigger id="network">
+                  <SelectValue placeholder="Select network" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="0">Mainnet</SelectItem>
+                  <SelectItem value="1">Testnet</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
             <div className="space-y-2">
               <Label htmlFor="notes">Notes</Label>
