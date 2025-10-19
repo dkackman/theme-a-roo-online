@@ -58,35 +58,32 @@ export default function Nav() {
             <NavigationMenu>
               <NavigationMenuList>
                 <NavigationMenuItem>
-                  <Link href="/">
-                    <NavigationMenuLink
-                      className={navigationMenuTriggerStyle()}
-                      active={router.pathname === "/"}
-                    >
-                      Home
-                    </NavigationMenuLink>
-                  </Link>
+                  <NavigationMenuLink
+                    asChild
+                    className={navigationMenuTriggerStyle()}
+                    active={router.pathname === "/"}
+                  >
+                    <Link href="/">Home</Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
                 <NavigationMenuItem>
-                  <Link href="/theme-editor">
-                    <NavigationMenuLink
-                      className={navigationMenuTriggerStyle()}
-                      active={router.pathname === "/theme-editor"}
-                    >
-                      Theme Editor
-                    </NavigationMenuLink>
-                  </Link>
+                  <NavigationMenuLink
+                    asChild
+                    className={navigationMenuTriggerStyle()}
+                    active={router.pathname === "/theme-editor"}
+                  >
+                    <Link href="/theme-editor">Theme Editor</Link>
+                  </NavigationMenuLink>
                 </NavigationMenuItem>
                 {isAdmin && (
                   <NavigationMenuItem>
-                    <Link href="/admin">
-                      <NavigationMenuLink
-                        className={navigationMenuTriggerStyle()}
-                        active={router.pathname === "/admin"}
-                      >
-                        Admin
-                      </NavigationMenuLink>
-                    </Link>
+                    <NavigationMenuLink
+                      asChild
+                      className={navigationMenuTriggerStyle()}
+                      active={router.pathname === "/admin"}
+                    >
+                      <Link href="/admin">Admin</Link>
+                    </NavigationMenuLink>
                   </NavigationMenuItem>
                 )}
               </NavigationMenuList>
@@ -127,7 +124,6 @@ export default function Nav() {
                     <Link
                       href="/profile"
                       className="flex items-center gap-3"
-                      legacyBehavior
                     >
                       <User className="w-4 h-4" />
                       Profile
@@ -137,7 +133,6 @@ export default function Nav() {
                     <Link
                       href="/settings"
                       className="flex items-center gap-3"
-                      legacyBehavior
                     >
                       <Settings className="w-4 h-4" />
                       Settings
