@@ -1,9 +1,9 @@
 import { ChevronDown, LogOut, Settings, User } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { useAuth } from "../lib/AuthContext";
 import type { UserRole } from "../lib/types";
-import { NavLink } from "./NavLink";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -12,6 +12,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
+import {
+  NavigationMenu,
+  NavigationMenuItem,
+  NavigationMenuLink,
+  NavigationMenuList,
+  navigationMenuTriggerStyle,
+} from "./ui/navigation-menu";
 
 const getRoleBadgeClass = (role: UserRole): string => {
   if (role === "admin") {
@@ -25,6 +32,7 @@ const getRoleBadgeClass = (role: UserRole): string => {
 
 export default function Nav() {
   const { user, role, isAdmin, signOut } = useAuth();
+  const router = useRouter();
 
   return (
     <nav className="border-b shadow-sm">
@@ -46,12 +54,43 @@ export default function Nav() {
               </span>
             </Link>
 
-            {/* Navigation Links */}
-            <NavLink url="/" message="Home" />
-            <NavLink url="/theme-editor" message="Theme Editor" />
-
-            {/* Admin-only link */}
-            {isAdmin && <NavLink url="/admin" message="Admin" />}
+            {/* Navigation Menu */}
+            <NavigationMenu>
+              <NavigationMenuList>
+                <NavigationMenuItem>
+                  <Link href="/" legacyBehavior passHref>
+                    <NavigationMenuLink
+                      className={navigationMenuTriggerStyle()}
+                      active={router.pathname === "/"}
+                    >
+                      Home
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <Link href="/theme-editor" legacyBehavior passHref>
+                    <NavigationMenuLink
+                      className={navigationMenuTriggerStyle()}
+                      active={router.pathname === "/theme-editor"}
+                    >
+                      Theme Editor
+                    </NavigationMenuLink>
+                  </Link>
+                </NavigationMenuItem>
+                {isAdmin && (
+                  <NavigationMenuItem>
+                    <Link href="/admin" legacyBehavior passHref>
+                      <NavigationMenuLink
+                        className={navigationMenuTriggerStyle()}
+                        active={router.pathname === "/admin"}
+                      >
+                        Admin
+                      </NavigationMenuLink>
+                    </Link>
+                  </NavigationMenuItem>
+                )}
+              </NavigationMenuList>
+            </NavigationMenu>
           </div>
           <div className="flex items-center gap-4">
             {user ? (
@@ -107,7 +146,12 @@ export default function Nav() {
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
-              <NavLink url="/auth" message="Sign in" />
+              <Link
+                href="/auth"
+                className="px-4 py-2 text-sm font-medium rounded-lg hover:bg-accent transition-colors"
+              >
+                Sign in
+              </Link>
             )}
           </div>
         </div>
