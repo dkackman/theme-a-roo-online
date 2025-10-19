@@ -39,6 +39,7 @@ export default function Nav() {
                 width={32}
                 height={32}
                 className="rounded-lg"
+                style={{ filter: "var(--logo-invert)" }}
               />
               <span className="text-xl font-bold hidden sm:block">
                 Theme-a-roo

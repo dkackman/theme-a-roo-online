@@ -1,5 +1,14 @@
 @import "tailwindcss";
 
+/* Logo inversion based on color-scheme */
+html {
+  --logo-invert: invert(1);
+}
+
+html[style*="color-scheme: dark"] {
+  --logo-invert: invert(0);
+}
+
 /* App-specific styles - themes.css is imported in layout.tsx */
 
 @theme {
