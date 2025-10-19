@@ -35,7 +35,6 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalDids: 0,
-    completedDids: 0,
     totalUsers: 0,
   });
 
@@ -63,7 +62,6 @@ export default function Admin() {
       setAllDids(typedDids);
       setStats({
         totalDids: typedDids.length,
-        completedDids: typedDids.filter((d) => d.is_complete ?? false).length,
         totalUsers: users?.length || 0,
       });
     }
@@ -164,23 +162,7 @@ export default function Admin() {
         accessorKey: "title",
         header: "Title",
         cell: ({ row }) => (
-          <span className="font-medium">{row.original.title}</span>
-        ),
-      },
-      {
-        accessorKey: "is_complete",
-        header: "Status",
-        size: 120,
-        cell: ({ row }) => (
-          <span
-            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-              row.original.is_complete
-                ? "bg-green-100 text-green-800"
-                : "bg-gray-100 text-gray-800"
-            }`}
-          >
-            {row.original.is_complete ? "Complete" : "Pending"}
-          </span>
+          <span className="font-medium">{row.original.launcher_id}</span>
         ),
       },
       {
@@ -214,7 +196,7 @@ export default function Admin() {
             onClick={() => deleteAnyDid(row.original.id)}
             variant="destructive"
             size="sm"
-            aria-label={`Delete "${row.original.title}"`}
+            aria-label={`Delete "${row.original.launcher_id}"`}
           >
             <Trash2 className="w-4 h-4 mr-2" />
             Delete
@@ -242,23 +224,13 @@ export default function Admin() {
         </Card>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <Card className="rounded-xl shadow-lg">
             <CardHeader>
               <CardTitle>Total DIDs</CardTitle>
             </CardHeader>
             <CardContent>
               <span className="text-3xl font-bold">{stats.totalDids}</span>
-            </CardContent>
-          </Card>
-          <Card className="rounded-xl shadow-lg">
-            <CardHeader>
-              <CardTitle>Completed DIDs</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <span className="text-3xl font-bold text-green-600">
-                {stats.completedDids}
-              </span>
             </CardContent>
           </Card>
           <Card className="rounded-xl shadow-lg">

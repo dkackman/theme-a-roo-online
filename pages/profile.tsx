@@ -1,22 +1,25 @@
-import { Github, Mail } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
+import { ClipboardList, User as UserIcon, Wallet } from "lucide-react";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import ProfileAddresses from "../components/profile/ProfileAddresses";
+import ProfileDIDs from "../components/profile/ProfileDIDs";
+import UserProfile from "../components/UserProfile";
 import { useAuth } from "../lib/AuthContext";
-import type { UserRole } from "../lib/types";
 
-const getRoleBadgeClass = (role: UserRole): string => {
-  if (role === "admin") {
-    return "inline-block px-3 py-1 rounded-full font-medium bg-purple-100 text-purple-700";
-  }
-  if (role === "creator") {
-    return "inline-block px-3 py-1 rounded-full font-medium bg-blue-100 text-blue-700";
-  }
-  return "inline-block px-3 py-1 rounded-full font-medium bg-gray-100";
-};
+type ProfileSection = "user" | "dids" | "addresses";
+
+const sections = [
+  { id: "user" as ProfileSection, label: "User", icon: UserIcon },
+  { id: "dids" as ProfileSection, label: "DIDs", icon: ClipboardList },
+  { id: "addresses" as ProfileSection, label: "Addresses", icon: Wallet },
+];
 
 export default function Profile() {
-  const { user, role, loading } = useAuth();
+  const { user, loading } = useAuth();
   const router = useRouter();
+  const [activeSection, setActiveSection] = useState<ProfileSection>("user");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -27,117 +30,58 @@ export default function Profile() {
   if (loading || !user) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
       </div>
     );
   }
 
+  const renderContent = () => {
+    switch (activeSection) {
+      case "user":
+        return <UserProfile />;
+      case "dids":
+        return <ProfileDIDs />;
+      case "addresses":
+        return <ProfileAddresses />;
+      default:
+        return <UserProfile />;
+    }
+  };
+
   return (
-    <div className="max-w-2xl mx-auto">
-      <div className="rounded-2xl shadow-xl p-10">
-        <h1 className="text-3xl font-bold mb-8">Profile</h1>
-
-        <div className="space-y-6">
-          {/* Email */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
-            <div className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
-              {user.email}
-            </div>
+    <div className="container max-w-7xl mx-auto px-4 py-8">
+      <div className="flex flex-col md:flex-row gap-8">
+        {/* Sidebar Navigation */}
+        <nav className="md:w-64 flex-shrink-0">
+          <div className="space-y-1">
+            {sections.map((section) => {
+              const Icon = section.icon;
+              const isActive = activeSection === section.id;
+              return (
+                <button
+                  key={section.id}
+                  onClick={() => setActiveSection(section.id)}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-4 py-2 text-sm font-medium rounded-lg transition-colors text-left",
+                    isActive
+                      ? "bg-accent text-accent-foreground"
+                      : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                  )}
+                >
+                  <Icon className="w-4 h-4" />
+                  <span>{section.label}</span>
+                </button>
+              );
+            })}
           </div>
+        </nav>
 
-          {/* User ID */}
-          <div>
-            <label className="block text-sm font-medium mb-2">User ID</label>
-            <div className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200 font-mono text-sm">
-              {user.id}
-            </div>
-          </div>
-
-          {/* User Role */}
-          <div>
-            <label className="block text-sm font-medium mb-2">Role</label>
-            <div className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
-              <span className={getRoleBadgeClass(role)}>
-                {role.charAt(0).toUpperCase() + role.slice(1)}
-              </span>
-            </div>
-          </div>
-
-          {/* Auth Provider(s) */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Sign-in Methods
-            </label>
-            <div className="space-y-2">
-              {user.identities && user.identities.length > 0 ? (
-                user.identities.map((identity) => (
-                  <div
-                    key={identity.id}
-                    className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200"
-                  >
-                    {identity.provider === "github" ? (
-                      <div className="flex items-center gap-2">
-                        <Github className="w-5 h-5" />
-                        <span>GitHub</span>
-                        <span className="ml-auto text-xs">
-                          {identity.identity_data?.user_name ||
-                            identity.identity_data?.email}
-                        </span>
-                      </div>
-                    ) : (
-                      <div className="flex items-center gap-2">
-                        <Mail className="w-5 h-5" />
-                        <span>Email / Password</span>
-                      </div>
-                    )}
-                  </div>
-                ))
-              ) : (
-                <div className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="flex items-center gap-2">
-                    <Mail className="w-5 h-5" />
-                    Email / Password
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Account Created */}
-          <div>
-            <label className="block text-sm font-medium mb-2">
-              Account Created
-            </label>
-            <div className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
-              {new Date(user.created_at).toLocaleDateString("en-US", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-                hour: "2-digit",
-                minute: "2-digit",
-              })}
-            </div>
-          </div>
-
-          {/* Last Sign In */}
-          {user.last_sign_in_at && (
-            <div>
-              <label className="block text-sm font-medium mb-2">
-                Last Sign In
-              </label>
-              <div className="px-4 py-3 bg-gray-50 rounded-lg border border-gray-200">
-                {new Date(user.last_sign_in_at).toLocaleDateString("en-US", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                  hour: "2-digit",
-                  minute: "2-digit",
-                })}
-              </div>
-            </div>
-          )}
-        </div>
+        {/* Main Content */}
+        <main className="flex-1 min-w-0">
+          <Card className="rounded-2xl shadow-xl p-6 md:p-10">
+            {renderContent()}
+          </Card>
+        </main>
       </div>
     </div>
   );

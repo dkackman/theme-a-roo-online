@@ -64,20 +64,6 @@ export default function Dids() {
     }
   };
 
-  const toggleComplete = async (did: Did) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - Type inference issue with Supabase client
-    const { error } = await supabase
-      .from("dids")
-      .update({ is_complete: !did.is_complete })
-      .eq("id", did.id);
-    if (error) {
-      console.error(error);
-    } else {
-      fetchDids();
-    }
-  };
-
   const deleteDid = async (id: string) => {
     const { error } = await supabase.from("dids").delete().eq("id", id);
     if (error) {
@@ -113,7 +99,7 @@ export default function Dids() {
             <p className="mt-4 text-gray-600">Loading...</p>
           </div>
         ) : (
-          <DidList dids={dids} onToggle={toggleComplete} onDelete={deleteDid} />
+          <DidList dids={dids} onDelete={deleteDid} />
         )}
       </div>
     </div>
