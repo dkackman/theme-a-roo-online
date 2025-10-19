@@ -1,5 +1,16 @@
-import { useEffect, useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { DataTable } from "@/components/ui/data-table";
+import type { ColumnDef } from "@tanstack/react-table";
+import { Trash2 } from "lucide-react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { AdminOnly } from "../components/RoleProtected";
+import { Button } from "../components/ui/button";
 import { useAuth } from "../lib/AuthContext";
 import type { Database } from "../lib/database.types";
 import { supabase } from "../lib/supabaseClient";
@@ -28,13 +39,7 @@ export default function Admin() {
     totalUsers: 0,
   });
 
-  useEffect(() => {
-    if (user) {
-      fetchAdminData();
-    }
-  }, [user]);
-
-  const fetchAdminData = async () => {
+  const fetchAdminData = useCallback(async () => {
     setLoading(true);
 
     // Fetch all DIDs (admin can see all)
@@ -69,211 +74,266 @@ export default function Admin() {
     }
 
     setLoading(false);
-  };
+  }, []);
 
-  const deleteAnyDid = async (id: string) => {
-    const { error } = await supabase.from("dids").delete().eq("id", id);
-    if (error) {
-      console.error(error);
-    } else {
+  useEffect(() => {
+    if (user) {
       fetchAdminData();
     }
-  };
+  }, [user, fetchAdminData]);
+
+  const deleteAnyDid = useCallback(
+    async (id: string) => {
+      const { error } = await supabase.from("dids").delete().eq("id", id);
+      if (error) {
+        console.error(error);
+      } else {
+        fetchAdminData();
+      }
+    },
+    [fetchAdminData]
+  );
+
+  const usersColumns = useMemo<ColumnDef<UserProfile>[]>(
+    () => [
+      {
+        accessorKey: "email",
+        header: "Email",
+        cell: ({ row }) => (
+          <span className="font-medium">{row.original.email}</span>
+        ),
+      },
+      {
+        accessorKey: "role",
+        header: "Role",
+        size: 120,
+        cell: ({ row }) => (
+          <span className={getRoleBadgeClass(row.original.role)}>
+            {(row.original.role || "user").charAt(0).toUpperCase() +
+              (row.original.role || "user").slice(1)}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "created_at",
+        header: "Joined",
+        size: 120,
+        cell: ({ row }) => (
+          <span className="text-sm">
+            {row.original.created_at
+              ? new Date(row.original.created_at).toLocaleDateString()
+              : "N/A"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "last_sign_in_at",
+        header: "Last Sign In",
+        size: 120,
+        cell: ({ row }) => (
+          <span className="text-sm">
+            {row.original.last_sign_in_at
+              ? new Date(row.original.last_sign_in_at).toLocaleDateString()
+              : "Never"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "email_confirmed_at",
+        header: "Status",
+        size: 120,
+        cell: ({ row }) => (
+          <span
+            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+              row.original.email_confirmed_at
+                ? "bg-green-100 text-green-800"
+                : "bg-yellow-100 text-yellow-800"
+            }`}
+          >
+            {row.original.email_confirmed_at ? "Confirmed" : "Pending"}
+          </span>
+        ),
+      },
+    ],
+    []
+  );
+
+  const didsColumns = useMemo<ColumnDef<Did>[]>(
+    () => [
+      {
+        accessorKey: "title",
+        header: "Title",
+        cell: ({ row }) => (
+          <span className="font-medium">{row.original.title}</span>
+        ),
+      },
+      {
+        accessorKey: "is_complete",
+        header: "Status",
+        size: 120,
+        cell: ({ row }) => (
+          <span
+            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+              row.original.is_complete
+                ? "bg-green-100 text-green-800"
+                : "bg-gray-100 text-gray-800"
+            }`}
+          >
+            {row.original.is_complete ? "Complete" : "Pending"}
+          </span>
+        ),
+      },
+      {
+        accessorKey: "user_id",
+        header: "User ID",
+        size: 150,
+        cell: ({ row }) => (
+          <span className="text-xs font-mono text-muted-foreground">
+            {row.original.user_id.substring(0, 8)}...
+          </span>
+        ),
+      },
+      {
+        accessorKey: "created_at",
+        header: "Created",
+        size: 120,
+        cell: ({ row }) => (
+          <span className="text-sm">
+            {row.original.created_at
+              ? new Date(row.original.created_at).toLocaleDateString()
+              : "N/A"}
+          </span>
+        ),
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        size: 100,
+        cell: ({ row }) => (
+          <Button
+            onClick={() => deleteAnyDid(row.original.id)}
+            variant="destructive"
+            size="sm"
+            aria-label={`Delete "${row.original.title}"`}
+          >
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete
+          </Button>
+        ),
+        meta: {
+          cellClassName: "text-right px-4",
+        },
+      },
+    ],
+    [deleteAnyDid]
+  );
 
   return (
     <AdminOnly>
-      <div className="space-y-6">
+      <div className="max-w-4xl mx-auto space-y-8">
         {/* Header */}
-        <div className="rounded-2xl shadow-xl p-10">
-          <h1 className="text-3xl font-bold mb-2">Admin Dashboard</h1>
-          <p className="text-gray-600">
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-base">Admin Dashboard</CardTitle>
+          </CardHeader>
+          <CardDescription className="space-y-4 ml-8 pb-8">
             Manage users and content across the platform
-          </p>
-        </div>
+          </CardDescription>
+        </Card>
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="rounded-xl shadow-lg p-6">
-            <h3 className="text-sm font-medium uppercase">Total DIDs</h3>
-            <p className="text-3xl font-bold mt-2">{stats.totalDids}</p>
-          </div>
-          <div className="rounded-xl shadow-lg p-6">
-            <h3 className="text-sm font-medium uppercase">Completed DIDs</h3>
-            <p className="text-3xl font-bold text-green-600 mt-2">
-              {stats.completedDids}
-            </p>
-          </div>
-          <div className="rounded-xl shadow-lg p-6">
-            <h3 className="text-sm font-medium uppercase">Active Users</h3>
-            <p className="text-3xl font-bold text-indigo-600 mt-2">
-              {stats.totalUsers}
-            </p>
-          </div>
+          <Card className="rounded-xl shadow-lg">
+            <CardHeader>
+              <CardTitle>Total DIDs</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <span className="text-3xl font-bold">{stats.totalDids}</span>
+            </CardContent>
+          </Card>
+          <Card className="rounded-xl shadow-lg">
+            <CardHeader>
+              <CardTitle>Completed DIDs</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <span className="text-3xl font-bold text-green-600">
+                {stats.completedDids}
+              </span>
+            </CardContent>
+          </Card>
+          <Card className="rounded-xl shadow-lg">
+            <CardHeader>
+              <CardTitle>Active Users</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <span className="text-3xl font-bold text-indigo-600">
+                {stats.totalUsers}
+              </span>
+            </CardContent>
+          </Card>
         </div>
 
         {/* All Users Table */}
-        <div className="rounded-2xl shadow-xl p-10">
-          <h2 className="text-2xl font-bold mb-6">All Users</h2>
-
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent"></div>
-              <p className="mt-4 text-gray-600">Loading...</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Email
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Role
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Joined
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Last Sign In
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {allUsers.map((userProfile) => (
-                    <tr key={userProfile.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm ">
-                        {userProfile.email}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={getRoleBadgeClass(userProfile.role)}>
-                          {(userProfile.role || "user")
-                            .charAt(0)
-                            .toUpperCase() +
-                            (userProfile.role || "user").slice(1)}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {userProfile.created_at
-                          ? new Date(
-                              userProfile.created_at
-                            ).toLocaleDateString()
-                          : "N/A"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {userProfile.last_sign_in_at
-                          ? new Date(
-                              userProfile.last_sign_in_at
-                            ).toLocaleDateString()
-                          : "Never"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            userProfile.email_confirmed_at
-                              ? "bg-green-100 text-green-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
-                        >
-                          {userProfile.email_confirmed_at
-                            ? "Confirmed"
-                            : "Pending"}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {allUsers.length === 0 && (
-                <div className="text-center py-12">
-                  <p>No users in the system yet</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        <Card className="rounded-2xl shadow-xl">
+          <CardHeader>
+            <CardTitle>All Users</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading && (
+              <div className="text-center py-12">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+                <p className="mt-4 text-muted-foreground">Loading...</p>
+              </div>
+            )}
+            {!loading && allUsers.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">
+                  No users in the system yet
+                </p>
+              </div>
+            )}
+            {!loading && allUsers.length > 0 && (
+              <DataTable
+                columns={usersColumns}
+                data={allUsers}
+                showTotalRows={true}
+                rowLabel="user"
+                rowLabelPlural="users"
+              />
+            )}
+          </CardContent>
+        </Card>
 
         {/* All DIDs Table */}
-        <div className="rounded-2xl shadow-xl p-10">
-          <h2 className="text-2xl font-bold mb-6">All DIDs</h2>
-
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-indigo-600 border-t-transparent"></div>
-              <p className="mt-4 text-gray-600">Loading...</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Title
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Status
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      User ID
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Created
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium uppercase tracking-wider">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {allDids.map((did) => (
-                    <tr key={did.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm ">
-                        {did.title}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            did.is_complete
-                              ? "bg-green-100 text-green-800"
-                              : "bg-gray-100 text-gray-800"
-                          }`}
-                        >
-                          {did.is_complete ? "Complete" : "Pending"}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-xs font-mono">
-                        {did.user_id.substring(0, 8)}...
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        {did.created_at
-                          ? new Date(did.created_at).toLocaleDateString()
-                          : "N/A"}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <button
-                          onClick={() => deleteAnyDid(did.id)}
-                          className="text-red-600 hover:text-red-900 font-medium"
-                        >
-                          Delete
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-
-              {allDids.length === 0 && (
-                <div className="text-center py-12">
-                  <p>No DIDs in the system yet</p>
-                </div>
-              )}
-            </div>
-          )}
-        </div>
+        <Card className="rounded-2xl shadow-xl">
+          <CardHeader>
+            <CardTitle>All DIDs</CardTitle>
+          </CardHeader>
+          <CardContent>
+            {loading && (
+              <div className="text-center py-12">
+                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+                <p className="mt-4 text-muted-foreground">Loading...</p>
+              </div>
+            )}
+            {!loading && allDids.length === 0 && (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">
+                  No DIDs in the system yet
+                </p>
+              </div>
+            )}
+            {!loading && allDids.length > 0 && (
+              <DataTable
+                columns={didsColumns}
+                data={allDids}
+                showTotalRows={true}
+                rowLabel="DID"
+                rowLabelPlural="DIDs"
+              />
+            )}
+          </CardContent>
+        </Card>
       </div>
     </AdminOnly>
   );
