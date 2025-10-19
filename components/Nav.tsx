@@ -48,7 +48,7 @@ export default function Nav() {
 
             {/* Navigation Links */}
             <NavLink url="/" message="Home" />
-            <NavLink url="/dids" message="DIDs" />
+            <NavLink url="/theme-editor" message="Theme Editor" />
 
             {/* Admin-only link */}
             {isAdmin && <NavLink url="/admin" message="Admin" />}
