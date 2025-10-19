@@ -1,5 +1,14 @@
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Palette } from "lucide-react";
+import {
+  Empty,
+  EmptyContent,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Download, Palette, Plus } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { useAuth } from "../lib/AuthContext";
@@ -25,14 +34,31 @@ export default function Home() {
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8">
       <Card className="rounded-2xl shadow-xl p-10">
-        <h1 className="text-4xl font-bold mb-6">
-          Welcome to Theme-a-roo Online
-        </h1>
-        <div className="text-center py-12">
-          <Palette className="mx-auto h-16 w-16 text-muted-foreground mb-4" />
-          <h2 className="text-2xl font-semibold mb-2">Your Themes</h2>
-          <p className="text-muted-foreground">Your themes will appear here</p>
-        </div>
+        <h1 className="text-4xl font-bold">Welcome to Theme-a-roo Online</h1>
+        <Empty>
+          <EmptyHeader>
+            <EmptyMedia variant="icon">
+              <Palette />
+            </EmptyMedia>
+            <EmptyTitle>No Themes Yet</EmptyTitle>
+            <EmptyDescription>
+              You haven&apos;t created any themes yet. Get started by creating
+              your first theme.
+            </EmptyDescription>
+          </EmptyHeader>
+          <EmptyContent>
+            <div className="flex gap-3">
+              <Button onClick={() => {}} variant="default">
+                <Plus className="w-4 h-4 mr-2" />
+                Create Theme
+              </Button>
+              <Button onClick={() => {}} variant="outline">
+                <Download className="w-4 h-4 mr-2" />
+                Import Theme
+              </Button>
+            </div>
+          </EmptyContent>
+        </Empty>
       </Card>
     </div>
   );
