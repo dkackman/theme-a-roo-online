@@ -10,18 +10,70 @@ import {
 } from "@/components/ui/empty";
 import { Download, Palette, Plus } from "lucide-react";
 import { useRouter } from "next/router";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 import { useAuth } from "../Contexts/AuthContext";
+import { supabase } from "../lib/supabaseClient";
 
 export default function Home() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push("/auth");
     }
   }, [user, loading, router]);
+
+  const handleCreateTheme = async () => {
+    if (!user) {
+      return;
+    }
+
+    setIsCreating(true);
+    try {
+      // Generate a UUID for the theme name
+      const themeId = crypto.randomUUID();
+      const displayName = "My New Theme";
+
+      // Create the theme JSON
+      const themeJson = {
+        name: themeId,
+        display_name: displayName,
+        schema_version: 1,
+        most_like: "light",
+      };
+
+      // Insert the new theme into the database
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      const { data, error } = await supabase
+        .from("themes")
+        .insert({
+          name: themeId,
+          display_name: displayName,
+          theme: themeJson,
+          user_id: user.id,
+        })
+        .select()
+        .single();
+
+      if (error) {
+        throw error;
+      }
+
+      toast.success("Theme created successfully!");
+
+      // Navigate to the theme editor with the theme ID
+      router.push(`/theme-editor?id=${data.id}`);
+    } catch (error) {
+      console.error("Error creating theme:", error);
+      toast.error("Failed to create theme. Please try again.");
+    } finally {
+      setIsCreating(false);
+    }
+  };
 
   if (loading || !user) {
     return (
@@ -48,9 +100,13 @@ export default function Home() {
           </EmptyHeader>
           <EmptyContent>
             <div className="flex gap-3">
-              <Button onClick={() => {}} variant="default">
+              <Button
+                onClick={handleCreateTheme}
+                variant="default"
+                disabled={isCreating}
+              >
                 <Plus className="w-4 h-4 mr-2" />
-                Create Theme
+                {isCreating ? "Creating..." : "Create Theme"}
               </Button>
               <Button onClick={() => {}} variant="outline">
                 <Download className="w-4 h-4 mr-2" />

@@ -13,7 +13,6 @@ import { useAuth } from "../Contexts/AuthContext";
 import type { Database } from "../lib/database.types";
 import { supabase } from "../lib/supabaseClient";
 
-type Did = Database["public"]["Tables"]["dids"]["Row"];
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
 const getRoleBadgeClass = (role: string | null): string => {
