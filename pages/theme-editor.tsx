@@ -9,6 +9,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import {
@@ -23,7 +24,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { parseColor, rgbaToHex } from "@/lib/color";
 import Editor from "@monaco-editor/react";
-import { FileText, Save, StickyNote, Trash2 } from "lucide-react";
+import { CheckCircle, FileText, Save, StickyNote, Trash2 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
@@ -49,12 +50,42 @@ export default function ThemeEditor() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
   const monacoInitializedRef = useRef(false);
+  const [editorTheme, setEditorTheme] = useState<"vs" | "vs-dark">("vs");
 
   useEffect(() => {
     if (!loading && !user) {
       router.push("/auth");
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    // Set editor theme based on html element's color-scheme style property
+    const updateEditorTheme = () => {
+      if (typeof document === "undefined") {
+        setEditorTheme("vs");
+        return;
+      }
+
+      const colorScheme = document.documentElement.style.colorScheme;
+      // im gonna be honest, this should be reversed, but it works like this
+      // not when it is reversed like it should be ¯\_(ツ)_/¯
+      setEditorTheme(colorScheme === "dark" ? "vs" : "vs-dark");
+    };
+
+    // Initial set
+    updateEditorTheme();
+
+    // Watch for changes to the color-scheme on html element
+    const observer = new MutationObserver(updateEditorTheme);
+    if (typeof document !== "undefined") {
+      observer.observe(document.documentElement, {
+        attributes: true,
+        attributeFilter: ["style"],
+      });
+    }
+
+    return () => observer.disconnect();
+  }, []);
 
   const loadTheme = async () => {
     if (!id || typeof id !== "string") {
@@ -215,6 +246,40 @@ export default function ThemeEditor() {
     }
   };
 
+  const handleValidateTheme = () => {
+    try {
+      // Parse and validate JSON
+      const parsedJson = JSON.parse(themeJson);
+
+      // Validate required fields
+      if (
+        !parsedJson.name ||
+        typeof parsedJson.name !== "string" ||
+        parsedJson.name.trim() === ""
+      ) {
+        toast.error("Theme JSON must contain a non-empty 'name' field");
+        return;
+      }
+
+      if (
+        !parsedJson.displayName ||
+        typeof parsedJson.displayName !== "string" ||
+        parsedJson.displayName.trim() === ""
+      ) {
+        toast.error("Theme JSON must contain a non-empty 'displayName' field");
+        return;
+      }
+
+      toast.success("Theme JSON is valid!");
+    } catch (error) {
+      if (error instanceof SyntaxError) {
+        toast.error("Invalid JSON format. Please check your syntax.");
+      } else {
+        toast.error("Validation failed");
+      }
+    }
+  };
+
   if (loading || !user || isLoadingTheme) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -242,7 +307,7 @@ export default function ThemeEditor() {
           <div>
             <h1 className="text-3xl font-bold mb-2">{theme.display_name}</h1>
           </div>
-          <div className="flex gap-2">
+          <ButtonGroup>
             <Button
               onClick={() => setIsNotesSheetOpen(true)}
               variant="outline"
@@ -250,6 +315,19 @@ export default function ThemeEditor() {
             >
               <StickyNote className="w-4 h-4 mr-2" />
               Notes
+            </Button>
+            <Button onClick={handleValidateTheme} variant="outline" size="sm">
+              <CheckCircle className="w-4 h-4 mr-2" />
+              Validate
+            </Button>
+            <Button
+              onClick={handleSaveTheme}
+              disabled={isSaving}
+              variant="outline"
+              size="sm"
+            >
+              <Save className="w-4 h-4 mr-2" />
+              {isSaving ? "Saving..." : "Save"}
             </Button>
             <Button
               onClick={() => setIsDeleteDialogOpen(true)}
@@ -259,7 +337,7 @@ export default function ThemeEditor() {
               <Trash2 className="w-4 h-4 mr-2" />
               Delete
             </Button>
-          </div>
+          </ButtonGroup>
         </div>
 
         <Card>
@@ -271,6 +349,7 @@ export default function ThemeEditor() {
           </CardHeader>
           <CardContent className="space-y-4">
             <Editor
+              theme={editorTheme}
               beforeMount={(monaco) => {
                 // Only initialize Monaco once to prevent duplicate color providers
                 if (monacoInitializedRef.current) {
@@ -431,12 +510,6 @@ export default function ThemeEditor() {
                 </div>
               }
             />
-            <div className="flex justify-end">
-              <Button onClick={handleSaveTheme} disabled={isSaving}>
-                <Save className="w-4 h-4 mr-2" />
-                {isSaving ? "Saving..." : "Save Theme"}
-              </Button>
-            </div>
           </CardContent>
         </Card>
       </div>
