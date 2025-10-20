@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "../Contexts/AuthContext";
 import type { UserRole } from "../lib/types";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,9 +85,15 @@ export default function Nav() {
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger className="flex items-center gap-2 px-4 py-2 text-sm font-medium rounded-lg hover:bg-accent transition-colors outline-none">
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-semibold">
-                    {user.email?.charAt(0).toUpperCase()}
-                  </div>
+                  <Avatar className="w-8 h-8">
+                    <AvatarImage
+                      src={user.user_metadata?.avatar_url}
+                      alt={user.email || "User avatar"}
+                    />
+                    <AvatarFallback className="bg-primary text-primary-foreground font-semibold">
+                      {user.email?.charAt(0).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
                   <span className="hidden sm:inline max-w-[150px] truncate">
                     {user.email}
                   </span>

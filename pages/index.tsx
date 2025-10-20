@@ -40,9 +40,9 @@ export default function Home() {
       // Create the theme JSON
       const themeJson = {
         name: themeId,
-        display_name: displayName,
-        schema_version: 1,
-        most_like: "light",
+        displayName: displayName,
+        schemaVersion: 1,
+        mostLike: "light",
       };
 
       // Insert the new theme into the database
