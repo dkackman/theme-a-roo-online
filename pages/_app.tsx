@@ -9,7 +9,7 @@ import { Toaster } from "sonner";
 import "theme-o-rama/themes.css";
 import Layout from "../components/Layout";
 import { ClientThemeProvider } from "../components/providers/ClientThemeProvider";
-import { AuthProvider } from "../lib/AuthContext";
+import { AuthProvider } from "../Contexts/AuthContext";
 
 // Map routes to page titles
 const pageTitles: Record<string, string> = {

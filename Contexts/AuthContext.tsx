@@ -7,8 +7,8 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { supabase } from "./supabaseClient";
-import type { UserRole } from "./types";
+import { supabase } from "../lib/supabaseClient";
+import type { UserRole } from "../lib/types";
 
 interface AuthContextType {
   user: User | null;

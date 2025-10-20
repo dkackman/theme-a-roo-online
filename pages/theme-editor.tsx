@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Palette } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { useAuth } from "../lib/AuthContext";
+import { useAuth } from "../Contexts/AuthContext";
 
 export default function ThemeEditor() {
   const { user, loading } = useAuth();

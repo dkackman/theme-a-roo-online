@@ -6,7 +6,7 @@ import { useEffect, useState } from "react";
 import ProfileAddresses from "../components/profile/ProfileAddresses";
 import ProfileDIDs from "../components/profile/ProfileDIDs";
 import UserProfile from "../components/UserProfile";
-import { useAuth } from "../lib/AuthContext";
+import { useAuth } from "../Contexts/AuthContext";
 
 type ProfileSection = "user" | "dids" | "addresses";
 

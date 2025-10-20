@@ -8,7 +8,7 @@ import {
   type FormEvent,
 } from "react";
 import { toast } from "sonner";
-import { useAuth } from "../../lib/AuthContext";
+import { useAuth } from "../../Contexts/AuthContext";
 import type { Database } from "../../lib/database.types";
 import { supabase } from "../../lib/supabaseClient";
 import AddressList from "../AddressList";

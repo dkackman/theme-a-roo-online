@@ -9,7 +9,7 @@ import { Settings as SettingsIcon } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
 import { ThemeSelector } from "../components/ThemeSelector";
-import { useAuth } from "../lib/AuthContext";
+import { useAuth } from "../Contexts/AuthContext";
 
 export default function Settings() {
   const { user, loading } = useAuth();

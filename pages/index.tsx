@@ -11,7 +11,7 @@ import {
 import { Download, Palette, Plus } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect } from "react";
-import { useAuth } from "../lib/AuthContext";
+import { useAuth } from "../Contexts/AuthContext";
 
 export default function Home() {
   const { user, loading } = useAuth();

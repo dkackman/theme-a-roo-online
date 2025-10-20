@@ -1,7 +1,7 @@
 import { Github, Mail } from "lucide-react";
 import { Field, FieldGroup, FieldLabel } from "../components/ui/field";
 import { Input } from "../components/ui/input";
-import { useAuth } from "../lib/AuthContext";
+import { useAuth } from "../Contexts/AuthContext";
 import type { UserRole } from "../lib/types";
 
 const getRoleBadgeClass = (role: UserRole): string => {

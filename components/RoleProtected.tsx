@@ -1,6 +1,6 @@
 import { useRouter } from "next/router";
 import { useEffect, type ReactNode } from "react";
-import { useAuth } from "../lib/AuthContext";
+import { useAuth } from "../Contexts/AuthContext";
 import type { UserRole } from "../lib/types";
 
 interface RoleProtectedProps {
