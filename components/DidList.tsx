@@ -11,6 +11,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
+import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Field, FieldGroup, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
@@ -58,10 +59,10 @@ const getNetworkLabel = (network: number): string => {
   return network === 0 ? "Mainnet" : "Testnet";
 };
 
-const getNetworkBadgeClass = (network: number): string => {
-  return network === 0
-    ? "text-xs px-2 py-0.5 rounded-full font-medium bg-green-100 text-green-700"
-    : "text-xs px-2 py-0.5 rounded-full font-medium bg-yellow-100 text-yellow-700";
+const getNetworkBadgeVariant = (
+  network: number
+): "default" | "secondary" | "outline" => {
+  return network === 0 ? "default" : "secondary";
 };
 
 export default function DidList({
@@ -195,9 +196,9 @@ export default function DidList({
                 <label className="block text-xs font-medium text-muted-foreground mb-1">
                   Network
                 </label>
-                <span className={getNetworkBadgeClass(d.network)}>
+                <Badge variant={getNetworkBadgeVariant(d.network)}>
                   {getNetworkLabel(d.network)}
-                </span>
+                </Badge>
               </div>
 
               {/* Notes */}

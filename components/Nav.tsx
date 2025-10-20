@@ -5,6 +5,7 @@ import { useRouter } from "next/router";
 import { useAuth } from "../Contexts/AuthContext";
 import type { UserRole } from "../lib/types";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Badge } from "./ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,14 +22,26 @@ import {
   navigationMenuTriggerStyle,
 } from "./ui/navigation-menu";
 
-const getRoleBadgeClass = (role: UserRole): string => {
+const getRoleBadgeVariant = (
+  role: UserRole
+): "default" | "secondary" | "outline" => {
   if (role === "admin") {
-    return "text-xs px-2 py-0.5 rounded-full font-medium bg-purple-100 text-purple-700";
+    return "default";
   }
   if (role === "creator") {
-    return "text-xs px-2 py-0.5 rounded-full font-medium bg-blue-100 text-blue-700";
+    return "secondary";
   }
-  return "text-xs px-2 py-0.5 rounded-full font-medium bg-gray-100";
+  return "outline";
+};
+
+const getRoleBadgeClassName = (role: UserRole): string => {
+  if (role === "admin") {
+    return "bg-purple-100 text-purple-700 border-transparent";
+  }
+  if (role === "creator") {
+    return "bg-blue-100 text-blue-700 border-transparent";
+  }
+  return "";
 };
 
 export default function Nav() {
@@ -111,9 +124,12 @@ export default function Nav() {
                             ? "GitHub Account"
                             : "Email Account"}
                         </p>
-                        <span className={getRoleBadgeClass(role)}>
+                        <Badge
+                          variant={getRoleBadgeVariant(role)}
+                          className={getRoleBadgeClassName(role)}
+                        >
                           {role.charAt(0).toUpperCase() + role.slice(1)}
-                        </span>
+                        </Badge>
                       </div>
                     </div>
                   </DropdownMenuLabel>

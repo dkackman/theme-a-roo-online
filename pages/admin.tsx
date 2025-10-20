@@ -1,3 +1,4 @@
+import { Badge } from "@/components/ui/badge";
 import {
   Card,
   CardContent,
@@ -15,14 +16,26 @@ import { supabase } from "../lib/supabaseClient";
 
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
-const getRoleBadgeClass = (role: string | null): string => {
+const getRoleBadgeVariant = (
+  role: string | null
+): "default" | "secondary" | "outline" => {
   if (role === "admin") {
-    return "px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-purple-100 text-purple-700";
+    return "default";
   }
   if (role === "creator") {
-    return "px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-700";
+    return "secondary";
   }
-  return "px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100";
+  return "outline";
+};
+
+const getRoleBadgeClassName = (role: string | null): string => {
+  if (role === "admin") {
+    return "bg-purple-100 text-purple-700 border-transparent";
+  }
+  if (role === "creator") {
+    return "bg-blue-100 text-blue-700 border-transparent";
+  }
+  return "";
 };
 
 export default function Admin() {
@@ -75,10 +88,13 @@ export default function Admin() {
         header: "Role",
         size: 120,
         cell: ({ row }) => (
-          <span className={getRoleBadgeClass(row.original.role)}>
+          <Badge
+            variant={getRoleBadgeVariant(row.original.role)}
+            className={getRoleBadgeClassName(row.original.role)}
+          >
             {(row.original.role || "user").charAt(0).toUpperCase() +
               (row.original.role || "user").slice(1)}
-          </span>
+          </Badge>
         ),
       },
       {
@@ -110,15 +126,16 @@ export default function Admin() {
         header: "Status",
         size: 120,
         cell: ({ row }) => (
-          <span
-            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+          <Badge
+            variant={row.original.email_confirmed_at ? "default" : "secondary"}
+            className={
               row.original.email_confirmed_at
-                ? "bg-green-100 text-green-800"
-                : "bg-yellow-100 text-yellow-800"
-            }`}
+                ? "bg-green-100 text-green-800 border-transparent"
+                : ""
+            }
           >
             {row.original.email_confirmed_at ? "Confirmed" : "Pending"}
-          </span>
+          </Badge>
         ),
       },
     ],
