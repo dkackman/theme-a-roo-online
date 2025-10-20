@@ -121,19 +121,13 @@ export default function Nav() {
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem asChild>
-                    <Link
-                      href="/profile"
-                      className="flex items-center gap-3"
-                    >
+                    <Link href="/profile" className="flex items-center gap-3">
                       <User className="w-4 h-4" />
                       Profile
                     </Link>
                   </DropdownMenuItem>
                   <DropdownMenuItem asChild>
-                    <Link
-                      href="/settings"
-                      className="flex items-center gap-3"
-                    >
+                    <Link href="/settings" className="flex items-center gap-3">
                       <Settings className="w-4 h-4" />
                       Settings
                     </Link>

@@ -14,6 +14,39 @@ export type Database = {
   };
   public: {
     Tables: {
+      addresses: {
+        Row: {
+          address: string;
+          created_at: string | null;
+          id: string;
+          metadata: Json | null;
+          network: number;
+          notes: string | null;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          address: string;
+          created_at?: string | null;
+          id?: string;
+          metadata?: Json | null;
+          network?: number;
+          notes?: string | null;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          address?: string;
+          created_at?: string | null;
+          id?: string;
+          metadata?: Json | null;
+          network?: number;
+          notes?: string | null;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       dids: {
         Row: {
           created_at: string | null;
