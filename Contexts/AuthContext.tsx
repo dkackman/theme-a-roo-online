@@ -38,15 +38,7 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
         const {
           data: { session },
         } = await supabase.auth.getSession();
-        if (session?.access_token) {
-          const token = session.access_token;
-          const parts = token.split(".");
-          console.log("parts", parts[1]);
-          //const payload = JSON.parse(atob(parts[1]));
-          //console.log(payload);
-        } else {
-          console.log("No access token");
-        }
+
         setUser(session?.user ?? null);
         // Extract role from JWT app_metadata
         const userRole =

@@ -24,7 +24,16 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { parseColor, rgbaToHex } from "@/lib/color";
 import Editor from "@monaco-editor/react";
-import { CheckCircle, FileText, Save, StickyNote, Trash2 } from "lucide-react";
+import {
+  CheckCircle,
+  Eye,
+  FileText,
+  Rocket,
+  Save,
+  StickyNote,
+  Trash2,
+  Wand2,
+} from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
@@ -87,6 +96,25 @@ export default function ThemeEditor() {
 
     return () => observer.disconnect();
   }, []);
+
+  // useEffect(() => {
+  //   // Global error handler to suppress Monaco Editor's offsetNode errors
+  //   const handleError = (event: ErrorEvent) => {
+  //     if (
+  //       event.message?.includes("offsetNode") ||
+  //       event.message?.includes("hitTest") ||
+  //       event.error?.message?.includes("offsetNode") ||
+  //       event.error?.message?.includes("hitTest")
+  //     ) {
+  //       event.preventDefault();
+  //       event.stopPropagation();
+  //       return false;
+  //     }
+  //   };
+
+  //   window.addEventListener("error", handleError);
+  //   return () => window.removeEventListener("error", handleError);
+  // }, []);
 
   const loadTheme = async () => {
     if (!user || !id || typeof id !== "string") {
@@ -243,10 +271,10 @@ export default function ThemeEditor() {
   return (
     <div className="container max-w-6xl mx-auto px-4 py-8">
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold mb-2">{theme.display_name}</h1>
-          </div>
+        <div>
+          <h1 className="text-3xl font-bold mb-4">{theme.display_name}</h1>
+        </div>
+        <div className="flex items-center">
           <ButtonGroup>
             <Button
               onClick={() => setIsNotesSheetOpen(true)}
@@ -268,6 +296,18 @@ export default function ThemeEditor() {
             >
               <Save className="w-4 h-4 mr-2" />
               {isSaving ? "Saving..." : "Save"}
+            </Button>
+            <Button onClick={() => {}} variant="outline" size="sm">
+              <Eye className="w-4 h-4 mr-2" />
+              Preview
+            </Button>
+            <Button onClick={() => {}} variant="outline" size="sm">
+              <Wand2 className="w-4 h-4 mr-2" />
+              Apply
+            </Button>
+            <Button onClick={() => {}} variant="outline" size="sm">
+              <Rocket className="w-4 h-4 mr-2" />
+              Publish
             </Button>
             <Button
               onClick={() => setIsDeleteDialogOpen(true)}
