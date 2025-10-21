@@ -4,7 +4,7 @@ export function hasTag(theme: Theme, tag: string): boolean {
   return theme.tags?.includes(tag) === true;
 }
 
-export function validateThemeJson(json: string): void {
+export function validateThemeJson(json: string): Theme {
   const theme = validateTheme(json);
   if (
     theme?.buttonStyle !== undefined &&
@@ -16,6 +16,7 @@ export function validateThemeJson(json: string): void {
   ) {
     throw new Error(`Invalid button style: ${theme?.buttonStyle}`);
   }
+  return theme;
 }
 
 // Dynamically discover theme folders by scanning the themes directory

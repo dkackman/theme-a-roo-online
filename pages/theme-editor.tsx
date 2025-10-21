@@ -172,33 +172,12 @@ export default function ThemeEditor() {
 
     setIsSaving(true);
     try {
-      // Parse and validate JSON
-      const parsedJson = JSON.parse(themeJson);
-
-      // Validate required fields
-      if (
-        !parsedJson.name ||
-        typeof parsedJson.name !== "string" ||
-        parsedJson.name.trim() === ""
-      ) {
-        toast.error("Theme JSON must contain a non-empty 'name' field");
-        return;
-      }
-
-      if (
-        !parsedJson.displayName ||
-        typeof parsedJson.displayName !== "string" ||
-        parsedJson.displayName.trim() === ""
-      ) {
-        toast.error("Theme JSON must contain a non-empty 'displayName' field");
-        return;
-      }
-
+      const validatedTheme = validateThemeJson(themeJson);
       // Update the theme in the database
       const updatedTheme = await themesApi.update(theme.id, {
-        name: parsedJson.name.trim(),
-        display_name: parsedJson.displayName.trim(),
-        theme: parsedJson,
+        name: validatedTheme.name.trim(),
+        display_name: validatedTheme.displayName.trim(),
+        theme: JSON.stringify(validatedTheme, null, 2),
       });
 
       toast.success("Theme saved successfully!");
