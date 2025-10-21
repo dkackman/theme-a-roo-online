@@ -1,6 +1,8 @@
+import { ThemeCard } from "@/components/ThemeCard";
 import { Button } from "@/components/ui/button";
 import {
   Card,
+  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
@@ -13,14 +15,14 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Palette, Plus, Upload } from "lucide-react";
+import { Download, Palette, Plus } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import type { Theme as ThemeOramaTheme } from "theme-o-rama";
 import { useAuth } from "../Contexts/AuthContext";
 import { themesApi } from "../lib/data-access";
 import type { Database } from "../lib/database.types";
-
 type Theme = Database["public"]["Tables"]["themes"]["Row"];
 
 export default function Home() {
@@ -134,7 +136,7 @@ export default function Home() {
               {isCreating ? "Creating..." : "Create Theme"}
             </Button>
             <Button onClick={() => {}} variant="outline">
-              <Upload className="w-4 h-4 mr-2" />
+              <Download className="w-4 h-4 mr-2" />
               Import
             </Button>
           </div>
@@ -164,7 +166,7 @@ export default function Home() {
                     {isCreating ? "Creating..." : "Create Theme"}
                   </Button>
                   <Button onClick={() => {}} variant="outline">
-                    <Upload className="w-4 h-4 mr-2" />
+                    <Download className="w-4 h-4 mr-2" />
                     Import Theme
                   </Button>
                 </div>
@@ -191,6 +193,13 @@ export default function Home() {
                       : "No description"}
                   </CardDescription>
                 </CardHeader>
+                <CardContent>
+                  <ThemeCard
+                    theme={theme.theme as unknown as ThemeOramaTheme}
+                    isSelected={false}
+                    onSelect={() => {}}
+                  />
+                </CardContent>
               </Card>
             ))}
           </div>

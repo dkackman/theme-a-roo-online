@@ -28,6 +28,8 @@ import {
   CheckCircle,
   Eye,
   FileText,
+  Maximize2,
+  Minimize2,
   Rocket,
   Save,
   StickyNote,
@@ -61,12 +63,33 @@ export default function ThemeEditor() {
   const [isDeleting, setIsDeleting] = useState(false);
   const monacoInitializedRef = useRef(false);
   const [editorTheme, setEditorTheme] = useState<"vs" | "vs-dark">("vs");
+  const [isMaximized, setIsMaximized] = useState(() => {
+    // Initialize from localStorage
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("theme-editor-maximized");
+      return saved === "true";
+    }
+    return false;
+  });
+  const hasLoadedMaximizedState = useRef(false);
 
   useEffect(() => {
     if (!loading && !user) {
       router.push("/auth");
     }
   }, [user, loading, router]);
+
+  // Mark that we've loaded the initial state
+  useEffect(() => {
+    hasLoadedMaximizedState.current = true;
+  }, []);
+
+  // Save maximized state to localStorage (only after initial load)
+  useEffect(() => {
+    if (hasLoadedMaximizedState.current) {
+      localStorage.setItem("theme-editor-maximized", String(isMaximized));
+    }
+  }, [isMaximized]);
 
   useEffect(() => {
     // Set editor theme based on html element's color-scheme style property
@@ -269,230 +292,483 @@ export default function ThemeEditor() {
   }
 
   return (
-    <div className="container max-w-6xl mx-auto px-4 py-8">
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold mb-4">{theme.display_name}</h1>
-        </div>
-        <div className="flex items-center">
-          <ButtonGroup>
-            <Button
-              onClick={() => setIsNotesSheetOpen(true)}
-              variant="outline"
-              size="sm"
-            >
-              <StickyNote className="w-4 h-4 mr-2" />
-              Notes
-            </Button>
-            <Button onClick={handleValidateTheme} variant="outline" size="sm">
-              <CheckCircle className="w-4 h-4 mr-2" />
-              Validate
-            </Button>
-            <Button
-              onClick={handleSaveTheme}
-              disabled={isSaving}
-              variant="outline"
-              size="sm"
-            >
-              <Save className="w-4 h-4 mr-2" />
-              {isSaving ? "Saving..." : "Save"}
-            </Button>
-            <Button onClick={() => {}} variant="outline" size="sm">
-              <Eye className="w-4 h-4 mr-2" />
-              Preview
-            </Button>
-            <Button onClick={() => {}} variant="outline" size="sm">
-              <Wand2 className="w-4 h-4 mr-2" />
-              Apply
-            </Button>
-            <Button onClick={() => {}} variant="outline" size="sm">
-              <Rocket className="w-4 h-4 mr-2" />
-              Publish
-            </Button>
-            <Button
-              onClick={() => setIsDeleteDialogOpen(true)}
-              variant="destructive"
-              size="sm"
-            >
-              <Trash2 className="w-4 h-4 mr-2" />
-              Delete
-            </Button>
-          </ButtonGroup>
-        </div>
+    <>
+      {isMaximized && (
+        <div className="fixed inset-x-0 top-16 bottom-0 z-50 bg-background flex flex-col">
+          <Card className="flex-1 flex flex-col rounded-none border-0">
+            <CardHeader className="flex flex-row items-center justify-between px-6 py-3 border-b">
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                {theme.display_name}
+              </CardTitle>
+              <div className="flex items-center gap-2">
+                <ButtonGroup>
+                  <Button
+                    onClick={() => setIsNotesSheetOpen(true)}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <StickyNote className="w-4 h-4 mr-2" />
+                    Notes
+                  </Button>
+                  <Button
+                    onClick={handleValidateTheme}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" />
+                    Validate
+                  </Button>
+                  <Button
+                    onClick={handleSaveTheme}
+                    disabled={isSaving}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Save className="w-4 h-4 mr-2" />
+                    {isSaving ? "Saving..." : "Save"}
+                  </Button>
+                  <Button onClick={() => {}} variant="outline" size="sm">
+                    <Eye className="w-4 h-4 mr-2" />
+                    Preview
+                  </Button>
+                  <Button onClick={() => {}} variant="outline" size="sm">
+                    <Wand2 className="w-4 h-4 mr-2" />
+                    Apply
+                  </Button>
+                  <Button onClick={() => {}} variant="outline" size="sm">
+                    <Rocket className="w-4 h-4 mr-2" />
+                    Publish
+                  </Button>
+                  <Button
+                    onClick={() => setIsDeleteDialogOpen(true)}
+                    variant="destructive"
+                    size="sm"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete
+                  </Button>
+                </ButtonGroup>
+                <Button
+                  onClick={() => setIsMaximized(false)}
+                  variant="ghost"
+                  size="sm"
+                >
+                  <Minimize2 className="w-4 h-4 mr-2" />
+                  Minimize
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent className="flex-1 p-0 overflow-hidden">
+              <Editor
+                theme={editorTheme}
+                beforeMount={(monaco) => {
+                  // Only initialize Monaco once to prevent duplicate color providers
+                  if (monacoInitializedRef.current) {
+                    return;
+                  }
+                  monacoInitializedRef.current = true;
 
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Theme JSON
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Editor
-              theme={editorTheme}
-              beforeMount={(monaco) => {
-                // Only initialize Monaco once to prevent duplicate color providers
-                if (monacoInitializedRef.current) {
-                  return;
-                }
-                monacoInitializedRef.current = true;
-
-                monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-                  validate: true,
-                  schemas: [
-                    {
-                      uri: "http://myserver/my-schema.json",
-                      fileMatch: ["*"],
-                      schema: jsonSchema,
-                    },
-                  ],
-                });
-                monaco.languages.json.jsonDefaults.setModeConfiguration({
-                  documentFormattingEdits: true,
-                  documentRangeFormattingEdits: true,
-                  completionItems: true,
-                  hovers: true,
-                  documentSymbols: true,
-                  tokens: true,
-                  colors: true, // Enable color picker
-                  foldingRanges: true,
-                  diagnostics: true,
-                  selectionRanges: true,
-                });
-                // Only register color provider once to prevent duplicates on navigation
-                if (
-                  !(
-                    window as unknown as {
-                      __jsonColorProviderRegistered?: boolean;
-                    }
-                  ).__jsonColorProviderRegistered
-                ) {
-                  monaco.languages.registerColorProvider("json", {
-                    provideDocumentColors(model) {
-                      const colors: {
-                        color: {
-                          red: number;
-                          green: number;
-                          blue: number;
-                          alpha: number;
-                        };
-                        range: {
-                          startLineNumber: number;
-                          startColumn: number;
-                          endLineNumber: number;
-                          endColumn: number;
-                        };
-                      }[] = [];
-                      const text = model.getValue();
-
-                      // Match quoted strings that could be colors (hex, rgb, rgba, hsl, hsla, or named colors)
-                      // This regex matches any quoted string, then we'll validate with parseColor
-                      const colorRegex = /"([^"]+)"/g;
-                      let match;
-
-                      while ((match = colorRegex.exec(text)) !== null) {
-                        const colorString = match[1];
-
-                        // Skip obviously non-color strings to improve performance
-                        // Only check strings that could plausibly be colors
-                        if (
-                          colorString.length > 50 ||
-                          (colorString.includes(" ") &&
-                            !colorString.match(/^(rgb|hsl)/i)) ||
-                          colorString.includes("/") ||
-                          colorString.includes("\\")
-                        ) {
-                          continue;
-                        }
-
-                        const startPos = model.getPositionAt(match.index + 1); // +1 to skip opening quote
-                        const endPos = model.getPositionAt(
-                          match.index + match[1].length + 1
-                        );
-
-                        // Use our robust parseColor function to validate and parse
-                        const color = parseColor(colorString);
-                        if (color) {
-                          colors.push({
-                            color: color,
-                            range: {
-                              startLineNumber: startPos.lineNumber,
-                              startColumn: startPos.column,
-                              endLineNumber: endPos.lineNumber,
-                              endColumn: endPos.column,
-                            },
-                          });
-                        }
-                      }
-
-                      return colors;
-                    },
-                    provideColorPresentations(_, colorInfo) {
-                      const color = colorInfo.color;
-                      const hex = rgbaToHex(color);
-                      const rgb = `rgba(${Math.round(color.red * 255)}, ${Math.round(color.green * 255)}, ${Math.round(color.blue * 255)}, ${color.alpha})`;
-
-                      return [
-                        {
-                          label: hex,
-                          textEdit: {
-                            range: colorInfo.range,
-                            text: hex,
-                          },
-                        },
-                        {
-                          label: rgb,
-                          textEdit: {
-                            range: colorInfo.range,
-                            text: rgb,
-                          },
-                        },
-                      ];
-                    },
+                  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+                    validate: true,
+                    schemas: [
+                      {
+                        uri: "http://myserver/my-schema.json",
+                        fileMatch: ["*"],
+                        schema: jsonSchema,
+                      },
+                    ],
                   });
-                  (
-                    window as unknown as {
-                      __jsonColorProviderRegistered?: boolean;
-                    }
-                  ).__jsonColorProviderRegistered = true;
+                  monaco.languages.json.jsonDefaults.setModeConfiguration({
+                    documentFormattingEdits: true,
+                    documentRangeFormattingEdits: true,
+                    completionItems: true,
+                    hovers: true,
+                    documentSymbols: true,
+                    tokens: true,
+                    colors: true, // Enable color picker
+                    foldingRanges: true,
+                    diagnostics: true,
+                    selectionRanges: true,
+                  });
+                  // Only register color provider once to prevent duplicates on navigation
+                  if (
+                    !(
+                      window as unknown as {
+                        __jsonColorProviderRegistered?: boolean;
+                      }
+                    ).__jsonColorProviderRegistered
+                  ) {
+                    monaco.languages.registerColorProvider("json", {
+                      provideDocumentColors(model) {
+                        const colors: {
+                          color: {
+                            red: number;
+                            green: number;
+                            blue: number;
+                            alpha: number;
+                          };
+                          range: {
+                            startLineNumber: number;
+                            startColumn: number;
+                            endLineNumber: number;
+                            endColumn: number;
+                          };
+                        }[] = [];
+                        const text = model.getValue();
+
+                        // Match quoted strings that could be colors (hex, rgb, rgba, hsl, hsla, or named colors)
+                        // This regex matches any quoted string, then we'll validate with parseColor
+                        const colorRegex = /"([^"]+)"/g;
+                        let match;
+
+                        while ((match = colorRegex.exec(text)) !== null) {
+                          const colorString = match[1];
+
+                          // Skip obviously non-color strings to improve performance
+                          // Only check strings that could plausibly be colors
+                          if (
+                            colorString.length > 50 ||
+                            (colorString.includes(" ") &&
+                              !colorString.match(/^(rgb|hsl)/i)) ||
+                            colorString.includes("/") ||
+                            colorString.includes("\\")
+                          ) {
+                            continue;
+                          }
+
+                          const startPos = model.getPositionAt(match.index + 1); // +1 to skip opening quote
+                          const endPos = model.getPositionAt(
+                            match.index + match[1].length + 1
+                          );
+
+                          // Use our robust parseColor function to validate and parse
+                          const color = parseColor(colorString);
+                          if (color) {
+                            colors.push({
+                              color: color,
+                              range: {
+                                startLineNumber: startPos.lineNumber,
+                                startColumn: startPos.column,
+                                endLineNumber: endPos.lineNumber,
+                                endColumn: endPos.column,
+                              },
+                            });
+                          }
+                        }
+
+                        return colors;
+                      },
+                      provideColorPresentations(_, colorInfo) {
+                        const color = colorInfo.color;
+                        const hex = rgbaToHex(color);
+                        const rgb = `rgba(${Math.round(color.red * 255)}, ${Math.round(color.green * 255)}, ${Math.round(color.blue * 255)}, ${color.alpha})`;
+
+                        return [
+                          {
+                            label: hex,
+                            textEdit: {
+                              range: colorInfo.range,
+                              text: hex,
+                            },
+                          },
+                          {
+                            label: rgb,
+                            textEdit: {
+                              range: colorInfo.range,
+                              text: rgb,
+                            },
+                          },
+                        ];
+                      },
+                    });
+                    (
+                      window as unknown as {
+                        __jsonColorProviderRegistered?: boolean;
+                      }
+                    ).__jsonColorProviderRegistered = true;
+                  }
+                }}
+                height="100%"
+                defaultLanguage="json"
+                value={themeJson}
+                onChange={(value) => setThemeJson(value || "")}
+                options={{
+                  minimap: { enabled: true },
+                  scrollBeyondLastLine: false,
+                  fontSize: 12,
+                  fontFamily:
+                    "Monaco, Menlo, Ubuntu Mono, Consolas, source-code-pro, monospace",
+                  tabSize: 2,
+                  insertSpaces: true,
+                  wordWrap: "on",
+                  automaticLayout: true,
+                  formatOnPaste: true,
+                  formatOnType: true,
+                  bracketPairColorization: { enabled: true },
+                  folding: true,
+                  lineNumbers: "on",
+                  renderWhitespace: "selection",
+                  selectOnLineNumbers: true,
+                  roundedSelection: true,
+                  cursorStyle: "line",
+                  contextmenu: true,
+                  mouseWheelZoom: true,
+                  smoothScrolling: true,
+                }}
+                loading={
+                  <div className="flex items-center justify-center h-32">
+                    Loading editor...
+                  </div>
                 }
-              }}
-              height="calc(100vh - 300px)"
-              defaultLanguage="json"
-              value={themeJson}
-              onChange={(value) => setThemeJson(value || "")}
-              options={{
-                minimap: { enabled: true },
-                scrollBeyondLastLine: false,
-                fontSize: 12,
-                fontFamily:
-                  "Monaco, Menlo, Ubuntu Mono, Consolas, source-code-pro, monospace",
-                tabSize: 2,
-                insertSpaces: true,
-                wordWrap: "on",
-                automaticLayout: true,
-                formatOnPaste: true,
-                formatOnType: true,
-                bracketPairColorization: { enabled: true },
-                folding: true,
-                lineNumbers: "on",
-                renderWhitespace: "selection",
-                selectOnLineNumbers: true,
-                roundedSelection: true,
-                cursorStyle: "line",
-                contextmenu: true,
-                mouseWheelZoom: true,
-                smoothScrolling: true,
-              }}
-              loading={
-                <div className="flex items-center justify-center h-32">
-                  Loading editor...
+              />
+            </CardContent>
+          </Card>
+        </div>
+      )}
+      {!isMaximized && (
+        <div className="container max-w-6xl mx-auto px-4 py-8">
+          <div className="space-y-6">
+            <div>
+              <h1 className="text-3xl font-bold mb-4">{theme.display_name}</h1>
+            </div>
+            <div className="flex items-center">
+              <ButtonGroup>
+                <Button
+                  onClick={() => setIsNotesSheetOpen(true)}
+                  variant="outline"
+                  size="sm"
+                >
+                  <StickyNote className="w-4 h-4 mr-2" />
+                  Notes
+                </Button>
+                <Button
+                  onClick={handleValidateTheme}
+                  variant="outline"
+                  size="sm"
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" />
+                  Validate
+                </Button>
+                <Button
+                  onClick={handleSaveTheme}
+                  disabled={isSaving}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Save className="w-4 h-4 mr-2" />
+                  {isSaving ? "Saving..." : "Save"}
+                </Button>
+                <Button onClick={() => {}} variant="outline" size="sm">
+                  <Eye className="w-4 h-4 mr-2" />
+                  Preview
+                </Button>
+                <Button onClick={() => {}} variant="outline" size="sm">
+                  <Wand2 className="w-4 h-4 mr-2" />
+                  Apply
+                </Button>
+                <Button onClick={() => {}} variant="outline" size="sm">
+                  <Rocket className="w-4 h-4 mr-2" />
+                  Publish
+                </Button>
+                <Button
+                  onClick={() => setIsDeleteDialogOpen(true)}
+                  variant="destructive"
+                  size="sm"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete
+                </Button>
+              </ButtonGroup>
+            </div>
+
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <FileText className="w-5 h-5" />
+                    Theme JSON
+                  </CardTitle>
+                  <Button
+                    onClick={() => setIsMaximized(true)}
+                    variant="ghost"
+                    size="sm"
+                  >
+                    <Maximize2 className="w-4 h-4 mr-2" />
+                    Maximize
+                  </Button>
                 </div>
-              }
-            />
-          </CardContent>
-        </Card>
-      </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <Editor
+                  theme={editorTheme}
+                  beforeMount={(monaco) => {
+                    // Only initialize Monaco once to prevent duplicate color providers
+                    if (monacoInitializedRef.current) {
+                      return;
+                    }
+                    monacoInitializedRef.current = true;
+
+                    monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+                      validate: true,
+                      schemas: [
+                        {
+                          uri: "http://myserver/my-schema.json",
+                          fileMatch: ["*"],
+                          schema: jsonSchema,
+                        },
+                      ],
+                    });
+                    monaco.languages.json.jsonDefaults.setModeConfiguration({
+                      documentFormattingEdits: true,
+                      documentRangeFormattingEdits: true,
+                      completionItems: true,
+                      hovers: true,
+                      documentSymbols: true,
+                      tokens: true,
+                      colors: true, // Enable color picker
+                      foldingRanges: true,
+                      diagnostics: true,
+                      selectionRanges: true,
+                    });
+                    // Only register color provider once to prevent duplicates on navigation
+                    if (
+                      !(
+                        window as unknown as {
+                          __jsonColorProviderRegistered?: boolean;
+                        }
+                      ).__jsonColorProviderRegistered
+                    ) {
+                      monaco.languages.registerColorProvider("json", {
+                        provideDocumentColors(model) {
+                          const colors: {
+                            color: {
+                              red: number;
+                              green: number;
+                              blue: number;
+                              alpha: number;
+                            };
+                            range: {
+                              startLineNumber: number;
+                              startColumn: number;
+                              endLineNumber: number;
+                              endColumn: number;
+                            };
+                          }[] = [];
+                          const text = model.getValue();
+
+                          // Match quoted strings that could be colors (hex, rgb, rgba, hsl, hsla, or named colors)
+                          // This regex matches any quoted string, then we'll validate with parseColor
+                          const colorRegex = /"([^"]+)"/g;
+                          let match;
+
+                          while ((match = colorRegex.exec(text)) !== null) {
+                            const colorString = match[1];
+
+                            // Skip obviously non-color strings to improve performance
+                            // Only check strings that could plausibly be colors
+                            if (
+                              colorString.length > 50 ||
+                              (colorString.includes(" ") &&
+                                !colorString.match(/^(rgb|hsl)/i)) ||
+                              colorString.includes("/") ||
+                              colorString.includes("\\")
+                            ) {
+                              continue;
+                            }
+
+                            const startPos = model.getPositionAt(
+                              match.index + 1
+                            ); // +1 to skip opening quote
+                            const endPos = model.getPositionAt(
+                              match.index + match[1].length + 1
+                            );
+
+                            // Use our robust parseColor function to validate and parse
+                            const color = parseColor(colorString);
+                            if (color) {
+                              colors.push({
+                                color: color,
+                                range: {
+                                  startLineNumber: startPos.lineNumber,
+                                  startColumn: startPos.column,
+                                  endLineNumber: endPos.lineNumber,
+                                  endColumn: endPos.column,
+                                },
+                              });
+                            }
+                          }
+
+                          return colors;
+                        },
+                        provideColorPresentations(_, colorInfo) {
+                          const color = colorInfo.color;
+                          const hex = rgbaToHex(color);
+                          const rgb = `rgba(${Math.round(color.red * 255)}, ${Math.round(color.green * 255)}, ${Math.round(color.blue * 255)}, ${color.alpha})`;
+
+                          return [
+                            {
+                              label: hex,
+                              textEdit: {
+                                range: colorInfo.range,
+                                text: hex,
+                              },
+                            },
+                            {
+                              label: rgb,
+                              textEdit: {
+                                range: colorInfo.range,
+                                text: rgb,
+                              },
+                            },
+                          ];
+                        },
+                      });
+                      (
+                        window as unknown as {
+                          __jsonColorProviderRegistered?: boolean;
+                        }
+                      ).__jsonColorProviderRegistered = true;
+                    }
+                  }}
+                  height="calc(100vh - 300px)"
+                  defaultLanguage="json"
+                  value={themeJson}
+                  onChange={(value) => setThemeJson(value || "")}
+                  options={{
+                    minimap: { enabled: true },
+                    scrollBeyondLastLine: false,
+                    fontSize: 12,
+                    fontFamily:
+                      "Monaco, Menlo, Ubuntu Mono, Consolas, source-code-pro, monospace",
+                    tabSize: 2,
+                    insertSpaces: true,
+                    wordWrap: "on",
+                    automaticLayout: true,
+                    formatOnPaste: true,
+                    formatOnType: true,
+                    bracketPairColorization: { enabled: true },
+                    folding: true,
+                    lineNumbers: "on",
+                    renderWhitespace: "selection",
+                    selectOnLineNumbers: true,
+                    roundedSelection: true,
+                    cursorStyle: "line",
+                    contextmenu: true,
+                    mouseWheelZoom: true,
+                    smoothScrolling: true,
+                  }}
+                  loading={
+                    <div className="flex items-center justify-center h-32">
+                      Loading editor...
+                    </div>
+                  }
+                />
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
 
       {/* Notes Side Sheet */}
       <Sheet open={isNotesSheetOpen} onOpenChange={setIsNotesSheetOpen}>
@@ -557,6 +833,6 @@ export default function ThemeEditor() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </div>
+    </>
   );
 }
