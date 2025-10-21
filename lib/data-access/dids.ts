@@ -139,8 +139,10 @@ export const didsApi = {
   /**
    * Update DID metadata
    */
-  async updateMetadata(didId: string, metadata: Database["public"]["Tables"]["dids"]["Row"]["metadata"]) {
+  async updateMetadata(
+    didId: string,
+    metadata: Database["public"]["Tables"]["dids"]["Row"]["metadata"]
+  ) {
     return await this.update(didId, { metadata });
   },
 };
-

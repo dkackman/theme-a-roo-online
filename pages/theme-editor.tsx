@@ -29,8 +29,9 @@ import { useRouter } from "next/router";
 import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../Contexts/AuthContext";
-import type { Database } from "../lib/database.types";
 import { themesApi } from "../lib/data-access";
+import type { Database } from "../lib/database.types";
+import { validateThemeJson } from "../lib/themes";
 import jsonSchema from "../public/schema.json";
 
 type Theme = Database["public"]["Tables"]["themes"]["Row"];
@@ -208,32 +209,11 @@ export default function ThemeEditor() {
 
   const handleValidateTheme = () => {
     try {
-      // Parse and validate JSON
-      const parsedJson = JSON.parse(themeJson);
-
-      // Validate required fields
-      if (
-        !parsedJson.name ||
-        typeof parsedJson.name !== "string" ||
-        parsedJson.name.trim() === ""
-      ) {
-        toast.error("Theme JSON must contain a non-empty 'name' field");
-        return;
-      }
-
-      if (
-        !parsedJson.displayName ||
-        typeof parsedJson.displayName !== "string" ||
-        parsedJson.displayName.trim() === ""
-      ) {
-        toast.error("Theme JSON must contain a non-empty 'displayName' field");
-        return;
-      }
-
+      validateThemeJson(themeJson);
       toast.success("Theme JSON is valid!");
     } catch (error) {
-      if (error instanceof SyntaxError) {
-        toast.error("Invalid JSON format. Please check your syntax.");
+      if (error instanceof Error) {
+        toast.error(error.message);
       } else {
         toast.error("Validation failed");
       }

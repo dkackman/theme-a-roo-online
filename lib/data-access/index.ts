@@ -7,11 +7,11 @@ export { themesApi, usersApi, addressesApi, didsApi };
 
 /**
  * Combined database API object
- * 
+ *
  * Usage:
  * ```typescript
  * import { db } from '@/lib/data-access';
- * 
+ *
  * const themes = await db.themes.getByUserId(userId);
  * const users = await db.users.getAll();
  * const addresses = await db.addresses.getByUserId(userId);
@@ -24,4 +24,3 @@ export const db = {
   addresses: addressesApi,
   dids: didsApi,
 } as const;
-

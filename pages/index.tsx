@@ -13,7 +13,7 @@ import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../Contexts/AuthContext";
-import { supabase } from "../lib/supabaseClient";
+import { themesApi } from "../lib/data-access";
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -33,40 +33,27 @@ export default function Home() {
 
     setIsCreating(true);
     try {
-      // Generate a UUID for the theme name
-      const themeId = crypto.randomUUID();
-      const displayName = "My New Theme";
-
       // Create the theme JSON
+      // the name and display name are both in the themeJson object
+      // and the database record (for easy retreival)
       const themeJson = {
-        name: themeId,
-        displayName: displayName,
+        name: crypto.randomUUID(),
+        displayName: "My New Theme",
         schemaVersion: 1,
         mostLike: "light",
       };
 
-      // Insert the new theme into the database
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const { data, error } = await supabase
-        .from("themes")
-        .insert({
-          name: themeId,
-          display_name: displayName,
-          theme: themeJson,
-          user_id: user.id,
-        })
-        .select()
-        .single();
-
-      if (error) {
-        throw error;
-      }
+      const theme = await themesApi.create({
+        name: themeJson.name,
+        display_name: themeJson.displayName,
+        theme: themeJson,
+        user_id: user.id,
+      });
 
       toast.success("Theme created successfully!");
 
       // Navigate to the theme editor with the theme ID
-      router.push(`/theme-editor?id=${data.id}`);
+      router.push(`/theme-editor?id=${theme.id}`);
     } catch (error) {
       console.error("Error creating theme:", error);
       toast.error("Failed to create theme. Please try again.");

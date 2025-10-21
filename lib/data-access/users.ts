@@ -2,8 +2,10 @@ import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
 
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
-type UserProfileInsert = Database["public"]["Tables"]["user_profiles"]["Insert"];
-type UserProfileUpdate = Database["public"]["Tables"]["user_profiles"]["Update"];
+type UserProfileInsert =
+  Database["public"]["Tables"]["user_profiles"]["Insert"];
+type UserProfileUpdate =
+  Database["public"]["Tables"]["user_profiles"]["Update"];
 
 export const usersApi = {
   /**
@@ -87,4 +89,3 @@ export const usersApi = {
     return data as UserProfile;
   },
 };
-

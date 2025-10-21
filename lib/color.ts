@@ -1,5 +1,5 @@
-import { colord, extend } from 'colord';
-import namesPlugin from 'colord/plugins/names';
+import { colord, extend } from "colord";
+import namesPlugin from "colord/plugins/names";
 
 // Extend colord with the names plugin to support named colors
 extend([namesPlugin]);
@@ -77,7 +77,7 @@ export function hslToRgba(
   h: number,
   s: number,
   l: number,
-  a: number,
+  a: number
 ): RgbaColor {
   const color = colord({ h, s: s * 100, l: l * 100, a });
   const rgb = color.toRgb();
@@ -107,15 +107,15 @@ export function hslToRgb(themeColor: string): RgbColor | null {
 export function rgbToHsl(
   rOrColor: number | RgbColor,
   g?: number,
-  b?: number,
+  b?: number
 ): HslColor {
   let color: RgbColor;
 
-  if (typeof rOrColor === 'number') {
+  if (typeof rOrColor === "number") {
     // Legacy function signature: rgbToHsl(r, g, b)
     if (g === undefined || b === undefined) {
       throw new Error(
-        'Missing required parameters: g and b must be provided when r is a number',
+        "Missing required parameters: g and b must be provided when r is a number"
       );
     }
     color = { r: rOrColor, g, b };

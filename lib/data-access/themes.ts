@@ -126,4 +126,3 @@ export const themesApi = {
     return data as Theme;
   },
 };
-

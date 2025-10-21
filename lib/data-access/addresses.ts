@@ -118,8 +118,10 @@ export const addressesApi = {
   /**
    * Update address metadata
    */
-  async updateMetadata(addressId: string, metadata: Database["public"]["Tables"]["addresses"]["Row"]["metadata"]) {
+  async updateMetadata(
+    addressId: string,
+    metadata: Database["public"]["Tables"]["addresses"]["Row"]["metadata"]
+  ) {
     return await this.update(addressId, { metadata });
   },
 };
-

@@ -32,7 +32,7 @@ await themesApi.delete(themeId);
 ### Option 2: Import combined db object
 
 ```typescript
-import { db } from '@/lib/data-access';
+import { db } from "@/lib/data-access";
 
 const themes = await db.themes.getByUserId(userId);
 const users = await db.users.getAll();
@@ -61,14 +61,14 @@ setTheme(data);
 
 ```typescript
 // In theme-editor.tsx
-import { themesApi } from '@/lib/data-access';
+import { themesApi } from "@/lib/data-access";
 
 try {
   const theme = await themesApi.getById(id, user.id);
   setTheme(theme);
 } catch (error) {
-  console.error('Error loading theme:', error);
-  toast.error('Failed to load theme');
+  console.error("Error loading theme:", error);
+  toast.error("Failed to load theme");
 }
 ```
 
@@ -79,7 +79,7 @@ try {
 ```typescript
 const { count: themeCount } = await supabase
   .from("themes")
-  .select("*", { count: 'exact', head: true });
+  .select("*", { count: "exact", head: true });
 ```
 
 **After:**
@@ -143,8 +143,8 @@ try {
   const themes = await themesApi.getByUserId(userId);
   setThemes(themes);
 } catch (error) {
-  console.error('Error fetching themes:', error);
-  toast.error('Failed to load themes');
+  console.error("Error fetching themes:", error);
+  toast.error("Failed to load themes");
 }
 ```
 
