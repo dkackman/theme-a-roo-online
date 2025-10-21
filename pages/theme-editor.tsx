@@ -30,7 +30,7 @@ import { useEffect, useRef, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../Contexts/AuthContext";
 import type { Database } from "../lib/database.types";
-import { supabase } from "../lib/supabaseClient";
+import { themesApi } from "../lib/data-access";
 import jsonSchema from "../public/schema.json";
 
 type Theme = Database["public"]["Tables"]["themes"]["Row"];
@@ -94,17 +94,7 @@ export default function ThemeEditor() {
 
     setIsLoadingTheme(true);
     try {
-      const { data, error } = await supabase
-        .from("themes")
-        .select("*")
-        .eq("user_id", user.id)
-        .eq("id", id)
-        .single();
-
-      if (error) {
-        throw error;
-      }
-
+      const data = await themesApi.getById(id, user.id);
       setTheme(data);
       setThemeJson(JSON.stringify(data.theme, null, 2));
       setNotes(data.notes || "");
@@ -153,29 +143,14 @@ export default function ThemeEditor() {
       }
 
       // Update the theme in the database
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const { error } = await supabase
-        .from("themes")
-        .update({
-          name: parsedJson.name.trim(),
-          display_name: parsedJson.displayName.trim(),
-          theme: parsedJson,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", theme.id);
-
-      if (error) {
-        throw error;
-      }
-
-      toast.success("Theme saved successfully!");
-      setTheme({
-        ...theme,
+      const updatedTheme = await themesApi.update(theme.id, {
         name: parsedJson.name.trim(),
         display_name: parsedJson.displayName.trim(),
         theme: parsedJson,
       });
+
+      toast.success("Theme saved successfully!");
+      setTheme(updatedTheme);
     } catch (error) {
       if (error instanceof SyntaxError) {
         toast.error("Invalid JSON format. Please check your syntax.");
@@ -195,22 +170,13 @@ export default function ThemeEditor() {
 
     setIsSavingNotes(true);
     try {
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      const { error } = await supabase
-        .from("themes")
-        .update({
-          notes: notes.trim() || null,
-          updated_at: new Date().toISOString(),
-        })
-        .eq("id", theme.id);
-
-      if (error) {
-        throw error;
-      }
+      const updatedTheme = await themesApi.updateNotes(
+        theme.id,
+        notes.trim() || null
+      );
 
       toast.success("Notes saved successfully!");
-      setTheme({ ...theme, notes: notes.trim() || null });
+      setTheme(updatedTheme);
       setIsNotesSheetOpen(false);
     } catch (error) {
       console.error("Error saving notes:", error);
@@ -227,14 +193,7 @@ export default function ThemeEditor() {
 
     setIsDeleting(true);
     try {
-      const { error } = await supabase
-        .from("themes")
-        .delete()
-        .eq("id", theme.id);
-
-      if (error) {
-        throw error;
-      }
+      await themesApi.delete(theme.id);
 
       toast.success("Theme deleted successfully!");
       router.push("/");

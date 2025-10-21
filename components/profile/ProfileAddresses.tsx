@@ -10,7 +10,7 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "../../Contexts/AuthContext";
 import type { Database } from "../../lib/database.types";
-import { supabase } from "../../lib/supabaseClient";
+import { addressesApi } from "../../lib/data-access";
 import AddressList from "../AddressList";
 
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
@@ -26,15 +26,11 @@ export default function ProfileAddresses() {
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase
-      .from("addresses")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-    if (error) {
+    try {
+      const data = await addressesApi.getByUserId(user.id);
+      setAddresses(data);
+    } catch (error) {
       console.error("Error fetching addresses", error);
-    } else {
-      setAddresses(data || []);
     }
     setLoading(false);
   }, [user]);
@@ -50,14 +46,16 @@ export default function ProfileAddresses() {
     if (!address || !user) {
       return;
     }
-    const newAddress = { address: address, user_id: user.id, network: 0 };
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - Type inference issue with Supabase client
-    const { error } = await supabase
-      .from("addresses")
-      .insert(newAddress)
-      .select();
-    if (error) {
+    try {
+      await addressesApi.create({
+        address: address,
+        user_id: user.id,
+        network: 0,
+      });
+      toast.success("Address added successfully");
+      setAddress("");
+      fetchAddresses();
+    } catch (error: any) {
       console.error(error);
       // Check for duplicate key error
       if (error.code === "23505") {
@@ -69,23 +67,19 @@ export default function ProfileAddresses() {
           description: error.message || "An unexpected error occurred.",
         });
       }
-    } else {
-      toast.success("Address added successfully");
-      setAddress("");
-      fetchAddresses();
     }
   };
 
   const deleteAddress = async (id: string) => {
-    const { error } = await supabase.from("addresses").delete().eq("id", id);
-    if (error) {
+    try {
+      await addressesApi.delete(id);
+      toast.success("Address deleted successfully");
+      fetchAddresses();
+    } catch (error: any) {
       console.error(error);
       toast.error("Failed to delete address", {
         description: error.message || "An unexpected error occurred.",
       });
-    } else {
-      toast.success("Address deleted successfully");
-      fetchAddresses();
     }
   };
 
@@ -97,14 +91,11 @@ export default function ProfileAddresses() {
       network: number;
     }
   ) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - Type inference issue with Supabase client
-    const { error } = await supabase
-      .from("addresses")
-      .update(updates)
-      .eq("id", id);
-
-    if (error) {
+    try {
+      await addressesApi.update(id, updates);
+      toast.success("Address updated successfully");
+      fetchAddresses();
+    } catch (error: any) {
       console.error("Error updating address:", error);
       // Check for duplicate key error
       if (error.code === "23505") {
@@ -117,9 +108,6 @@ export default function ProfileAddresses() {
         });
       }
       throw error;
-    } else {
-      toast.success("Address updated successfully");
-      fetchAddresses();
     }
   };
 

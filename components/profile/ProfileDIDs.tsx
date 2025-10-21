@@ -10,7 +10,7 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "../../Contexts/AuthContext";
 import type { Database } from "../../lib/database.types";
-import { supabase } from "../../lib/supabaseClient";
+import { didsApi } from "../../lib/data-access";
 import DidList from "../DidList";
 
 type Did = Database["public"]["Tables"]["dids"]["Row"];
@@ -26,15 +26,11 @@ export default function ProfileDIDs() {
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase
-      .from("dids")
-      .select("*")
-      .eq("user_id", user.id)
-      .order("created_at", { ascending: false });
-    if (error) {
+    try {
+      const data = await didsApi.getByUserId(user.id);
+      setDids(data);
+    } catch (error) {
       console.error("Error fetching dids", error);
-    } else {
-      setDids(data || []);
     }
     setLoading(false);
   }, [user]);
@@ -50,11 +46,16 @@ export default function ProfileDIDs() {
     if (!launcherId || !user) {
       return;
     }
-    const newDid = { launcher_id: launcherId, user_id: user.id, network: 0 };
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - Type inference issue with Supabase client
-    const { error } = await supabase.from("dids").insert(newDid).select();
-    if (error) {
+    try {
+      await didsApi.create({
+        launcher_id: launcherId,
+        user_id: user.id,
+        network: 0,
+      });
+      toast.success("DID added successfully");
+      setLauncherId("");
+      fetchDids();
+    } catch (error: any) {
       console.error(error);
       // Check for duplicate key error
       if (error.code === "23505") {
@@ -66,23 +67,19 @@ export default function ProfileDIDs() {
           description: error.message || "An unexpected error occurred.",
         });
       }
-    } else {
-      toast.success("DID added successfully");
-      setLauncherId("");
-      fetchDids();
     }
   };
 
   const deleteDid = async (id: string) => {
-    const { error } = await supabase.from("dids").delete().eq("id", id);
-    if (error) {
+    try {
+      await didsApi.delete(id);
+      toast.success("DID deleted successfully");
+      fetchDids();
+    } catch (error: any) {
       console.error(error);
       toast.error("Failed to delete DID", {
         description: error.message || "An unexpected error occurred.",
       });
-    } else {
-      toast.success("DID deleted successfully");
-      fetchDids();
     }
   };
 
@@ -95,11 +92,11 @@ export default function ProfileDIDs() {
       network: number;
     }
   ) => {
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - Type inference issue with Supabase client
-    const { error } = await supabase.from("dids").update(updates).eq("id", id);
-
-    if (error) {
+    try {
+      await didsApi.update(id, updates);
+      toast.success("DID updated successfully");
+      fetchDids();
+    } catch (error: any) {
       console.error("Error updating DID:", error);
       // Check for duplicate key error
       if (error.code === "23505") {
@@ -112,9 +109,6 @@ export default function ProfileDIDs() {
         });
       }
       throw error;
-    } else {
-      toast.success("DID updated successfully");
-      fetchDids();
     }
   };
 

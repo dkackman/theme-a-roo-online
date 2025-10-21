@@ -12,7 +12,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { AdminOnly } from "../components/RoleProtected";
 import { useAuth } from "../Contexts/AuthContext";
 import type { Database } from "../lib/database.types";
-import { supabase } from "../lib/supabaseClient";
+import { usersApi, themesApi } from "../lib/data-access";
 
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 
@@ -50,24 +50,18 @@ export default function Admin() {
   const fetchAdminData = useCallback(async () => {
     setLoading(true);
 
-    // Fetch all users (admin can see all)
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore - Type inference issue with Supabase client
-    const { data: users, error: usersError } = await supabase
-      .from("user_profiles")
-      .select("*")
-      .order("created_at", { ascending: false });
-    const { count: themeCount } = await supabase
-      .from('themes')
-      .select('*', { count: 'exact', head: true });
-    
-    if (!usersError && users) {
-      const typedUsers = users as UserProfile[];
-      setAllUsers(typedUsers);
+    try {
+      // Fetch all users (admin can see all)
+      const users = await usersApi.getAll();
+      const themeCount = await themesApi.getCount();
+
+      setAllUsers(users);
       setStats({
-        totalUsers: users?.length || 0,
-        totalThemes: themeCount || 0,
+        totalUsers: users.length,
+        totalThemes: themeCount,
       });
+    } catch (error) {
+      console.error("Error fetching admin data:", error);
     }
 
     setLoading(false);
