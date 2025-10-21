@@ -126,21 +126,21 @@ export const didsApi = {
    * Update DID notes
    */
   async updateNotes(didId: string, notes: string | null) {
-    return this.update(didId, { notes });
+    return await this.update(didId, { notes });
   },
 
   /**
    * Update DID name
    */
   async updateName(didId: string, name: string | null) {
-    return this.update(didId, { name });
+    return await this.update(didId, { name });
   },
 
   /**
    * Update DID metadata
    */
   async updateMetadata(didId: string, metadata: Database["public"]["Tables"]["dids"]["Row"]["metadata"]) {
-    return this.update(didId, { metadata });
+    return await this.update(didId, { metadata });
   },
 };
 

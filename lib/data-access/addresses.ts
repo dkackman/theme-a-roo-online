@@ -112,14 +112,14 @@ export const addressesApi = {
    * Update address notes
    */
   async updateNotes(addressId: string, notes: string | null) {
-    return this.update(addressId, { notes });
+    return await this.update(addressId, { notes });
   },
 
   /**
    * Update address metadata
    */
   async updateMetadata(addressId: string, metadata: Database["public"]["Tables"]["addresses"]["Row"]["metadata"]) {
-    return this.update(addressId, { metadata });
+    return await this.update(addressId, { metadata });
   },
 };
 
