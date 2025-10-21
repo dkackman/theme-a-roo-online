@@ -44,6 +44,7 @@ export default function Admin() {
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalUsers: 0,
+    totalThemes: 0,
   });
 
   const fetchAdminData = useCallback(async () => {
@@ -56,12 +57,16 @@ export default function Admin() {
       .from("user_profiles")
       .select("*")
       .order("created_at", { ascending: false });
-
+    const { count: themeCount } = await supabase
+      .from('themes')
+      .select('*', { count: 'exact', head: true });
+    
     if (!usersError && users) {
       const typedUsers = users as UserProfile[];
       setAllUsers(typedUsers);
       setStats({
         totalUsers: users?.length || 0,
+        totalThemes: themeCount || 0,
       });
     }
 
@@ -164,6 +169,16 @@ export default function Admin() {
             <CardContent>
               <span className="text-3xl font-bold text-indigo-600">
                 {stats.totalUsers}
+              </span>
+            </CardContent>
+          </Card>
+          <Card className="rounded-xl shadow-lg">
+            <CardHeader>
+              <CardTitle>Total # of Themes</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <span className="text-3xl font-bold text-green-600">
+                  {stats.totalThemes}
               </span>
             </CardContent>
           </Card>

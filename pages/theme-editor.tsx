@@ -88,7 +88,7 @@ export default function ThemeEditor() {
   }, []);
 
   const loadTheme = async () => {
-    if (!id || typeof id !== "string") {
+    if (!user || !id || typeof id !== "string") {
       return;
     }
 
@@ -97,6 +97,7 @@ export default function ThemeEditor() {
       const { data, error } = await supabase
         .from("themes")
         .select("*")
+        .eq("user_id", user.id)
         .eq("id", id)
         .single();
 

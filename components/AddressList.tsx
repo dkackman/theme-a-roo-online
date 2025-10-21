@@ -121,11 +121,11 @@ export default function AddressList({
     }
   };
 
-  const handleDelete = async () => {
+  const handleDelete = () => {
     if (!deletingAddress) {
       return;
     }
-    await onDelete(deletingAddress.id);
+    onDelete(deletingAddress.id);
     setDeletingAddress(null);
   };
 
