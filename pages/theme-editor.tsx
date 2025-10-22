@@ -21,6 +21,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { parseColor, rgbaToHex } from "@/lib/color";
 import Editor from "@monaco-editor/react";
@@ -72,6 +73,7 @@ export default function ThemeEditor() {
     return false;
   });
   const hasLoadedMaximizedState = useRef(false);
+  const [activeTab, setActiveTab] = useState("json");
 
   useEffect(() => {
     if (!loading && !user) {
@@ -338,170 +340,196 @@ export default function ThemeEditor() {
                 </Button>
               </div>
             </CardHeader>
-            <CardContent className="flex-1 p-0 overflow-hidden">
-              <Editor
-                theme={editorTheme}
-                beforeMount={(monaco) => {
-                  // Only initialize Monaco once to prevent duplicate color providers
-                  if (monacoInitializedRef.current) {
-                    return;
-                  }
-                  monacoInitializedRef.current = true;
-
-                  monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
-                    validate: true,
-                    schemas: [
-                      {
-                        uri: "http://myserver/my-schema.json",
-                        fileMatch: ["*"],
-                        schema: jsonSchema,
-                      },
-                    ],
-                  });
-                  monaco.languages.json.jsonDefaults.setModeConfiguration({
-                    documentFormattingEdits: true,
-                    documentRangeFormattingEdits: true,
-                    completionItems: true,
-                    hovers: true,
-                    documentSymbols: true,
-                    tokens: true,
-                    colors: true, // Enable color picker
-                    foldingRanges: true,
-                    diagnostics: true,
-                    selectionRanges: true,
-                  });
-                  // Only register color provider once to prevent duplicates on navigation
-                  if (
-                    !(
-                      window as unknown as {
-                        __jsonColorProviderRegistered?: boolean;
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <Tabs
+                value={activeTab}
+                onValueChange={setActiveTab}
+                className="flex-1 flex flex-col"
+              >
+                <div className="px-6 py-3 border-b">
+                  <TabsList>
+                    <TabsTrigger value="json">JSON Editor</TabsTrigger>
+                    <TabsTrigger value="background">Background</TabsTrigger>
+                  </TabsList>
+                </div>
+                <TabsContent
+                  value="json"
+                  className="flex-1 p-0 overflow-hidden"
+                >
+                  <Editor
+                    theme={editorTheme}
+                    beforeMount={(monaco) => {
+                      // Only initialize Monaco once to prevent duplicate color providers
+                      if (monacoInitializedRef.current) {
+                        return;
                       }
-                    ).__jsonColorProviderRegistered
-                  ) {
-                    monaco.languages.registerColorProvider("json", {
-                      provideDocumentColors(model) {
-                        const colors: {
-                          color: {
-                            red: number;
-                            green: number;
-                            blue: number;
-                            alpha: number;
-                          };
-                          range: {
-                            startLineNumber: number;
-                            startColumn: number;
-                            endLineNumber: number;
-                            endColumn: number;
-                          };
-                        }[] = [];
-                        const text = model.getValue();
+                      monacoInitializedRef.current = true;
 
-                        // Match quoted strings that could be colors (hex, rgb, rgba, hsl, hsla, or named colors)
-                        // This regex matches any quoted string, then we'll validate with parseColor
-                        const colorRegex = /"([^"]+)"/g;
-                        let match;
-
-                        while ((match = colorRegex.exec(text)) !== null) {
-                          const colorString = match[1];
-
-                          // Skip obviously non-color strings to improve performance
-                          // Only check strings that could plausibly be colors
-                          if (
-                            colorString.length > 50 ||
-                            (colorString.includes(" ") &&
-                              !colorString.match(/^(rgb|hsl)/i)) ||
-                            colorString.includes("/") ||
-                            colorString.includes("\\")
-                          ) {
-                            continue;
+                      monaco.languages.json.jsonDefaults.setDiagnosticsOptions({
+                        validate: true,
+                        schemas: [
+                          {
+                            uri: "http://myserver/my-schema.json",
+                            fileMatch: ["*"],
+                            schema: jsonSchema,
+                          },
+                        ],
+                      });
+                      monaco.languages.json.jsonDefaults.setModeConfiguration({
+                        documentFormattingEdits: true,
+                        documentRangeFormattingEdits: true,
+                        completionItems: true,
+                        hovers: true,
+                        documentSymbols: true,
+                        tokens: true,
+                        colors: true, // Enable color picker
+                        foldingRanges: true,
+                        diagnostics: true,
+                        selectionRanges: true,
+                      });
+                      // Only register color provider once to prevent duplicates on navigation
+                      if (
+                        !(
+                          window as unknown as {
+                            __jsonColorProviderRegistered?: boolean;
                           }
-
-                          const startPos = model.getPositionAt(match.index + 1); // +1 to skip opening quote
-                          const endPos = model.getPositionAt(
-                            match.index + match[1].length + 1
-                          );
-
-                          // Use our robust parseColor function to validate and parse
-                          const color = parseColor(colorString);
-                          if (color) {
-                            colors.push({
-                              color: color,
+                        ).__jsonColorProviderRegistered
+                      ) {
+                        monaco.languages.registerColorProvider("json", {
+                          provideDocumentColors(model) {
+                            const colors: {
+                              color: {
+                                red: number;
+                                green: number;
+                                blue: number;
+                                alpha: number;
+                              };
                               range: {
-                                startLineNumber: startPos.lineNumber,
-                                startColumn: startPos.column,
-                                endLineNumber: endPos.lineNumber,
-                                endColumn: endPos.column,
+                                startLineNumber: number;
+                                startColumn: number;
+                                endLineNumber: number;
+                                endColumn: number;
+                              };
+                            }[] = [];
+                            const text = model.getValue();
+
+                            // Match quoted strings that could be colors (hex, rgb, rgba, hsl, hsla, or named colors)
+                            // This regex matches any quoted string, then we'll validate with parseColor
+                            const colorRegex = /"([^"]+)"/g;
+                            let match;
+
+                            while ((match = colorRegex.exec(text)) !== null) {
+                              const colorString = match[1];
+
+                              // Skip obviously non-color strings to improve performance
+                              // Only check strings that could plausibly be colors
+                              if (
+                                colorString.length > 50 ||
+                                (colorString.includes(" ") &&
+                                  !colorString.match(/^(rgb|hsl)/i)) ||
+                                colorString.includes("/") ||
+                                colorString.includes("\\")
+                              ) {
+                                continue;
+                              }
+
+                              const startPos = model.getPositionAt(
+                                match.index + 1
+                              ); // +1 to skip opening quote
+                              const endPos = model.getPositionAt(
+                                match.index + match[1].length + 1
+                              );
+
+                              // Use our robust parseColor function to validate and parse
+                              const color = parseColor(colorString);
+                              if (color) {
+                                colors.push({
+                                  color: color,
+                                  range: {
+                                    startLineNumber: startPos.lineNumber,
+                                    startColumn: startPos.column,
+                                    endLineNumber: endPos.lineNumber,
+                                    endColumn: endPos.column,
+                                  },
+                                });
+                              }
+                            }
+
+                            return colors;
+                          },
+                          provideColorPresentations(_, colorInfo) {
+                            const color = colorInfo.color;
+                            const hex = rgbaToHex(color);
+                            const rgb = `rgba(${Math.round(color.red * 255)}, ${Math.round(color.green * 255)}, ${Math.round(color.blue * 255)}, ${color.alpha})`;
+
+                            return [
+                              {
+                                label: hex,
+                                textEdit: {
+                                  range: colorInfo.range,
+                                  text: hex,
+                                },
                               },
-                            });
+                              {
+                                label: rgb,
+                                textEdit: {
+                                  range: colorInfo.range,
+                                  text: rgb,
+                                },
+                              },
+                            ];
+                          },
+                        });
+                        (
+                          window as unknown as {
+                            __jsonColorProviderRegistered?: boolean;
                           }
-                        }
-
-                        return colors;
-                      },
-                      provideColorPresentations(_, colorInfo) {
-                        const color = colorInfo.color;
-                        const hex = rgbaToHex(color);
-                        const rgb = `rgba(${Math.round(color.red * 255)}, ${Math.round(color.green * 255)}, ${Math.round(color.blue * 255)}, ${color.alpha})`;
-
-                        return [
-                          {
-                            label: hex,
-                            textEdit: {
-                              range: colorInfo.range,
-                              text: hex,
-                            },
-                          },
-                          {
-                            label: rgb,
-                            textEdit: {
-                              range: colorInfo.range,
-                              text: rgb,
-                            },
-                          },
-                        ];
-                      },
-                    });
-                    (
-                      window as unknown as {
-                        __jsonColorProviderRegistered?: boolean;
+                        ).__jsonColorProviderRegistered = true;
                       }
-                    ).__jsonColorProviderRegistered = true;
-                  }
-                }}
-                height="100%"
-                defaultLanguage="json"
-                value={themeJson}
-                onChange={(value) => setThemeJson(value || "")}
-                options={{
-                  minimap: { enabled: true },
-                  scrollBeyondLastLine: false,
-                  fontSize: 12,
-                  fontFamily:
-                    "Monaco, Menlo, Ubuntu Mono, Consolas, source-code-pro, monospace",
-                  tabSize: 2,
-                  insertSpaces: true,
-                  wordWrap: "on",
-                  automaticLayout: true,
-                  formatOnPaste: true,
-                  formatOnType: true,
-                  bracketPairColorization: { enabled: true },
-                  folding: true,
-                  lineNumbers: "on",
-                  renderWhitespace: "selection",
-                  selectOnLineNumbers: true,
-                  roundedSelection: true,
-                  cursorStyle: "line",
-                  contextmenu: true,
-                  mouseWheelZoom: true,
-                  smoothScrolling: true,
-                }}
-                loading={
-                  <div className="flex items-center justify-center h-32">
-                    Loading editor...
+                    }}
+                    height="100%"
+                    defaultLanguage="json"
+                    value={themeJson}
+                    onChange={(value) => setThemeJson(value || "")}
+                    options={{
+                      minimap: { enabled: true },
+                      scrollBeyondLastLine: false,
+                      fontSize: 12,
+                      fontFamily:
+                        "Monaco, Menlo, Ubuntu Mono, Consolas, source-code-pro, monospace",
+                      tabSize: 2,
+                      insertSpaces: true,
+                      wordWrap: "on",
+                      automaticLayout: true,
+                      formatOnPaste: true,
+                      formatOnType: true,
+                      bracketPairColorization: { enabled: true },
+                      folding: true,
+                      lineNumbers: "on",
+                      renderWhitespace: "selection",
+                      selectOnLineNumbers: true,
+                      roundedSelection: true,
+                      cursorStyle: "line",
+                      contextmenu: true,
+                      mouseWheelZoom: true,
+                      smoothScrolling: true,
+                    }}
+                    loading={
+                      <div className="flex items-center justify-center h-32">
+                        Loading editor...
+                      </div>
+                    }
+                  />
+                </TabsContent>
+                <TabsContent value="background" className="flex-1 p-6">
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-muted-foreground">
+                      Background content coming soon...
+                    </p>
                   </div>
-                }
-              />
-            </CardContent>
+                </TabsContent>
+              </Tabs>
+            </div>
           </Card>
         </div>
       )}
@@ -511,7 +539,7 @@ export default function ThemeEditor() {
             <div>
               <h1 className="text-3xl font-bold mb-4">{theme.display_name}</h1>
             </div>
-            <div className="flex items-center">
+            <div className="flex items-center justify-between">
               <ButtonGroup>
                 <Button
                   onClick={() => setIsNotesSheetOpen(true)}
@@ -559,26 +587,26 @@ export default function ThemeEditor() {
                   Delete
                 </Button>
               </ButtonGroup>
+              <Button
+                onClick={() => setIsMaximized(true)}
+                variant="ghost"
+                size="sm"
+              >
+                <Maximize2 className="w-4 h-4 mr-2" />
+                Maximize
+              </Button>
             </div>
 
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="flex items-center gap-2">
-                    <FileText className="w-5 h-5" />
-                    Theme JSON
-                  </CardTitle>
-                  <Button
-                    onClick={() => setIsMaximized(true)}
-                    variant="ghost"
-                    size="sm"
-                  >
-                    <Maximize2 className="w-4 h-4 mr-2" />
-                    Maximize
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
+            <Tabs
+              value={activeTab}
+              onValueChange={setActiveTab}
+              className="w-full"
+            >
+              <TabsList>
+                <TabsTrigger value="json">JSON</TabsTrigger>
+                <TabsTrigger value="background">Background</TabsTrigger>
+              </TabsList>
+              <TabsContent value="json" className="space-y-4">
                 <Editor
                   theme={editorTheme}
                   beforeMount={(monaco) => {
@@ -743,8 +771,15 @@ export default function ThemeEditor() {
                     </div>
                   }
                 />
-              </CardContent>
-            </Card>
+              </TabsContent>
+              <TabsContent value="background" className="p-6">
+                <div className="flex items-center justify-center h-64">
+                  <p className="text-muted-foreground">
+                    Background content coming soon...
+                  </p>
+                </div>
+              </TabsContent>
+            </Tabs>
           </div>
         </div>
       )}
