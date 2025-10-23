@@ -1,9 +1,11 @@
-import { themesApi } from "./themes";
-import { usersApi } from "./users";
+import type { Database } from "../database.types";
 import { addressesApi } from "./addresses";
 import { didsApi } from "./dids";
+import { themesApi } from "./themes";
+import { usersApi } from "./users";
 
-export { themesApi, usersApi, addressesApi, didsApi };
+export { addressesApi, didsApi, themesApi, usersApi };
+export type DbTheme = Database["public"]["Tables"]["themes"]["Row"];
 
 /**
  * Combined database API object

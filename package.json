@@ -64,7 +64,7 @@
     "sonner": "^2.0.7",
     "supabase": "^2.51.0",
     "tailwind-merge": "^3.3.1",
-    "theme-o-rama": "^0.3.4"
+    "theme-o-rama": "^0.3.5"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.14",

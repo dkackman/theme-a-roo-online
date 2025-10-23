@@ -4,6 +4,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -15,22 +16,53 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Download, Palette, Plus } from "lucide-react";
+import { Check, Download, Palette, PencilOff, Plus } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { Theme as ThemeOramaTheme } from "theme-o-rama";
+import type { Theme } from "theme-o-rama";
+import { useTheme } from "theme-o-rama";
 import { useAuth } from "../Contexts/AuthContext";
-import { themesApi } from "../lib/data-access";
-import type { Database } from "../lib/database.types";
-type Theme = Database["public"]["Tables"]["themes"]["Row"];
-
+import { DbTheme, themesApi } from "../lib/data-access";
 export default function Home() {
   const { user, loading } = useAuth();
+  const { initializeTheme } = useTheme();
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
-  const [themes, setThemes] = useState<Theme[]>([]);
+  const [themes, setThemes] = useState<DbTheme[]>([]);
   const [isLoadingThemes, setIsLoadingThemes] = useState(true);
+  const [initializedThemes, setInitializedThemes] = useState<(Theme | null)[]>(
+    []
+  );
+
+  // Pre-initialize themes for performance
+  useEffect(() => {
+    const initializeAllThemes = async () => {
+      const initialized = await Promise.all(
+        themes.map(async (theme) => {
+          if (!theme.theme) return null;
+
+          try {
+            const themeData =
+              typeof theme.theme === "string"
+                ? (JSON.parse(theme.theme) as Theme)
+                : (theme.theme as unknown as Theme);
+
+            return await initializeTheme(themeData);
+          } catch {
+            return null;
+          }
+        })
+      );
+      setInitializedThemes(initialized);
+    };
+
+    if (themes.length > 0) {
+      initializeAllThemes();
+    } else {
+      setInitializedThemes([]);
+    }
+  }, [themes, initializeTheme]);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -175,7 +207,7 @@ export default function Home() {
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {themes.map((theme) => (
+            {themes.map((theme, index) => (
               <Card
                 key={theme.id}
                 className="cursor-pointer hover:shadow-lg transition-shadow"
@@ -195,11 +227,25 @@ export default function Home() {
                 </CardHeader>
                 <CardContent>
                   <ThemeCard
-                    theme={theme.theme as unknown as ThemeOramaTheme}
+                    key={theme.id}
+                    theme={initializedThemes[index] || null}
                     isSelected={false}
                     onSelect={() => {}}
                   />
                 </CardContent>
+                <CardFooter>
+                  <p className="text-sm text-muted-foreground">
+                    {theme.is_draft ? (
+                      <div title="Draft" className="flex items-center gap-2">
+                        <PencilOff className="w-4 h-4 mr-2 text-muted-foreground" />
+                      </div>
+                    ) : (
+                      <div title="Active" className="flex items-center gap-2">
+                        <Check className="w-4 h-4 mr-2 text-muted-foreground" />
+                      </div>
+                    )}
+                  </p>
+                </CardFooter>
               </Card>
             ))}
           </div>
