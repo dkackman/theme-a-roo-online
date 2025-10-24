@@ -20,10 +20,10 @@ import { Check, Download, Palette, PencilOff, Plus } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import type { Theme } from "theme-o-rama";
-import { useTheme } from "theme-o-rama";
+import { type Theme, useTheme } from "theme-o-rama";
 import { useAuth } from "../Contexts/AuthContext";
 import { DbTheme, themesApi } from "../lib/data-access";
+
 export default function Home() {
   const { user, loading } = useAuth();
   const { initializeTheme } = useTheme();
@@ -40,7 +40,9 @@ export default function Home() {
     const initializeAllThemes = async () => {
       const initialized = await Promise.all(
         themes.map(async (theme) => {
-          if (!theme.theme) return null;
+          if (!theme.theme) {
+            return null;
+          }
 
           try {
             const themeData =

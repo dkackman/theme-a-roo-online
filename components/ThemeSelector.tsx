@@ -94,12 +94,14 @@ export function ThemeSelector() {
           </div>
         )}
 
-        {isLoadingUserThemes && customThemes.length === 0 ? (
+        {isLoadingUserThemes && customThemes.length === 0 && (
           <div className="flex items-center justify-center p-8">
             <Loader2 className="h-6 w-6 animate-spin mr-2" />
             <span>Loading your themes...</span>
           </div>
-        ) : customThemes.length > 0 ? (
+        )}
+
+        {!isLoadingUserThemes && customThemes.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {customThemes.map((theme: Theme) => (
               <ThemeCard
@@ -110,7 +112,9 @@ export function ThemeSelector() {
               />
             ))}
           </div>
-        ) : (
+        )}
+
+        {!isLoadingUserThemes && customThemes.length === 0 && (
           <div className="text-center p-8 text-muted-foreground">
             <p>
               No custom themes found. Create your first theme in the theme

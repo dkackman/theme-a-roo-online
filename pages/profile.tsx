@@ -52,7 +52,7 @@ export default function Profile() {
     <div className="container max-w-7xl mx-auto px-4 py-8">
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar Navigation */}
-        <nav className="md:w-64 flex-shrink-0">
+        <nav className="md:w-36 flex-shrink-0">
           <div className="space-y-1">
             {sections.map((section) => {
               const Icon = section.icon;
@@ -78,9 +78,7 @@ export default function Profile() {
 
         {/* Main Content */}
         <main className="flex-1 min-w-0">
-          <Card className="rounded-2xl shadow-xl p-6 md:p-10">
-            {renderContent()}
-          </Card>
+          <Card className="shadow-xl p-6 md:p-10">{renderContent()}</Card>
         </main>
       </div>
     </div>

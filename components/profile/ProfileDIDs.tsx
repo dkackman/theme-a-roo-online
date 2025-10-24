@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -9,8 +10,8 @@ import {
 } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../../Contexts/AuthContext";
-import type { Database } from "../../lib/database.types";
 import { didsApi } from "../../lib/data-access";
+import type { Database } from "../../lib/database.types";
 import DidList from "../DidList";
 
 type Did = Database["public"]["Tables"]["dids"]["Row"];
