@@ -108,6 +108,7 @@ export default function Home() {
         displayName: "My New Theme",
         schemaVersion: 1,
         mostLike: "light",
+        inherits: "light",
       };
 
       const theme = await themesApi.create({

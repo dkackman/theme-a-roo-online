@@ -26,11 +26,13 @@ export function ClientThemeProvider({
 }: ClientThemeProviderProps) {
   const { user } = useAuth();
   const [currentTheme, setCurrentTheme] = useState(initialTheme);
-  const [isLoadingUserTheme, setIsLoadingUserTheme] = useState(false);
 
   // Return cached theme definition if available
+  // eslint-disable-next-line require-await
   const discoverUserThemes = useCallback(async (): Promise<Theme[]> => {
-    if (typeof window === "undefined") return [];
+    if (typeof window === "undefined") {
+      return [];
+    }
 
     try {
       const cachedTheme = localStorage.getItem("selected-theme-definition");
@@ -44,27 +46,11 @@ export function ClientThemeProvider({
     return [];
   }, []);
 
-  // Read theme from localStorage on client, with user theme priority
-  const [defaultTheme] = useState(() => {
-    if (typeof window === "undefined") {
-      return initialTheme;
-    }
-    try {
-      // Check for user-specific theme first
-      const userTheme = localStorage.getItem("user-theme");
-      if (userTheme) {
-        return userTheme;
-      }
-      // Fallback to general theme preference
-      return localStorage.getItem("theme") || initialTheme;
-    } catch {
-      return initialTheme;
-    }
-  });
-
   // Load user's active theme from cache only
   useEffect(() => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     try {
       const cachedUserTheme = localStorage.getItem("user-theme");
