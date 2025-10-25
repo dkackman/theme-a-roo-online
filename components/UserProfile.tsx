@@ -64,7 +64,9 @@ export default function UserProfile() {
   // Fetch user profile data
   useEffect(() => {
     const fetchProfile = async () => {
-      if (!user) return;
+      if (!user) {
+        return;
+      }
 
       setIsLoadingProfile(true);
       try {
@@ -92,7 +94,9 @@ export default function UserProfile() {
   }, [user]);
 
   const handleSave = async () => {
-    if (!user) return;
+    if (!user) {
+      return;
+    }
 
     setIsSaving(true);
     try {
