@@ -1,6 +1,7 @@
 import { BackgroundEditor } from "@/components/BackgroundEditor";
 import { JsonEditor } from "@/components/JsonEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Braces, FileText, ImageIcon } from "lucide-react";
 
 interface ThemeEditorTabsProps {
   activeTab: string;
@@ -39,15 +40,35 @@ export function ThemeEditorTabs({
       {isMaximized && (
         <div className="px-6 py-3 border-b">
           <TabsList>
-            <TabsTrigger value="json">JSON Editor</TabsTrigger>
-            <TabsTrigger value="background">Background</TabsTrigger>
+            <TabsTrigger value="json">
+              <Braces className="w-4 h-4 mr-2" />
+              JSON Editor
+            </TabsTrigger>
+            <TabsTrigger value="files">
+              <FileText className="w-4 h-4 mr-2" />
+              Files
+            </TabsTrigger>
+            <TabsTrigger value="background">
+              <ImageIcon className="w-4 h-4 mr-2" />
+              Background
+            </TabsTrigger>
           </TabsList>
         </div>
       )}
       {!isMaximized && (
         <TabsList>
-          <TabsTrigger value="json">JSON</TabsTrigger>
-          <TabsTrigger value="background">Background</TabsTrigger>
+          <TabsTrigger value="json">
+            <Braces className="w-4 h-4 mr-2" />
+            JSON
+          </TabsTrigger>
+          <TabsTrigger value="files">
+            <FileText className="w-4 h-4 mr-2" />
+            Files
+          </TabsTrigger>
+          <TabsTrigger value="background">
+            <ImageIcon className="w-4 h-4 mr-2" />
+            Background
+          </TabsTrigger>
         </TabsList>
       )}
       <TabsContent
@@ -63,6 +84,19 @@ export function ThemeEditorTabs({
           theme={editorTheme}
           height={editorHeight}
         />
+      </TabsContent>
+      <TabsContent
+        value="files"
+        className={backgroundTabContentClass}
+        style={
+          isMaximized ? { display: "flex", flexDirection: "column" } : undefined
+        }
+      >
+        <div className="p-6">
+          <p className="text-muted-foreground">
+            Files management coming soon...
+          </p>
+        </div>
       </TabsContent>
       <TabsContent
         value="background"
