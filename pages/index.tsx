@@ -1,4 +1,14 @@
 import { ThemeCard } from "@/components/ThemeCard";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -16,7 +26,14 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Check, Download, Palette, PencilOff, Plus } from "lucide-react";
+import {
+  Check,
+  Download,
+  Palette,
+  PencilOff,
+  Plus,
+  Trash2,
+} from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -34,6 +51,10 @@ export default function Home() {
   const [initializedThemes, setInitializedThemes] = useState<(Theme | null)[]>(
     []
   );
+  const [themeToDelete, setThemeToDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
 
   // Pre-initialize themes for performance
   useEffect(() => {
@@ -132,6 +153,28 @@ export default function Home() {
       toast.error("Failed to create theme. Please try again.");
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  const handleDeleteClick = (themeId: string, themeName: string) => {
+    setThemeToDelete({ id: themeId, name: themeName });
+  };
+
+  const handleDeleteConfirm = async () => {
+    if (!user || !themeToDelete) {
+      return;
+    }
+
+    try {
+      await themesApi.delete(themeToDelete.id);
+      toast.success("Theme deleted successfully!");
+
+      // Remove from local state
+      setThemes(themes.filter((theme) => theme.id !== themeToDelete.id));
+      setThemeToDelete(null);
+    } catch (error) {
+      console.error("Error deleting theme:", error);
+      toast.error("Failed to delete theme. Please try again.");
     }
   };
 
@@ -237,23 +280,60 @@ export default function Home() {
                   />
                 </CardContent>
                 <CardFooter>
-                  <p className="text-sm text-muted-foreground">
-                    {theme.is_draft ? (
-                      <div title="Draft" className="flex items-center gap-2">
-                        <PencilOff className="w-4 h-4 mr-2 text-muted-foreground" />
-                      </div>
-                    ) : (
-                      <div title="Active" className="flex items-center gap-2">
-                        <Check className="w-4 h-4 mr-2 text-muted-foreground" />
-                      </div>
-                    )}
-                  </p>
+                  <div className="flex items-center justify-between w-full">
+                    <p className="text-sm text-muted-foreground">
+                      {theme.is_draft ? (
+                        <div title="Draft" className="flex items-center gap-2">
+                          <PencilOff className="w-4 h-4 mr-2 text-muted-foreground" />
+                        </div>
+                      ) : (
+                        <div title="Active" className="flex items-center gap-2">
+                          <Check className="w-4 h-4 mr-2 text-muted-foreground" />
+                        </div>
+                      )}
+                    </p>
+                    <button
+                      className="p-1.5 rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDeleteClick(theme.id, theme.display_name);
+                      }}
+                      title="Delete theme"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </CardFooter>
               </Card>
             ))}
           </div>
         )}
       </div>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog
+        open={!!themeToDelete}
+        onOpenChange={() => setThemeToDelete(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Theme</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete &quot;{themeToDelete?.name}&quot;?
+              This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteConfirm}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
