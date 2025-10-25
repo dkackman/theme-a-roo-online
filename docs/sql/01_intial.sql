@@ -26,14 +26,27 @@ CREATE TABLE public.dids (
   CONSTRAINT dids_pkey PRIMARY KEY (id),
   CONSTRAINT dids_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user_profiles(id)
 );
+CREATE TABLE public.theme_files (
+  id uuid NOT NULL DEFAULT gen_random_uuid(),
+  theme_id uuid NOT NULL,
+  created_at timestamp with time zone DEFAULT now(),
+  updated_at timestamp with time zone DEFAULT now(),
+  file_use_type USER-DEFINED NOT NULL,
+  mime_type text NOT NULL,
+  file bytea NOT NULL,
+  CONSTRAINT theme_files_pkey PRIMARY KEY (id),
+  CONSTRAINT theme_files_theme_id_fkey FOREIGN KEY (theme_id) REFERENCES public.themes(id)
+);
 CREATE TABLE public.themes (
   id uuid NOT NULL DEFAULT gen_random_uuid(),
   user_id uuid NOT NULL,
-  metadata jsonb DEFAULT '{}'::jsonb,
+  theme jsonb DEFAULT '{}'::jsonb,
   created_at timestamp with time zone DEFAULT now(),
   updated_at timestamp with time zone DEFAULT now(),
   notes text,
-  status smallint NOT NULL DEFAULT '0'::smallint,
+  name text NOT NULL DEFAULT ''''''::text,
+  display_name text NOT NULL DEFAULT '''New Theme'''::text,
+  is_draft boolean NOT NULL DEFAULT true,
   CONSTRAINT themes_pkey PRIMARY KEY (id),
   CONSTRAINT themes_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user_profiles(id)
 );
@@ -61,3 +74,4 @@ CREATE UNIQUE INDEX themes_user_id_name_key ON public.themes USING btree (user_i
 CREATE INDEX themes_user_id_idx ON public.themes USING btree (user_id);
 
 CREATE UNIQUE INDEX user_profiles_pkey ON public.user_profiles USING btree (id);
+CREATE UNIQUE INDEX theme_files_theme_id_file_use_type_key ON public.theme_files USING btree (theme_id, file_use_type);

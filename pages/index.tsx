@@ -178,15 +178,7 @@ export default function Home() {
     }
   };
 
-  if (loading || !user) {
-    return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
-      </div>
-    );
-  }
-
-  if (isLoadingThemes) {
+  if (loading || !user || isLoadingThemes) {
     return (
       <div className="flex justify-center items-center py-12">
         <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
