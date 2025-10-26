@@ -28,19 +28,21 @@ import { FileText, Maximize2, Minimize2 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
+import type { Theme as ThemeRom } from "theme-o-rama";
 import { useAuth } from "../Contexts/AuthContext";
+import { ThemeEditorProvider } from "../Contexts/ThemeEditorContext";
 import { useThemeOperations } from "../hooks/useThemeOperations";
 import { themesApi } from "../lib/data-access";
 import type { Database } from "../lib/database.types";
 
-type Theme = Database["public"]["Tables"]["themes"]["Row"];
+type DbTheme = Database["public"]["Tables"]["themes"]["Row"];
 
 export default function ThemeEditor() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { id } = router.query;
 
-  const [theme, setTheme] = useState<Theme | null>(null);
+  const [theme, setTheme] = useState<DbTheme | null>(null);
   const [themeJson, setThemeJson] = useState("");
   const [isLoadingTheme, setIsLoadingTheme] = useState(true);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
@@ -144,6 +146,23 @@ export default function ThemeEditor() {
     }
   };
 
+  // Parse theme JSON to get the theme object for the context
+  const parsedTheme: ThemeRom | null = (() => {
+    try {
+      return themeJson ? JSON.parse(themeJson) : null;
+    } catch {
+      return null;
+    }
+  })();
+
+  const handleThemeChange = (newTheme: ThemeRom) => {
+    setThemeJson(JSON.stringify(newTheme, null, 2));
+  };
+
+  const handleThemeJsonChange = (json: string) => {
+    setThemeJson(json);
+  };
+
   useEffect(() => {
     if (id && user) {
       loadTheme();
@@ -188,7 +207,12 @@ export default function ThemeEditor() {
   }
 
   return (
-    <>
+    <ThemeEditorProvider
+      theme={parsedTheme}
+      themeJson={themeJson}
+      onThemeChange={handleThemeChange}
+      onThemeJsonChange={handleThemeJsonChange}
+    >
       {isMaximized && (
         <div className="fixed inset-x-0 top-16 bottom-0 z-50 bg-background flex flex-col">
           <Card className="flex-1 flex flex-col rounded-none border-0">
@@ -346,6 +370,6 @@ export default function ThemeEditor() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
-    </>
+    </ThemeEditorProvider>
   );
 }

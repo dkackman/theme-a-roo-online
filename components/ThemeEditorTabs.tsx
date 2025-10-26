@@ -1,3 +1,4 @@
+import { BackdropFilters } from "@/components/BackdropFilters";
 import { BackgroundEditor } from "@/components/BackgroundEditor";
 import { JsonEditor } from "@/components/JsonEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -92,10 +93,11 @@ export function ThemeEditorTabs({
           isMaximized ? { display: "flex", flexDirection: "column" } : undefined
         }
       >
-        <div className="p-6">
-          <p className="text-muted-foreground">
-            Files management coming soon...
-          </p>
+        <div className="p-6 space-y-6">
+          <div>
+            <h3 className="text-lg font-semibold mb-2">Backdrop Filters</h3>
+            <BackdropFilters />
+          </div>
         </div>
       </TabsContent>
       <TabsContent
