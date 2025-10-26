@@ -1,4 +1,3 @@
-import { BackdropFilters } from "@/components/BackdropFilters";
 import { BackgroundEditor } from "@/components/BackgroundEditor";
 import { JsonEditor } from "@/components/JsonEditor";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -26,11 +25,10 @@ export function ThemeEditorTabs({
     : "space-y-4 border border-border rounded-b-md";
 
   const backgroundTabContentClass = isMaximized
-    ? "flex-1 p-6 border border-border rounded-b-md"
+    ? "flex-1 p-6 border border-border rounded-b-md overflow-auto"
     : "p-6 border border-border rounded-b-md";
 
   const editorHeight = isMaximized ? "100%" : "calc(100vh - 300px)";
-  const backgroundHeight = isMaximized ? "h-full" : "h-64";
 
   return (
     <Tabs
@@ -93,12 +91,7 @@ export function ThemeEditorTabs({
           isMaximized ? { display: "flex", flexDirection: "column" } : undefined
         }
       >
-        <div className="p-6 space-y-6">
-          <div>
-            <h3 className="text-lg font-semibold mb-2">Backdrop Filters</h3>
-            <BackdropFilters />
-          </div>
-        </div>
+        <div className="p-6 space-y-8"></div>
       </TabsContent>
       <TabsContent
         value="background"
@@ -107,7 +100,7 @@ export function ThemeEditorTabs({
           isMaximized ? { display: "flex", flexDirection: "column" } : undefined
         }
       >
-        <BackgroundEditor className={backgroundHeight} />
+        <BackgroundEditor />
       </TabsContent>
     </Tabs>
   );
