@@ -10,7 +10,7 @@ export function BackdropFilters() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const loadData = async () => {
+    const loadData = () => {
       try {
         setIsLoading(true);
 
@@ -25,11 +25,14 @@ export function BackdropFilters() {
             theme?.tables?.footer?.backdropFilter
         );
 
-        // Get background image from theme (check various possible locations)
+        // Get background image from theme
+        // The Theme type from theme-o-rama may not have this property in its type definition
+        // but it exists at runtime, so we need to access it dynamically
+        const themeWithBackground = theme as typeof theme & {
+          backgroundImage?: string;
+        };
         const backgroundImageResult =
-          (theme as any)?.background?.imageUrl ||
-          (theme as any)?.backgroundImage ||
-          null;
+          themeWithBackground?.backgroundImage || null;
 
         setBackdropFilters(hasBackdropFilters);
         setBackgroundImage(backgroundImageResult);
@@ -51,52 +54,42 @@ export function BackdropFilters() {
   const handleToggle = (checked: boolean) => {
     setBackdropFilters(checked);
 
-    if (!theme) return;
+    if (!theme) {
+      return;
+    }
 
     // Update theme with backdrop filter settings
-    if (checked) {
-      updateTheme({
-        colors: {
-          ...theme.colors,
-          cardBackdropFilter: checked
-            ? "blur(16px) saturate(180%) brightness(1.1)"
-            : null,
-          popoverBackdropFilter: checked
-            ? "blur(20px) saturate(180%) brightness(1.1)"
-            : null,
-          inputBackdropFilter: checked
-            ? "blur(8px) saturate(150%) brightness(1.05)"
-            : null,
-        },
-        sidebar: {
-          ...theme.sidebar,
-          backdropFilter: checked
-            ? "blur(20px) saturate(180%) brightness(1.1)"
-            : null,
-        },
-        tables: {
-          ...theme.tables,
-          header: {
-            ...theme.tables?.header,
-            backdropFilter: checked
-              ? "blur(8px) saturate(150%) brightness(1.05)"
-              : null,
-          },
-          row: {
-            ...theme.tables?.row,
-            backdropFilter: checked
-              ? "blur(4px) saturate(120%) brightness(1.02)"
-              : null,
-          },
-          footer: {
-            ...theme.tables?.footer,
-            backdropFilter: checked
-              ? "blur(8px) saturate(150%) brightness(1.05)"
-              : null,
-          },
-        },
-      });
+    if (!checked) {
+      return;
     }
+
+    updateTheme({
+      colors: {
+        ...theme.colors,
+        cardBackdropFilter: "blur(16px) saturate(180%) brightness(1.1)",
+        popoverBackdropFilter: "blur(20px) saturate(180%) brightness(1.1)",
+        inputBackdropFilter: "blur(8px) saturate(150%) brightness(1.05)",
+      },
+      sidebar: {
+        ...theme.sidebar,
+        backdropFilter: "blur(20px) saturate(180%) brightness(1.1)",
+      },
+      tables: {
+        ...theme.tables,
+        header: {
+          ...theme.tables?.header,
+          backdropFilter: "blur(8px) saturate(150%) brightness(1.05)",
+        },
+        row: {
+          ...theme.tables?.row,
+          backdropFilter: "blur(4px) saturate(120%) brightness(1.02)",
+        },
+        footer: {
+          ...theme.tables?.footer,
+          backdropFilter: "blur(8px) saturate(150%) brightness(1.05)",
+        },
+      },
+    });
   };
 
   return (
@@ -116,11 +109,15 @@ export function BackdropFilters() {
         </Label>
       </div>
       <p className="text-xs text-muted-foreground">
-        {isLoading
-          ? "Loading..."
-          : !backgroundImage
-            ? "Requires a background image to enable backdrop filters"
-            : "Adds blur effect to cards, popups, and other UI elements"}
+        {(() => {
+          if (isLoading) {
+            return "Loading...";
+          }
+          if (!backgroundImage) {
+            return "Requires a background image to enable backdrop filters";
+          }
+          return "Adds blur effect to cards, popups, and other UI elements";
+        })()}
       </p>
     </div>
   );

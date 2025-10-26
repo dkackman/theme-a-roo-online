@@ -1,7 +1,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { hslToRgb, rgbToHsl } from "@/lib/color";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { RgbColorPicker } from "react-colorful";
 import { useThemeEditor } from "../Contexts/ThemeEditorContext";
 
@@ -12,7 +12,11 @@ interface ThemeColorPickerProps {
 export function ThemeColorPicker({ className = "" }: ThemeColorPickerProps) {
   const { theme, updateTheme } = useThemeEditor();
 
-  const getColorFromTheme = (): { r: number; g: number; b: number } => {
+  const getColorFromTheme = useCallback((): {
+    r: number;
+    g: number;
+    b: number;
+  } => {
     if (theme?.colors?.themeColor) {
       const rgb = hslToRgb(theme.colors.themeColor);
       if (rgb) {
@@ -22,7 +26,7 @@ export function ThemeColorPicker({ className = "" }: ThemeColorPickerProps) {
     return theme?.mostLike === "dark"
       ? { r: 0, g: 0, b: 0 }
       : { r: 255, g: 255, b: 255 };
-  };
+  }, [theme]);
 
   const [color, setColor] = useState(getColorFromTheme());
   const [applyToBackground, setApplyToBackground] = useState(false);
@@ -30,7 +34,7 @@ export function ThemeColorPicker({ className = "" }: ThemeColorPickerProps) {
   // Update color when theme changes
   useEffect(() => {
     setColor(getColorFromTheme());
-  }, [theme]);
+  }, [theme, getColorFromTheme]);
 
   const handleColorChange = (newColor: { r: number; g: number; b: number }) => {
     setColor(newColor);
