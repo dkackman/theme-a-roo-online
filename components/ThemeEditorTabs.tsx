@@ -1,5 +1,6 @@
 import { BackgroundEditor } from "@/components/BackgroundEditor";
 import { JsonEditor } from "@/components/JsonEditor";
+import { ThemeFilesManager } from "@/components/ThemeFilesManager";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Braces, FileText, ImageIcon } from "lucide-react";
 
@@ -10,6 +11,7 @@ interface ThemeEditorTabsProps {
   onThemeJsonChange: (value: string) => void;
   editorTheme: "vs" | "vs-dark";
   isMaximized?: boolean;
+  themeId?: string;
 }
 
 export function ThemeEditorTabs({
@@ -19,6 +21,7 @@ export function ThemeEditorTabs({
   onThemeJsonChange,
   editorTheme,
   isMaximized = false,
+  themeId,
 }: ThemeEditorTabsProps) {
   const jsonTabContentClass = isMaximized
     ? "flex-1 p-0 overflow-hidden border border-border rounded-b-md"
@@ -91,7 +94,13 @@ export function ThemeEditorTabs({
           isMaximized ? { display: "flex", flexDirection: "column" } : undefined
         }
       >
-        <div className="p-6 space-y-8"></div>
+        {themeId ? (
+          <ThemeFilesManager themeId={themeId} />
+        ) : (
+          <div className="p-6 text-center text-muted-foreground">
+            Theme ID not available
+          </div>
+        )}
       </TabsContent>
       <TabsContent
         value="background"

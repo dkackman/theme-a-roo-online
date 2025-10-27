@@ -250,6 +250,7 @@ export default function ThemeEditor() {
                 onThemeJsonChange={setThemeJson}
                 editorTheme={editorTheme}
                 isMaximized={true}
+                themeId={theme?.id}
               />
             </div>
           </Card>
@@ -289,6 +290,7 @@ export default function ThemeEditor() {
               onThemeJsonChange={setThemeJson}
               editorTheme={editorTheme}
               isMaximized={false}
+              themeId={theme?.id}
             />
           </div>
         </div>
