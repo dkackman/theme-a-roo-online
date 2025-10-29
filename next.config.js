@@ -1,15 +1,30 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   reactStrictMode: true,
-  // Enable source maps in development
+
+  // Optimized for Vercel deployment
+
+  // Enable source maps in development only
   webpack: (config, { dev, isServer }) => {
     if (dev) {
       config.devtool = "source-map";
     }
     return config;
   },
-  // Optional: Enable source maps in production (increases bundle size)
-  // productionBrowserSourceMaps: true,
+
+  // Disable source maps in production for better performance
+  productionBrowserSourceMaps: false,
+
+  // Optimize images
+  images: {
+    domains: [],
+    formats: ["image/webp", "image/avif"],
+  },
+
+  // Enable compression
+  compress: true,
+
+  // Optimize bundle (removed experimental optimizeCss as it's causing build issues)
 };
 
 module.exports = nextConfig;

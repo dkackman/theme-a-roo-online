@@ -1,0 +1,30 @@
+# Documentation
+docs/
+
+# Development files
+*.log
+.DS_Store
+.vscode/
+.idea/
+
+# Dependencies
+node_modules/
+
+# Build artifacts
+.next/
+out/
+dist/
+
+# Environment files (these should be set in Vercel dashboard)
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# TypeScript build info
+*.tsbuildinfo
+
+# Git
+.git/
+.gitignore

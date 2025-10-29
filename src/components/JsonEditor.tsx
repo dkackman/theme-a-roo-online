@@ -1,7 +1,7 @@
 import { parseColor, rgbaToHex } from "@/lib/color";
 import Editor from "@monaco-editor/react";
 import { useRef } from "react";
-import jsonSchema from "../public/schema.json";
+import jsonSchema from "../schema.json";
 
 interface JsonEditorProps {
   value: string;

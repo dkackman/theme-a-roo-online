@@ -40,7 +40,9 @@ function FileSlot({
     event: React.ChangeEvent<HTMLInputElement>
   ) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      return;
+    }
 
     try {
       await upload({
@@ -64,7 +66,9 @@ function FileSlot({
   };
 
   const handleDelete = async () => {
-    if (!confirm(`Delete ${title}?`)) return;
+    if (!confirm(`Delete ${title}?`)) {
+      return;
+    }
 
     setIsDeleting(true);
     try {

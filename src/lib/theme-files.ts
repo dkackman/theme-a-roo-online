@@ -64,7 +64,7 @@ export async function uploadThemeFile({
   // Debug logging - following Supabase's recommendation
   console.log("Session user:", session?.user?.id);
   console.log("access_token:", session?.access_token);
-  console.log("JWT token segments:", jwt.split('.').length);
+  console.log("JWT token segments:", jwt.split(".").length);
   console.log("JWT token preview:", jwt.substring(0, 50) + "...");
 
   // Build form data
@@ -105,7 +105,7 @@ export async function uploadThemeFile({
             resolve(xhr.responseText as unknown as ThemeFileResponse);
           }
         } else {
-          let errorBody: { error?: string;[key: string]: unknown };
+          let errorBody: { error?: string; [key: string]: unknown };
           try {
             errorBody = JSON.parse(xhr.responseText);
           } catch (e) {
@@ -118,12 +118,18 @@ export async function uploadThemeFile({
       };
 
       xhr.onerror = () => {
-        const error: UploadError = { status: xhr.status || 0, body: { error: "Network error" } };
+        const error: UploadError = {
+          status: xhr.status || 0,
+          body: { error: "Network error" },
+        };
         reject(error);
       };
 
       xhr.ontimeout = () => {
-        const error: UploadError = { status: xhr.status || 0, body: { error: "Timeout" } };
+        const error: UploadError = {
+          status: xhr.status || 0,
+          body: { error: "Timeout" },
+        };
         reject(error);
       };
 
