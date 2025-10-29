@@ -61,12 +61,6 @@ export async function uploadThemeFile({
     throw new Error("Not authenticated");
   }
 
-  // Debug logging - following Supabase's recommendation
-  console.log("Session user:", session?.user?.id);
-  console.log("access_token:", session?.access_token);
-  console.log("JWT token segments:", jwt.split(".").length);
-  console.log("JWT token preview:", jwt.substring(0, 50) + "...");
-
   // Build form data
   const formData = new FormData();
   formData.append("file", file, file.name);
@@ -74,7 +68,7 @@ export async function uploadThemeFile({
   formData.append("file_use_type", file_use_type);
 
   // Use XMLHttpRequest to enable upload progress
-  async function sendRequest(): Promise<ThemeFileResponse> {
+  function sendRequest(): Promise<ThemeFileResponse> {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
 
@@ -82,8 +76,6 @@ export async function uploadThemeFile({
       // The edge function should be named "theme-files" and have an "upload" handler
       // Note: The edge function path is just "/upload", not "/theme-files/upload"
       const edgeFunctionUrl = `${SUPABASE_URL}/functions/v1/theme-files/upload`;
-      console.log("Edge Function URL:", edgeFunctionUrl);
-      console.log("Full Authorization header:", `Bearer ${jwt}`);
 
       xhr.open("POST", edgeFunctionUrl, true);
       xhr.setRequestHeader("Authorization", `Bearer ${jwt}`);
@@ -101,14 +93,14 @@ export async function uploadThemeFile({
           try {
             const json = JSON.parse(xhr.responseText);
             resolve(json);
-          } catch (err) {
+          } catch {
             resolve(xhr.responseText as unknown as ThemeFileResponse);
           }
         } else {
-          let errorBody: { error?: string; [key: string]: unknown };
+          let errorBody: { error?: string;[key: string]: unknown };
           try {
             errorBody = JSON.parse(xhr.responseText);
-          } catch (e) {
+          } catch {
             errorBody = { error: xhr.responseText || xhr.statusText };
           }
           console.error("Edge Function Error:", xhr.status, errorBody);
@@ -141,6 +133,7 @@ export async function uploadThemeFile({
   let attempts = 0;
   while (attempts <= maxRetries) {
     try {
+      // eslint-disable-next-line no-await-in-loop
       const result = await sendRequest();
       return result;
     } catch (err) {
@@ -149,6 +142,7 @@ export async function uploadThemeFile({
         throw err;
       }
       // Exponential backoff
+      // eslint-disable-next-line no-await-in-loop
       await new Promise((resolve) => setTimeout(resolve, 500 * attempts));
     }
   }
@@ -162,8 +156,8 @@ export async function uploadThemeFile({
  * TODO: Implement once Edge Function endpoint is available
  */
 export async function deleteThemeFile(
-  theme_id: string,
-  file_use_type: FileUseType
+  _theme_id: string,
+  _file_use_type: FileUseType
 ): Promise<void> {
   // Get JWT token from supabase client
   const {
@@ -204,12 +198,12 @@ export async function deleteThemeFile(
  * Get theme files for a given theme
  * TODO: Implement once Edge Function or storage query is available
  */
-export async function getThemeFiles(theme_id: string): Promise<{
+export function getThemeFiles(_theme_id: string): Promise<{
   background?: string;
   preview?: string;
   banner?: string;
 }> {
   // TODO: Implement fetch from storage or Edge Function
   // For now, return empty object
-  return {};
+  return Promise.resolve({});
 }

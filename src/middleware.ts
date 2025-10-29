@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-export async function middleware(req: NextRequest) {
+export function middleware(_req: NextRequest) {
   // For now, just pass through all requests
   // Auth is handled client-side via AuthContext
   // If you need server-side auth in the future, you'll need to use cookies

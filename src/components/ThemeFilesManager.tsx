@@ -9,7 +9,9 @@ import {
 import { useUploadThemeFile } from "@/hooks/useUploadThemeFile";
 import { deleteThemeFile, type FileUseType } from "@/lib/theme-files";
 import { ImageIcon, Loader2, Trash2, Upload } from "lucide-react";
+import Image from "next/image";
 import { useRef, useState } from "react";
+import { Input } from "./ui/input";
 
 interface FileSlotProps {
   title: string;
@@ -90,7 +92,7 @@ function FileSlot({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <input
+        <Input
           ref={fileInputRef}
           type="file"
           accept="image/*"
@@ -100,7 +102,7 @@ function FileSlot({
         {fileUrl ? (
           <div className="space-y-3">
             <div className="aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border">
-              <img
+              <Image
                 src={fileUrl}
                 alt={title}
                 className="max-w-full max-h-full rounded-lg"
@@ -176,7 +178,7 @@ interface ThemeFilesManagerProps {
 
 export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
   // TODO: Fetch actual file URLs from storage
-  const [files, setFiles] = useState<{
+  const [files, _setFiles] = useState<{
     background?: string;
     preview?: string;
     banner?: string;

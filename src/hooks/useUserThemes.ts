@@ -27,14 +27,14 @@ export function useUserThemes() {
         .map((theme) => {
           const themeData =
             theme.theme && typeof theme.theme === "object"
-              ? (theme.theme as any)
+              ? (theme.theme as Record<string, unknown>)
               : {};
           return {
             name: theme.name,
             displayName: theme.display_name,
             description: theme.notes || `Custom theme by ${user.email}`,
             tags: ["custom", "user-created"],
-            schemaVersion: "1.0.0",
+            schemaVersion: 1,
             ...themeData,
           } as Theme;
         });

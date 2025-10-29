@@ -1,15 +1,16 @@
+import type { User } from "@supabase/supabase-js";
 import { useRouter } from "next/router";
 import { useState } from "react";
 import { toast } from "sonner";
 import { themesApi } from "../lib/data-access";
-import type { Database } from "../lib/database.types";
+import type { Database, Json } from "../lib/database.types";
 import { validateThemeJson } from "../lib/themes";
 
 type Theme = Database["public"]["Tables"]["themes"]["Row"];
 
 interface UseThemeOperationsProps {
   theme: Theme | null;
-  user: any;
+  user: User | null;
   onThemeUpdate: (theme: Theme) => void;
 }
 
@@ -34,7 +35,7 @@ export function useThemeOperations({
       const updatedTheme = await themesApi.update(theme.id, {
         name: validatedTheme.name.trim(),
         display_name: validatedTheme.displayName.trim(),
-        theme: validatedTheme as any, // Store as object, not stringified
+        theme: JSON.stringify(validatedTheme) as Json // Store as object, not stringified
       });
 
       toast.success("Theme saved successfully!");
