@@ -1,15 +1,6 @@
 import { ThemeCard } from "@/components/ThemeCard";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
+import { DeleteButton } from "@/components/ui/delete-button";
 import {
   Card,
   CardContent,
@@ -51,10 +42,6 @@ export default function Home() {
   const [initializedThemes, setInitializedThemes] = useState<(Theme | null)[]>(
     []
   );
-  const [themeToDelete, setThemeToDelete] = useState<{
-    id: string;
-    name: string;
-  } | null>(null);
 
   // Pre-initialize themes for performance
   useEffect(() => {
@@ -156,22 +143,17 @@ export default function Home() {
     }
   };
 
-  const handleDeleteClick = (themeId: string, themeName: string) => {
-    setThemeToDelete({ id: themeId, name: themeName });
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!user || !themeToDelete) {
+  const handleDeleteTheme = async (themeId: string) => {
+    if (!user) {
       return;
     }
 
     try {
-      await themesApi.delete(themeToDelete.id);
+      await themesApi.delete(themeId);
       toast.success("Theme deleted successfully!");
 
       // Remove from local state
-      setThemes(themes.filter((theme) => theme.id !== themeToDelete.id));
-      setThemeToDelete(null);
+      setThemes(themes.filter((theme) => theme.id !== themeId));
     } catch (error) {
       console.error("Error deleting theme:", error);
       toast.error("Failed to delete theme. Please try again.");
@@ -284,16 +266,13 @@ export default function Home() {
                         </div>
                       )}
                     </div>
-                    <button
-                      className="p-1.5 rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDeleteClick(theme.id, theme.display_name);
-                      }}
-                      title="Delete theme"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+                    <div onClick={(e) => e.stopPropagation()}>
+                      <DeleteButton
+                        title="Delete Theme"
+                        description={`Are you sure you want to delete "${theme.display_name}"? This action cannot be undone.`}
+                        onConfirm={() => handleDeleteTheme(theme.id)}
+                      />
+                    </div>
                   </div>
                 </CardFooter>
               </Card>
@@ -301,31 +280,6 @@ export default function Home() {
           </div>
         )}
       </div>
-
-      {/* Delete Confirmation Dialog */}
-      <AlertDialog
-        open={!!themeToDelete}
-        onOpenChange={() => setThemeToDelete(null)}
-      >
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Theme</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete &quot;{themeToDelete?.name}&quot;?
-              This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteConfirm}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
     </div>
   );
 }

@@ -1,14 +1,3 @@
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,9 +6,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { DeleteButton } from "@/components/ui/delete-button";
+import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useUploadThemeFile } from "@/hooks/useUploadThemeFile";
 import { deleteThemeFile, type FileUseType } from "@/lib/theme-files";
-import { ImageIcon, Loader2, Trash2, Upload } from "lucide-react";
+import { ImageIcon, Loader2, Upload } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
 import { Input } from "./ui/input";
@@ -106,16 +97,30 @@ export function FileSlot({
         />
         {fileUrl ? (
           <div className="space-y-3">
-            <div className="relative aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border overflow-hidden">
-              <Image
-                src={fileUrl}
-                alt={title}
-                fill
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                className="object-contain rounded-lg"
-                priority={false}
-              />
-            </div>
+            <Dialog>
+              <DialogTrigger asChild>
+                <div className="relative aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
+                  <Image
+                    src={fileUrl}
+                    alt={title}
+                    fill
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                    className="object-contain rounded-lg"
+                    priority={false}
+                  />
+                </div>
+              </DialogTrigger>
+              <DialogContent className="!max-w-none !md:max-w-none w-auto h-auto max-w-[95vw] max-h-[95vh] p-0 bg-black/90">
+                <div className="relative flex items-center justify-center p-4">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={fileUrl}
+                    alt={title}
+                    className="max-w-[93vw] max-h-[93vh] w-auto h-auto object-contain"
+                  />
+                </div>
+              </DialogContent>
+            </Dialog>
             {loading && (
               <div className="text-sm text-muted-foreground text-center">
                 Uploading... {progress}%
@@ -133,38 +138,12 @@ export function FileSlot({
                 Replace
               </Button>
 
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={loading || isDeleting}
-                    className="flex-1"
-                  >
-                    {isDeleting ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4 mr-2" />
-                    )}
-                    Delete
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Delete {title}?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action cannot be undone. This will permanently remove
-                      the file from storage.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction onClick={confirmDelete}>
-                      Delete
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
+              <DeleteButton
+                title={`Delete ${title}?`}
+                description="This action cannot be undone. This will permanently remove the file from storage."
+                onConfirm={confirmDelete}
+                disabled={loading || isDeleting}
+              />
             </div>
           </div>
         ) : (
