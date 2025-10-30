@@ -1,5 +1,5 @@
 import { getThemeFiles } from "@/lib/theme-files";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { FileSlot } from "./FileSlot";
 
 interface ThemeFilesManagerProps {
@@ -7,24 +7,27 @@ interface ThemeFilesManagerProps {
 }
 
 export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
-  // TODO: Fetch actual file URLs from storage
   const [files, setFiles] = useState<{
     background?: string;
     preview?: string;
     banner?: string;
   }>({});
-  useEffect(() => {
-    if (!themeId) return;
-    void refreshFiles();
-  }, [themeId]);
-  const refreshFiles = async () => {
+
+  const refreshFiles = useCallback(async () => {
     try {
       const filesData = await getThemeFiles(themeId);
       setFiles(filesData);
     } catch (error) {
       console.error("Failed to fetch theme files:", error);
     }
-  };
+  }, [themeId]);
+
+  useEffect(() => {
+    if (!themeId) {
+      return;
+    }
+    void refreshFiles();
+  }, [themeId, refreshFiles]);
 
   return (
     <div className="space-y-6">

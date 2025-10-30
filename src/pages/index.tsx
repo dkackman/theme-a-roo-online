@@ -1,6 +1,5 @@
 import { ThemeCard } from "@/components/ThemeCard";
 import { Button } from "@/components/ui/button";
-import { DeleteButton } from "@/components/ui/delete-button";
 import {
   Card,
   CardContent,
@@ -9,6 +8,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { DeleteButton } from "@/components/ui/delete-button";
 import {
   Empty,
   EmptyContent,
@@ -17,14 +17,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import {
-  Check,
-  Download,
-  Palette,
-  PencilOff,
-  Plus,
-  Trash2,
-} from "lucide-react";
+import { Check, Download, Palette, PencilOff, Plus } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";

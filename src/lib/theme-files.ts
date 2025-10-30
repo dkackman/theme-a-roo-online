@@ -79,7 +79,6 @@ export async function uploadThemeFile({
       // The edge function should be named "theme-files" and have an "upload" handler
       // Note: The edge function path is just "/upload", not "/theme-files/upload"
       const edgeFunctionUrl = `${SUPABASE_URL}/functions/v1/theme-files/upload`;
-      console.log("edgeFunctionUrl", edgeFunctionUrl);
       xhr.open("POST", edgeFunctionUrl, true);
       xhr.setRequestHeader("Authorization", `Bearer ${jwt}`);
 
@@ -258,7 +257,7 @@ export async function getThemeFiles(theme_id: string): Promise<{
               Authorization: `Bearer ${jwt}`,
             },
           });
-          if (!res.ok) return { type: f.file_use_type as FileUseType, url: undefined };
+          if (!res.ok) { return { type: f.file_use_type as FileUseType, url: undefined }; }
           const json = (await res.json()) as { url?: string };
           return { type: f.file_use_type as FileUseType, url: json.url };
         } catch {
@@ -268,7 +267,7 @@ export async function getThemeFiles(theme_id: string): Promise<{
     );
 
     for (const { type, url } of signedUrls) {
-      if (!url) continue;
+      if (!url) { continue; }
       switch (type) {
         case "background":
           result.background = url;
