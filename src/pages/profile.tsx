@@ -1,13 +1,13 @@
 import { ClipboardList, User as UserIcon, Wallet } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import ProfileAddresses from "../components/profile/ProfileAddresses.tsx";
-import ProfileDIDs from "../components/profile/ProfileDIDs.tsx";
-import { Button } from "../components/ui/button.tsx";
-import { Card } from "../components/ui/card.tsx";
-import UserProfile from "../components/UserProfile.tsx";
-import { useAuth } from "../Contexts/AuthContext.tsx";
-import { cn } from "../lib/utils.ts";
+import ProfileAddresses from "../components/profile/ProfileAddresses";
+import ProfileDIDs from "../components/profile/ProfileDIDs";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
+import UserProfile from "../components/UserProfile";
+import { useAuth } from "../Contexts/AuthContext";
+import { cn } from "../lib/utils";
 
 type ProfileSection = "user" | "dids" | "addresses";
 

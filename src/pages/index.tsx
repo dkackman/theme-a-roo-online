@@ -273,7 +273,7 @@ export default function Home() {
                 </CardContent>
                 <CardFooter>
                   <div className="flex items-center justify-between w-full">
-                    <p className="text-sm text-muted-foreground">
+                    <div className="text-sm text-muted-foreground">
                       {theme.is_draft ? (
                         <div title="Draft" className="flex items-center gap-2">
                           <PencilOff className="w-4 h-4 mr-2 text-muted-foreground" />
@@ -283,7 +283,7 @@ export default function Home() {
                           <Check className="w-4 h-4 mr-2 text-muted-foreground" />
                         </div>
                       )}
-                    </p>
+                    </div>
                     <button
                       className="p-1.5 rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors"
                       onClick={(e) => {

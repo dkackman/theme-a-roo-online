@@ -1,11 +1,11 @@
 import { ClipboardList, Palette } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { ThemeSelector } from "../components/ThemeSelector.tsx";
-import { Button } from "../components/ui/button.tsx";
-import { Card } from "../components/ui/card.tsx";
-import { useAuth } from "../Contexts/AuthContext.tsx";
-import { cn } from "../lib/utils.ts";
+import { ThemeSelector } from "../components/ThemeSelector";
+import { Button } from "../components/ui/button";
+import { Card } from "../components/ui/card";
+import { useAuth } from "../Contexts/AuthContext";
+import { cn } from "../lib/utils";
 
 type SettingsSection = "theme" | "editor";
 

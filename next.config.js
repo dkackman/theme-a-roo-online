@@ -17,7 +17,7 @@ const nextConfig = {
 
   // Optimize images
   images: {
-    domains: [],
+    domains: ["vpmlokamxveoskhprxep.supabase.co"],
     formats: ["image/webp", "image/avif"],
   },
 

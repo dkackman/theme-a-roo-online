@@ -7,4 +7,4 @@ public
 *.config.js
 *.config.mjs
 .env*
-
+edge-src

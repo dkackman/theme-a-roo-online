@@ -3,7 +3,10 @@ import { supabase } from "./supabaseClient";
 export type FileUseType = "background" | "preview" | "banner";
 
 // Get the Supabase URL from environment variable
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const SUPABASE_URL =
+  process.env.NODE_ENV === "development"
+    ? process.env.NEXT_PUBLIC_SUPABASE_LOCAL_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+    : process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 
 export interface UploadOptions {
   file: File;
@@ -76,7 +79,7 @@ export async function uploadThemeFile({
       // The edge function should be named "theme-files" and have an "upload" handler
       // Note: The edge function path is just "/upload", not "/theme-files/upload"
       const edgeFunctionUrl = `${SUPABASE_URL}/functions/v1/theme-files/upload`;
-
+      console.log("edgeFunctionUrl", edgeFunctionUrl);
       xhr.open("POST", edgeFunctionUrl, true);
       xhr.setRequestHeader("Authorization", `Bearer ${jwt}`);
 
@@ -153,11 +156,10 @@ export async function uploadThemeFile({
 
 /**
  * Delete a theme file
- * TODO: Implement once Edge Function endpoint is available
  */
 export async function deleteThemeFile(
-  _theme_id: string,
-  _file_use_type: FileUseType
+  theme_id: string,
+  file_use_type: FileUseType
 ): Promise<void> {
   // Get JWT token from supabase client
   const {
@@ -174,36 +176,115 @@ export async function deleteThemeFile(
     throw new Error("Not authenticated");
   }
 
-  // TODO: Implement DELETE request to Edge Function
-  // For now, just throw an error indicating it's not implemented
-  throw new Error("Delete functionality not yet implemented");
+  // Find the file ID by theme_id, file_use_type, and user_id
+  const { data: file, error: fileError } = await supabase
+    .from("theme_files")
+    .select("id")
+    .eq("theme_id", theme_id)
+    .eq("file_use_type", file_use_type)
+    .eq("user_id", session.user.id)
+    .single();
 
-  // Example implementation:
-  /*
-  const response = await fetch(`/functions/theme-files/${theme_id}/${file_use_type}`, {
-    method: "DELETE",
-    headers: {
-      Authorization: `Bearer ${jwt}`,
-    },
-  });
+  if (fileError || !file) {
+    throw new Error(`File not found: ${fileError?.message || "No file found"}`);
+  }
+
+  // Call the edge function to delete the file
+  const response = await fetch(
+    `${SUPABASE_URL}/functions/v1/theme-files/delete?id=${encodeURIComponent(file.id)}`,
+    {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    }
+  );
 
   if (!response.ok) {
-    const error = await response.json();
-    throw new Error(error.error || "Failed to delete file");
+    const errorBody = await response.json().catch(() => ({
+      error: response.statusText,
+    }));
+    throw new Error(errorBody.error || "Failed to delete file");
   }
-  */
 }
 
 /**
  * Get theme files for a given theme
- * TODO: Implement once Edge Function or storage query is available
  */
-export function getThemeFiles(_theme_id: string): Promise<{
+export async function getThemeFiles(theme_id: string): Promise<{
   background?: string;
   preview?: string;
   banner?: string;
 }> {
-  // TODO: Implement fetch from storage or Edge Function
-  // For now, return empty object
-  return Promise.resolve({});
+  try {
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      throw new Error(`Session error: ${sessionError.message}`);
+    }
+
+    const jwt = session?.access_token;
+    if (!jwt) {
+      throw new Error("Not authenticated");
+    }
+
+    // Fetch theme files for this user/theme
+    const { data: files, error: filesError } = await supabase
+      .from("theme_files")
+      .select("id, file_use_type")
+      .eq("theme_id", theme_id)
+      .eq("user_id", session.user.id);
+
+    if (filesError) {
+      throw new Error(`Failed to fetch theme files: ${filesError.message}`);
+    }
+
+    const result: { background?: string; preview?: string; banner?: string } = {};
+
+    if (!files || files.length === 0) {
+      return result;
+    }
+
+    // Ask the edge function (service role) to sign each file by id
+    const signedUrls = await Promise.all(
+      files.map(async (f) => {
+        try {
+          const res = await fetch(`${SUPABASE_URL}/functions/v1/theme-files/url?id=${encodeURIComponent(f.id)}`, {
+            method: "GET",
+            headers: {
+              Authorization: `Bearer ${jwt}`,
+            },
+          });
+          if (!res.ok) return { type: f.file_use_type as FileUseType, url: undefined };
+          const json = (await res.json()) as { url?: string };
+          return { type: f.file_use_type as FileUseType, url: json.url };
+        } catch {
+          return { type: f.file_use_type as FileUseType, url: undefined };
+        }
+      })
+    );
+
+    for (const { type, url } of signedUrls) {
+      if (!url) continue;
+      switch (type) {
+        case "background":
+          result.background = url;
+          break;
+        case "preview":
+          result.preview = url;
+          break;
+        case "banner":
+          result.banner = url;
+          break;
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching theme files:", error);
+    return {};
+  }
 }

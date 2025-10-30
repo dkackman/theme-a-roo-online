@@ -1,0 +1,44 @@
+{
+  "tasks": {
+    "dev": "deno run --watch --allow-net --allow-env --allow-read --env-file=../.env.local index.ts",
+    "start": "deno run --allow-net --allow-env --allow-read --env-file=../.env.local index.ts"
+  },
+  "imports": {
+    "@supabase/supabase-js": "npm:@supabase/supabase-js@2.33.0"
+  },
+  "compilerOptions": {
+    "lib": [
+      "deno.window"
+    ]
+  },
+  "lint": {
+    "files": {
+      "include": [
+        "./"
+      ],
+      "exclude": [
+        "../.git",
+        "../node_modules",
+        "../.next",
+        "../src",
+        "../public",
+        "../docs"
+      ]
+    }
+  },
+  "fmt": {
+    "files": {
+      "include": [
+        "./"
+      ],
+      "exclude": [
+        "../.git",
+        "../node_modules",
+        "../.next",
+        "../src",
+        "../public",
+        "../docs"
+      ]
+    }
+  }
+}

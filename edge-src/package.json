@@ -1,0 +1,13 @@
+{
+  "name": "edge",
+  "version": "1.0.0",
+  "description": "Deno edge function for theme file management",
+  "license": "ISC",
+  "author": "",
+  "scripts": {
+    "dev": "deno run --watch --allow-net --allow-env index.ts",
+    "start": "deno run --allow-net --allow-env index.ts",
+    "test": "deno test --allow-net --allow-env"
+  },
+  "type": "module"
+}
