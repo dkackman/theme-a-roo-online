@@ -5,7 +5,9 @@ export type FileUseType = "background" | "preview" | "banner";
 // Get the Supabase URL from environment variable
 const SUPABASE_URL =
   process.env.NODE_ENV === "development"
-    ? process.env.NEXT_PUBLIC_SUPABASE_LOCAL_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || ""
+    ? process.env.NEXT_PUBLIC_SUPABASE_DEV_URL ||
+      process.env.NEXT_PUBLIC_SUPABASE_URL ||
+      ""
     : process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 
 export interface UploadOptions {
@@ -32,9 +34,6 @@ export interface UploadError {
   };
 }
 
-/**
- * Upload a theme file using the Edge Function
- */
 export async function uploadThemeFile({
   file,
   theme_id,
@@ -99,7 +98,7 @@ export async function uploadThemeFile({
             resolve(xhr.responseText as unknown as ThemeFileResponse);
           }
         } else {
-          let errorBody: { error?: string;[key: string]: unknown };
+          let errorBody: { error?: string; [key: string]: unknown };
           try {
             errorBody = JSON.parse(xhr.responseText);
           } catch {
@@ -153,9 +152,6 @@ export async function uploadThemeFile({
   throw new Error("Upload failed after all retries");
 }
 
-/**
- * Delete a theme file
- */
 export async function deleteThemeFile(
   theme_id: string,
   file_use_type: FileUseType
@@ -207,10 +203,41 @@ export async function deleteThemeFile(
   }
 }
 
-/**
- * Get theme files for a given theme
- */
-export async function getThemeFiles(theme_id: string): Promise<{
+async function getThemeFileUrl(
+  fileId: string,
+  jwt: string,
+  usePublic: boolean = false
+): Promise<string | undefined> {
+  try {
+    const url = new URL(`${SUPABASE_URL}/functions/v1/theme-files/url`);
+    url.searchParams.set("id", fileId);
+
+    if (usePublic) {
+      url.searchParams.set("public", "true");
+    }
+
+    const res = await fetch(url.toString(), {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${jwt}`,
+      },
+    });
+
+    if (!res.ok) {
+      return undefined;
+    }
+
+    const json = (await res.json()) as { url?: string };
+    return json.url;
+  } catch {
+    return undefined;
+  }
+}
+
+export async function getThemeFiles(
+  theme_id: string,
+  usePublicUrls: boolean = false
+): Promise<{
   background?: string;
   preview?: string;
   banner?: string;
@@ -241,43 +268,41 @@ export async function getThemeFiles(theme_id: string): Promise<{
       throw new Error(`Failed to fetch theme files: ${filesError.message}`);
     }
 
-    const result: { background?: string; preview?: string; banner?: string } = {};
+    const result: {
+      background?: string;
+      preview?: string;
+      banner?: string;
+    } = {};
 
     if (!files || files.length === 0) {
       return result;
     }
 
-    // Ask the edge function (service role) to sign each file by id
-    const signedUrls = await Promise.all(
-      files.map(async (f) => {
-        try {
-          const res = await fetch(`${SUPABASE_URL}/functions/v1/theme-files/url?id=${encodeURIComponent(f.id)}`, {
-            method: "GET",
-            headers: {
-              Authorization: `Bearer ${jwt}`,
-            },
-          });
-          if (!res.ok) { return { type: f.file_use_type as FileUseType, url: undefined }; }
-          const json = (await res.json()) as { url?: string };
-          return { type: f.file_use_type as FileUseType, url: json.url };
-        } catch {
-          return { type: f.file_use_type as FileUseType, url: undefined };
-        }
-      })
-    );
+    // Get both full-size URLs and thumbnail URLs
+    const [fullSizeUrls] = await Promise.all([
+      // Full-size URLs (no width parameter)
+      Promise.all(
+        files.map(async (f) => {
+          const url = await getThemeFileUrl(f.id, jwt, usePublicUrls);
+          return { type: f.file_use_type as FileUseType, url };
+        })
+      ),
+    ]);
 
-    for (const { type, url } of signedUrls) {
-      if (!url) { continue; }
-      switch (type) {
-        case "background":
-          result.background = url;
-          break;
-        case "preview":
-          result.preview = url;
-          break;
-        case "banner":
-          result.banner = url;
-          break;
+    // Map full-size URLs
+    for (const { type, url } of fullSizeUrls) {
+      if (url) {
+        switch (type) {
+          case "background":
+            result.background = url;
+            break;
+          case "preview":
+            result.preview = url;
+            break;
+          case "banner":
+            result.banner = url;
+            break;
+        }
       }
     }
 

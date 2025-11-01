@@ -10,9 +10,10 @@ import { DeleteButton } from "@/components/ui/delete-button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
 import { useUploadThemeFile } from "@/hooks/useUploadThemeFile";
 import { deleteThemeFile, type FileUseType } from "@/lib/theme-files";
-import { ImageIcon, Loader2, Upload } from "lucide-react";
+import { Copy, ImageIcon, Loader2, Upload } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState } from "react";
+import { toast } from "sonner";
 import { Input } from "./ui/input";
 
 interface FileSlotProps {
@@ -20,8 +21,10 @@ interface FileSlotProps {
   description: string;
   fileType: FileUseType;
   fileUrl?: string;
+  publicUrl?: string;
   themeId: string;
-  onFileChange?: () => void;
+  onFileChange?: () => void | Promise<void>;
+  onInsertBackground?: (url: string | undefined) => void;
 }
 
 export function FileSlot({
@@ -29,8 +32,10 @@ export function FileSlot({
   description,
   fileType,
   fileUrl,
+  publicUrl,
   themeId,
   onFileChange,
+  onInsertBackground,
 }: FileSlotProps) {
   const { upload, progress, loading } = useUploadThemeFile();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -55,8 +60,10 @@ export function FileSlot({
         file_use_type: fileType,
       });
 
+      // Refresh files to get the new public URL
+      // The parent component (ThemeFilesManager) will handle inserting the public URL
       if (onFileChange) {
-        onFileChange();
+        await onFileChange();
       }
 
       if (fileInputRef.current) {
@@ -64,6 +71,7 @@ export function FileSlot({
       }
     } catch (error) {
       console.error("Upload error:", error);
+      toast.error("Failed to upload file");
     }
   };
 
@@ -71,13 +79,36 @@ export function FileSlot({
     setIsDeleting(true);
     try {
       await deleteThemeFile(themeId, fileType);
+
+      // For background files, clear the background image from theme when deleted
+      if (fileType === "background" && onInsertBackground) {
+        onInsertBackground(undefined);
+      }
+
       if (onFileChange) {
-        onFileChange();
+        await onFileChange();
       }
     } catch (error) {
       console.error("Delete error:", error);
+      toast.error("Failed to delete file");
     } finally {
       setIsDeleting(false);
+    }
+  };
+
+  const handleCopy = async () => {
+    const urlToCopy = publicUrl || fileUrl;
+    if (!urlToCopy) {
+      toast.error("No URL available to copy");
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(urlToCopy);
+      toast.success("URL copied to clipboard");
+    } catch (error) {
+      console.error("Failed to copy URL:", error);
+      toast.error("Failed to copy URL");
     }
   };
 
@@ -113,7 +144,7 @@ export function FileSlot({
               <DialogContent className="!max-w-none !md:max-w-none w-auto h-auto max-w-[95vw] max-h-[95vh] p-0 bg-black/90">
                 <div className="relative flex items-center justify-center p-4">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
+                  <Image
                     src={fileUrl}
                     alt={title}
                     className="max-w-[93vw] max-h-[93vh] w-auto h-auto object-contain"
@@ -136,6 +167,17 @@ export function FileSlot({
               >
                 <Upload className="w-4 h-4 mr-2" />
                 Replace
+              </Button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleCopy}
+                disabled={loading || isDeleting || !fileUrl}
+                className="p-1.5"
+                title="Copy public URL to clipboard"
+              >
+                <Copy className="w-4 h-4" />
               </Button>
 
               <DeleteButton

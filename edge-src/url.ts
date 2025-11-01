@@ -1,10 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { CORS_HEADERS } from "./cors.ts";
+import { JSON_HEADERS } from "./headers.ts";
 
 export async function getUrl(
   url: URL,
   rlsClient: SupabaseClient,
-  supabase: SupabaseClient,
+  supabase: SupabaseClient
 ) {
   const id = url.searchParams.get("id");
   if (!id) {
@@ -14,15 +14,19 @@ export async function getUrl(
       }),
       {
         status: 400,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
-      },
+        headers: JSON_HEADERS,
+      }
     );
   }
-  const meta = await rlsClient.from("theme_files").select("storage_path")
-    .eq("id", id).single();
+
+  // Optional parameters
+  const usePublic = url.searchParams.get("public") === "true";
+
+  const meta = await rlsClient
+    .from("theme_files")
+    .select("storage_path, mime_type")
+    .eq("id", id)
+    .single();
   if (meta.error) {
     return new Response(
       JSON.stringify({
@@ -30,11 +34,8 @@ export async function getUrl(
       }),
       {
         status: 404,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
-      },
+        headers: JSON_HEADERS,
+      }
     );
   }
   const storage_path = meta.data.storage_path;
@@ -45,19 +46,47 @@ export async function getUrl(
       }),
       {
         status: 404,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
-      },
+        headers: JSON_HEADERS,
+      }
     );
   }
   const [bucket, ...parts] = storage_path.split("/");
   const pathKey = parts.join("/");
-  const { data } = await supabase.storage.from(bucket).createSignedUrl(
-    pathKey,
-    60,
-  );
+
+  // Use public URL if requested (requires bucket to be public)
+  if (usePublic) {
+    const { data: publicUrlData } = supabase.storage
+      .from(bucket)
+      .getPublicUrl(pathKey);
+
+    // getPublicUrl always returns a URL, but we verify it's in the correct format
+    // Public URLs should be: /storage/v1/object/public/...
+    // Signed URLs have: /storage/v1/object/sign/... with token parameter
+    if (publicUrlData?.publicUrl) {
+      const publicUrl = publicUrlData.publicUrl;
+      // Verify it's actually a public URL format (not a signed URL)
+      if (
+        publicUrl.includes("/object/public/") &&
+        !publicUrl.includes("token=")
+      ) {
+        return new Response(
+          JSON.stringify({
+            url: publicUrl,
+          }),
+          {
+            status: 200,
+            headers: JSON_HEADERS,
+          }
+        );
+      }
+    }
+    // If public URL format is incorrect or missing, fall through to signed URL
+  }
+
+  // Regular signed URL (no transformation)
+  const { data } = await supabase.storage
+    .from(bucket)
+    .createSignedUrl(pathKey, 3600);
   if (data?.signedUrl) {
     return new Response(
       JSON.stringify({
@@ -65,11 +94,8 @@ export async function getUrl(
       }),
       {
         status: 200,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
-      },
+        headers: JSON_HEADERS,
+      }
     );
   }
 
@@ -79,10 +105,7 @@ export async function getUrl(
     }),
     {
       status: 500,
-      headers: {
-        "Content-Type": "application/json",
-        ...CORS_HEADERS,
-      },
-    },
+      headers: JSON_HEADERS,
+    }
   );
 }

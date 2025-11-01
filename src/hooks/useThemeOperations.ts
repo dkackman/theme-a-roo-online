@@ -35,7 +35,7 @@ export function useThemeOperations({
       const updatedTheme = await themesApi.update(theme.id, {
         name: validatedTheme.name.trim(),
         display_name: validatedTheme.displayName.trim(),
-        theme: JSON.stringify(validatedTheme) as Json // Store as object, not stringified
+        theme: JSON.stringify(validatedTheme) as Json, // Store as object, not stringified
       });
 
       toast.success("Theme saved successfully!");

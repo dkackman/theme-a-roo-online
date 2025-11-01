@@ -1,11 +1,11 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { CORS_HEADERS } from "./cors.ts";
+import { JSON_HEADERS } from "./headers.ts";
 
 export async function upload(
   req: Request,
   rlsClient: SupabaseClient,
   user_id: string,
-  supabase: SupabaseClient,
+  supabase: SupabaseClient
 ) {
   const contentType = req.headers.get("content-type") || "";
   if (!contentType.includes("multipart/form-data")) {
@@ -15,11 +15,8 @@ export async function upload(
       }),
       {
         status: 400,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
-      },
+        headers: JSON_HEADERS,
+      }
     );
   }
   const form = await req.formData();
@@ -33,11 +30,8 @@ export async function upload(
       }),
       {
         status: 400,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
-      },
+        headers: JSON_HEADERS,
+      }
     );
   }
   if (!theme_id) {
@@ -47,11 +41,8 @@ export async function upload(
       }),
       {
         status: 400,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
-      },
+        headers: JSON_HEADERS,
+      }
     );
   }
 
@@ -72,20 +63,21 @@ export async function upload(
       await supabase.storage.from(bucket).remove([pathKey]);
     }
     // Delete old database record
-    await rlsClient
-      .from("theme_files")
-      .delete()
-      .eq("id", existingFile.data.id);
+    await rlsClient.from("theme_files").delete().eq("id", existingFile.data.id);
   }
 
   // User is already validated above, use the user object
-  const insert = await rlsClient.from("theme_files").insert([
-    {
-      theme_id,
-      user_id,
-      file_use_type,
-    },
-  ]).select("id").single();
+  const insert = await rlsClient
+    .from("theme_files")
+    .insert([
+      {
+        theme_id,
+        user_id,
+        file_use_type,
+      },
+    ])
+    .select("id")
+    .single();
   if (insert.error) {
     return new Response(
       JSON.stringify({
@@ -93,11 +85,8 @@ export async function upload(
       }),
       {
         status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
-      },
+        headers: JSON_HEADERS,
+      }
     );
   }
   const id = insert.data.id;
@@ -106,13 +95,11 @@ export async function upload(
   const key = `${user_id}/${theme_id}/${id}.${ext}`;
   const BUCKET = "theme-files";
   const body = await file.arrayBuffer();
-  const upload = await supabase.storage.from(BUCKET).upload(
-    key,
-    new Uint8Array(body),
-    {
+  const upload = await supabase.storage
+    .from(BUCKET)
+    .upload(key, new Uint8Array(body), {
       contentType: mime,
-    },
-  );
+    });
   if (upload.error) {
     await rlsClient.from("theme_files").delete().eq("id", id);
     return new Response(
@@ -121,21 +108,21 @@ export async function upload(
       }),
       {
         status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
-      },
+        headers: JSON_HEADERS,
+      }
     );
   }
   const storage_path = `${BUCKET}/${key}`;
   const size = body.byteLength;
   // Update the record with all metadata at once
-  const { error: updErr } = await rlsClient.from("theme_files").update({
-    storage_path,
-    mime_type: mime,
-    size,
-  }).eq("id", id);
+  const { error: updErr } = await rlsClient
+    .from("theme_files")
+    .update({
+      storage_path,
+      mime_type: mime,
+      size,
+    })
+    .eq("id", id);
   if (updErr) {
     console.error("Failed to update metadata:", updErr);
     return new Response(
@@ -144,11 +131,8 @@ export async function upload(
       }),
       {
         status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
-      },
+        headers: JSON_HEADERS,
+      }
     );
   }
   return new Response(
@@ -158,10 +142,7 @@ export async function upload(
     }),
     {
       status: 201,
-      headers: {
-        "Content-Type": "application/json",
-        ...CORS_HEADERS,
-      },
-    },
+      headers: JSON_HEADERS,
+    }
   );
 }

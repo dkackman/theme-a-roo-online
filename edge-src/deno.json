@@ -7,15 +7,11 @@
     "@supabase/supabase-js": "npm:@supabase/supabase-js@2.33.0"
   },
   "compilerOptions": {
-    "lib": [
-      "deno.window"
-    ]
+    "lib": ["deno.window"]
   },
   "lint": {
     "files": {
-      "include": [
-        "./"
-      ],
+      "include": ["./"],
       "exclude": [
         "../.git",
         "../node_modules",
@@ -28,9 +24,7 @@
   },
   "fmt": {
     "files": {
-      "include": [
-        "./"
-      ],
+      "include": ["./"],
       "exclude": [
         "../.git",
         "../node_modules",

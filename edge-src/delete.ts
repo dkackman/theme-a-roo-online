@@ -1,10 +1,10 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { CORS_HEADERS } from "./cors.ts";
+import { JSON_HEADERS } from "./headers.ts";
 
 export async function deleteFile(
   url: URL,
   rlsClient: SupabaseClient,
-  supabase: SupabaseClient,
+  supabase: SupabaseClient
 ) {
   const id = url.searchParams.get("id");
   if (!id) {
@@ -14,15 +14,15 @@ export async function deleteFile(
       }),
       {
         status: 400,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
-      },
+        headers: JSON_HEADERS,
+      }
     );
   }
-  const meta = await rlsClient.from("theme_files").select("storage_path")
-    .eq("id", id).single();
+  const meta = await rlsClient
+    .from("theme_files")
+    .select("storage_path")
+    .eq("id", id)
+    .single();
   if (meta.error) {
     return new Response(
       JSON.stringify({
@@ -30,11 +30,8 @@ export async function deleteFile(
       }),
       {
         status: 404,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
-      },
+        headers: JSON_HEADERS,
+      }
     );
   }
   const storage_path = meta.data.storage_path;
@@ -46,19 +43,14 @@ export async function deleteFile(
       }),
       {
         status: 500,
-        headers: {
-          "Content-Type": "application/json",
-          ...CORS_HEADERS,
-        },
-      },
+        headers: JSON_HEADERS,
+      }
     );
   }
   if (storage_path) {
     const [bucket, ...parts] = storage_path.split("/");
     const pathKey = parts.join("/");
-    await supabase.storage.from(bucket).remove([
-      pathKey,
-    ]);
+    await supabase.storage.from(bucket).remove([pathKey]);
   }
   return new Response(
     JSON.stringify({
@@ -66,10 +58,7 @@ export async function deleteFile(
     }),
     {
       status: 200,
-      headers: {
-        "Content-Type": "application/json",
-        ...CORS_HEADERS,
-      },
-    },
+      headers: JSON_HEADERS,
+    }
   );
 }
