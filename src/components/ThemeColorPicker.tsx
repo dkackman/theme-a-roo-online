@@ -1,7 +1,7 @@
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { hslToRgb, rgbToHsl } from "@/lib/color";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { RgbColorPicker } from "react-colorful";
 import { useThemeEditor } from "../Contexts/ThemeEditorContext";
 
@@ -29,12 +29,21 @@ export function ThemeColorPicker({ className = "" }: ThemeColorPickerProps) {
   }, [theme]);
 
   const [color, setColor] = useState(getColorFromTheme());
-  const [applyToBackground, setApplyToBackground] = useState(false);
 
-  // Update color when theme changes
+  // Compute whether background should be checked based on current theme
+  const shouldApplyToBackground = useMemo(() => {
+    return theme?.colors?.background === "var(--theme-color)";
+  }, [theme?.colors?.background]);
+
+  const [applyToBackground, setApplyToBackground] = useState(
+    shouldApplyToBackground
+  );
+
+  // Update color and applyToBackground when theme changes
   useEffect(() => {
     setColor(getColorFromTheme());
-  }, [theme, getColorFromTheme]);
+    setApplyToBackground(shouldApplyToBackground);
+  }, [theme, getColorFromTheme, shouldApplyToBackground]);
 
   const handleColorChange = (newColor: { r: number; g: number; b: number }) => {
     setColor(newColor);
