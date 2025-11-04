@@ -1,11 +1,9 @@
 {
   "extends": ["next/core-web-vitals", "next/typescript"],
   "rules": {
-    // React rules (already included in next/core-web-vitals)
     "react/react-in-jsx-scope": "off",
     "react/prop-types": "off",
     "react/display-name": "off",
-    // Best practices
     "no-console": [
       "warn",
       {
@@ -23,19 +21,15 @@
     "prefer-const": "error",
     "prefer-arrow-callback": "warn",
     "no-duplicate-imports": "error",
-    // Code quality
     "eqeqeq": ["error", "always"],
     "curly": ["error", "all"],
     "no-else-return": "warn",
     "no-nested-ternary": "warn",
-    // Async/Promise best practices
     "no-async-promise-executor": "error",
     "no-await-in-loop": "warn",
     "require-await": "warn",
-    // React Hooks (already included, just adjusting severity)
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "warn",
-    // TypeScript specific
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/explicit-module-boundary-types": "off"
   }

@@ -143,7 +143,7 @@ export function FileSlot({
               </DialogTrigger>
               <DialogContent className="!max-w-none !md:max-w-none w-auto h-auto max-w-[95vw] max-h-[95vh] p-0 bg-black/90">
                 <div className="relative flex items-center justify-center p-4">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  {}
                   <Image
                     src={fileUrl}
                     alt={title}

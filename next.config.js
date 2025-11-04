@@ -4,20 +4,17 @@ const nextConfig = {
 
   // Optimized for Vercel deployment
 
-  // Enable source maps in development only
-  webpack: (config, { dev, isServer }) => {
-    if (dev) {
-      config.devtool = "source-map";
-    }
-    return config;
-  },
-
   // Disable source maps in production for better performance
   productionBrowserSourceMaps: false,
 
   // Optimize images
   images: {
-    domains: ["vpmlokamxveoskhprxep.supabase.co"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "vpmlokamxveoskhprxep.supabase.co",
+      },
+    ],
     formats: ["image/webp", "image/avif"],
   },
 

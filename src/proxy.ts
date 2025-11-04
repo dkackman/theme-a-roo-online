@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-export function middleware(_req: NextRequest) {
+export function proxy(_req: NextRequest) {
   // For now, just pass through all requests
   // Auth is handled client-side via AuthContext
   // If you need server-side auth in the future, you'll need to use cookies
@@ -8,7 +8,7 @@ export function middleware(_req: NextRequest) {
   return NextResponse.next();
 }
 
-// Specify which routes use this middleware
+// Specify which routes use this proxy
 export const config = {
   matcher: [
     /*
