@@ -5,7 +5,7 @@ import { applyThemeIsolated, Theme } from "theme-o-rama";
 interface ThemeCardProps {
   theme: Theme | null;
   isSelected: boolean;
-  onSelect: (themeName: string) => void;
+  onSelect: (theme: Theme) => void;
   className?: string;
 }
 
@@ -89,7 +89,7 @@ export function ThemeCard({
           isSelected ? "ring-2" : "hover:ring-1"
         } ${className}`}
         style={selectionStyle}
-        onClick={() => onSelect(theme?.name || "")}
+        onClick={() => onSelect(theme)}
       >
         {renderDefaultContent()}
       </div>

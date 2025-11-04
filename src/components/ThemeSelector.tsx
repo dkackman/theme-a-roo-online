@@ -1,40 +1,18 @@
-import { hasTag } from "@/lib/themes";
 import { Loader2, RefreshCw } from "lucide-react";
-import { Theme, useTheme } from "theme-o-rama";
+import { Theme, useSimpleTheme } from "theme-o-rama";
 import { useUserThemes } from "../hooks/useUserThemes";
 import { ThemeCard } from "./ThemeCard";
 import { Button } from "./ui/button";
 
 export function ThemeSelector() {
-  const { currentTheme, setTheme, availableThemes, isLoading, error } =
-    useTheme();
+  const { currentTheme, setTheme, isLoading, error } = useSimpleTheme();
   const {
     userThemes,
+    builtInThemes,
     isLoading: isLoadingUserThemes,
     error: userThemesError,
     reloadThemes,
   } = useUserThemes();
-
-  // Handle theme selection and cache the theme definition
-  const handleThemeSelect = (themeName: string) => {
-    setTheme(themeName);
-
-    // Find the theme object and cache its definition
-    const themeObject = [...userThemes, ...availableThemes].find(
-      (t) => t.name === themeName
-    );
-    if (themeObject) {
-      try {
-        localStorage.setItem(
-          "selected-theme-definition",
-          JSON.stringify(themeObject)
-        );
-      } catch (error) {
-        console.warn("Failed to cache theme definition:", error);
-      }
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="flex items-center justify-center p-8">
@@ -52,23 +30,33 @@ export function ThemeSelector() {
     );
   }
 
-  if (!currentTheme) {
-    return <div className="text-center p-8">No theme available</div>;
-  }
-
-  const defaultThemes = availableThemes
-    .filter(
-      (theme: Theme) => !hasTag(theme, "hidden") && !hasTag(theme, "custom")
-    )
-    .sort((a: Theme, b: Theme) => a.displayName.localeCompare(b.displayName));
-
-  // Use user themes from the hook instead of availableThemes
-  const customThemes = userThemes.sort((a: Theme, b: Theme) =>
+  // Sort themes by display name
+  const sortedBuiltInThemes = builtInThemes.sort((a: Theme, b: Theme) =>
     a.displayName.localeCompare(b.displayName)
   );
+  const customThemes = userThemes
+    .filter((userTheme) => !userTheme.dbTheme.is_draft)
+    .sort((a, b) => a.theme.displayName.localeCompare(b.theme.displayName));
 
   return (
     <div className="space-y-8">
+      {/* Built-in Themes */}
+      {sortedBuiltInThemes.length > 0 && (
+        <div>
+          <h3 className="text-lg font-semibold mb-4">Built-in Themes</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {sortedBuiltInThemes.map((theme: Theme) => (
+              <ThemeCard
+                key={theme.name}
+                theme={theme}
+                isSelected={currentTheme?.name === theme.name}
+                onSelect={setTheme}
+              />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Custom User Themes */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -103,12 +91,12 @@ export function ThemeSelector() {
 
         {!isLoadingUserThemes && customThemes.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {customThemes.map((theme: Theme) => (
+            {customThemes.map((userTheme) => (
               <ThemeCard
-                key={theme.name}
-                theme={theme}
-                isSelected={currentTheme.name === theme.name}
-                onSelect={handleThemeSelect}
+                key={userTheme.theme.name}
+                theme={userTheme.theme}
+                isSelected={currentTheme?.name === userTheme.theme.name}
+                onSelect={setTheme}
               />
             ))}
           </div>
@@ -123,23 +111,6 @@ export function ThemeSelector() {
           </div>
         )}
       </div>
-
-      {/* Default Themes */}
-      {defaultThemes.length > 0 && (
-        <div>
-          <h3 className="text-lg font-semibold mb-4">Built-in Themes</h3>
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {defaultThemes.map((theme: Theme) => (
-              <ThemeCard
-                key={theme.name}
-                theme={theme}
-                isSelected={currentTheme.name === theme.name}
-                onSelect={handleThemeSelect}
-              />
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

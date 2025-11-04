@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
 import * as React from "react";
-import { useTheme } from "theme-o-rama";
+import { useSimpleTheme } from "theme-o-rama";
 
 const Dialog = DialogPrimitive.Root;
 
@@ -34,7 +34,7 @@ const DialogContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
 >(({ className, children, style, ...props }, ref) => {
-  const { currentTheme } = useTheme();
+  const { currentTheme } = useSimpleTheme();
 
   // Apply theme-aware background styles
   const themeStyles: React.CSSProperties = {

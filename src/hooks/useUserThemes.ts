@@ -1,11 +1,17 @@
 import { useCallback, useEffect, useState } from "react";
-import { Theme } from "theme-o-rama";
+import { Theme, dark, light, useSimpleTheme } from "theme-o-rama";
 import { useAuth } from "../Contexts/AuthContext";
-import { themesApi } from "../lib/data-access";
+import { DbTheme, themesApi } from "../lib/data-access";
+
+export interface UserTheme {
+  theme: Theme;
+  dbTheme: DbTheme;
+}
 
 export function useUserThemes() {
   const { user } = useAuth();
-  const [userThemes, setUserThemes] = useState<Theme[]>([]);
+  const { initializeTheme } = useSimpleTheme();
+  const [userThemes, setUserThemes] = useState<UserTheme[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -19,42 +25,60 @@ export function useUserThemes() {
     setError(null);
 
     try {
-      const themes = await themesApi.getByUserId(user.id);
+      const dbThemes = await themesApi.getByUserId(user.id);
 
-      // Convert database themes to Theme-o-rama format
-      const convertedThemes = themes
-        .filter((theme) => !theme.is_draft) // Only non-draft themes
-        .map((theme) => {
-          const themeData =
-            theme.theme && typeof theme.theme === "object"
-              ? (theme.theme as Record<string, unknown>)
-              : {};
-          return {
-            name: theme.name,
-            displayName: theme.display_name,
-            description: theme.notes || `Custom theme by ${user.email}`,
-            tags: ["custom", "user-created"],
-            schemaVersion: 1,
-            ...themeData,
-          } as Theme;
-        });
+      // Convert and initialize themes, keeping them paired with their DbTheme
+      const userThemesWithDb = await Promise.all(
+        dbThemes.map(async (dbTheme) => {
+          try {
+            // Convert database theme to Theme-o-rama format
+            const themeData =
+              dbTheme.theme && typeof dbTheme.theme === "object"
+                ? (dbTheme.theme as Record<string, unknown>)
+                : {};
+            const convertedTheme = {
+              name: dbTheme.name,
+              displayName: dbTheme.display_name,
+              description: dbTheme.notes || `Custom theme by ${user.email}`,
+              schemaVersion: 1,
+              ...themeData,
+            } as Theme;
 
-      setUserThemes(convertedThemes);
+            // Initialize the theme
+            const initializedTheme = await initializeTheme(convertedTheme);
+
+            return {
+              theme: initializedTheme,
+              dbTheme,
+            } as UserTheme;
+          } catch (err) {
+            console.warn(`Failed to initialize theme ${dbTheme.name}:`, err);
+            return null;
+          }
+        })
+      );
+
+      // Filter out any null values from failed initializations
+      setUserThemes(
+        userThemesWithDb.filter(
+          (userTheme): userTheme is UserTheme => userTheme !== null
+        )
+      );
     } catch (err) {
       console.error("Failed to load user themes:", err);
       setError(err instanceof Error ? err.message : "Failed to load themes");
     } finally {
       setIsLoading(false);
     }
-  }, [user]);
+  }, [user, initializeTheme]);
 
-  // Load themes when component mounts
   useEffect(() => {
     loadUserThemes();
   }, [loadUserThemes]);
 
   return {
     userThemes,
+    builtInThemes: [light, dark],
     isLoading,
     error,
     reloadThemes: loadUserThemes,
