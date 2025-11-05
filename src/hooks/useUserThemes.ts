@@ -32,10 +32,35 @@ export function useUserThemes() {
         dbThemes.map(async (dbTheme) => {
           try {
             // Convert database theme to Theme-o-rama format
-            const themeData =
-              dbTheme.theme && typeof dbTheme.theme === "object"
-                ? (dbTheme.theme as Record<string, unknown>)
-                : {};
+            // Handle JSONB column which can be null, string (if unparsed), or object
+            let themeData: Record<string, unknown> = {};
+
+            if (dbTheme.theme !== null && dbTheme.theme !== undefined) {
+              // If it's a string, try to parse it
+              if (typeof dbTheme.theme === "string") {
+                try {
+                  themeData = JSON.parse(dbTheme.theme) as Record<
+                    string,
+                    unknown
+                  >;
+                } catch (parseError) {
+                  console.warn(
+                    `Failed to parse theme JSON for ${dbTheme.name}:`,
+                    parseError
+                  );
+                }
+              }
+              // If it's already an object (and not null or array), use it directly
+              else if (
+                typeof dbTheme.theme === "object" &&
+                dbTheme.theme !== null &&
+                !Array.isArray(dbTheme.theme)
+              ) {
+                themeData = dbTheme.theme as Record<string, unknown>;
+              }
+            }
+
+            console.warn("Theme data for", dbTheme.name, ":", themeData);
             const convertedTheme = {
               name: dbTheme.name,
               displayName: dbTheme.display_name,
@@ -81,6 +106,6 @@ export function useUserThemes() {
     builtInThemes: [light, dark],
     isLoading,
     error,
-    reloadThemes: loadUserThemes,
+    loadUserThemes,
   };
 }

@@ -1,8 +1,7 @@
-import { Loader2, RefreshCw } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { Theme, useSimpleTheme } from "theme-o-rama";
 import { useUserThemes } from "../hooks/useUserThemes";
 import { ThemeCard } from "./ThemeCard";
-import { Button } from "./ui/button";
 
 export function ThemeSelector() {
   const { currentTheme, setTheme, isLoading, error } = useSimpleTheme();
@@ -11,7 +10,6 @@ export function ThemeSelector() {
     builtInThemes,
     isLoading: isLoadingUserThemes,
     error: userThemesError,
-    reloadThemes,
   } = useUserThemes();
   if (isLoading) {
     return (
@@ -61,19 +59,6 @@ export function ThemeSelector() {
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-semibold">Your Custom Themes</h3>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={reloadThemes}
-            disabled={isLoadingUserThemes}
-          >
-            {isLoadingUserThemes ? (
-              <Loader2 className="h-4 w-4 animate-spin mr-2" />
-            ) : (
-              <RefreshCw className="h-4 w-4 mr-2" />
-            )}
-            Refresh
-          </Button>
         </div>
 
         {userThemesError && (

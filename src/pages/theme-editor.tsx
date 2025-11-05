@@ -28,7 +28,7 @@ import { FileText, Maximize2, Minimize2 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
-import type { Theme as ThemeRom } from "theme-o-rama";
+import type { Theme } from "theme-o-rama";
 import { useAuth } from "../Contexts/AuthContext";
 import { ThemeEditorProvider } from "../Contexts/ThemeEditorContext";
 import { useThemeOperations } from "../hooks/useThemeOperations";
@@ -122,18 +122,14 @@ export default function ThemeEditor() {
     try {
       const data = await themesApi.getById(id, user.id);
       setTheme(data);
-      // Handle both object and string formats from database
       if (typeof data.theme === "string") {
-        // If it's already a string, parse it first to remove escaped characters
         try {
           const parsed = JSON.parse(data.theme);
           setThemeJson(JSON.stringify(parsed, null, 2));
         } catch {
-          // If parsing fails, use the string as-is
           setThemeJson(data.theme);
         }
       } else {
-        // If it's an object, stringify it with formatting
         setThemeJson(JSON.stringify(data.theme, null, 2));
       }
       setNotes(data.notes || "");
@@ -147,7 +143,7 @@ export default function ThemeEditor() {
   };
 
   // Parse theme JSON to get the theme object for the context
-  const parsedTheme: ThemeRom | null = (() => {
+  const parsedTheme: Theme | null = (() => {
     try {
       return themeJson ? JSON.parse(themeJson) : null;
     } catch {
@@ -155,7 +151,7 @@ export default function ThemeEditor() {
     }
   })();
 
-  const handleThemeChange = (newTheme: ThemeRom) => {
+  const handleThemeChange = (newTheme: Theme) => {
     setThemeJson(JSON.stringify(newTheme, null, 2));
   };
 

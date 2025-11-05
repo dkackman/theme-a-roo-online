@@ -33,9 +33,9 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <Layout>
           <Component {...pageProps} />
         </Layout>
-        <Toaster position="top-right" richColors />
-        <Analytics />
-        <SpeedInsights />
+        <Toaster position="bottom-right" richColors />
+        <Analytics debug={false} />
+        <SpeedInsights debug={false} />
       </ClientThemeProvider>
     </AuthProvider>
   );

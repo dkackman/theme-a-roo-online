@@ -23,7 +23,6 @@ interface ClientThemeProviderProps {
   children: React.ReactNode;
 }
 
-// Internal component to set initial theme from localStorage
 function ThemeInitializer() {
   const { setTheme, initializeTheme } = useSimpleTheme();
   const [initialized, setInitialized] = useState(false);
@@ -35,7 +34,6 @@ function ThemeInitializer() {
 
     const initializeThemeAsync = async () => {
       try {
-        // Try to get theme from localStorage
         const storedTheme = localStorage.getItem("theme");
         if (storedTheme) {
           const parsedTheme = JSON.parse(storedTheme) as Theme;
@@ -63,10 +61,8 @@ function ThemeInitializer() {
 }
 
 export function ClientThemeProvider({ children }: ClientThemeProviderProps) {
-  // Handle theme changes - save to localStorage and update cache
   const handleThemeChange = useCallback((theme: Theme) => {
     try {
-      // Save to localStorage
       localStorage.setItem("theme", JSON.stringify(theme));
     } catch (error) {
       console.warn("Failed to save theme preference:", error);

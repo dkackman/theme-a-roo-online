@@ -30,7 +30,7 @@ export default function Home() {
   const {
     userThemes,
     isLoading: isLoadingUserThemes,
-    reloadThemes,
+    loadUserThemes,
   } = useUserThemes();
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
@@ -65,7 +65,7 @@ export default function Home() {
 
       toast.success("Theme created successfully!");
 
-      await reloadThemes();
+      await loadUserThemes();
 
       router.push(`/theme-editor?id=${theme.id}`);
     } catch (error) {
@@ -86,7 +86,7 @@ export default function Home() {
       toast.success("Theme deleted successfully!");
 
       // Reload themes from hook
-      await reloadThemes();
+      await loadUserThemes();
     } catch (error) {
       console.error("Error deleting theme:", error);
       toast.error("Failed to delete theme. Please try again.");
