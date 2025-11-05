@@ -94,19 +94,17 @@ export function useThemeOperations({
     }
   };
 
-  const validateTheme = (themeJson: string) => {
+  const validateTheme = (themeJson: string): string | null => {
     try {
       validateThemeJson(themeJson);
-      toast.success("Theme JSON is valid!");
-      return true;
+      return null; // No errors
     } catch (error) {
       if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error("Validation failed");
+        return error.message;
       }
-      return false;
     }
+
+    return "Validation failed";
   };
 
   return {

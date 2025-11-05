@@ -26,7 +26,13 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { FileText, Maximize2, Minimize2 } from "lucide-react";
 import { useRouter } from "next/router";
-import { useEffect, useState, type ChangeEvent } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type ChangeEvent,
+} from "react";
 import { toast } from "sonner";
 import type { Theme } from "theme-o-rama";
 import { useAuth } from "../Contexts/AuthContext";
@@ -59,6 +65,10 @@ export default function ThemeEditor() {
     return false;
   });
   const [activeTab, setActiveTab] = useState("json");
+  const [validationError, setValidationError] = useState<string | null>(null);
+  const validationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
+    null
+  );
 
   // Theme operations hook
   const {
@@ -122,18 +132,24 @@ export default function ThemeEditor() {
     try {
       const data = await themesApi.getById(id, user.id);
       setTheme(data);
+      let themeJsonString = "";
       if (typeof data.theme === "string") {
         try {
           const parsed = JSON.parse(data.theme);
-          setThemeJson(JSON.stringify(parsed, null, 2));
+          themeJsonString = JSON.stringify(parsed, null, 2);
         } catch {
-          setThemeJson(data.theme);
+          themeJsonString = data.theme;
         }
       } else {
-        setThemeJson(JSON.stringify(data.theme, null, 2));
+        themeJsonString = JSON.stringify(data.theme, null, 2);
       }
+      setThemeJson(themeJsonString);
       setNotes(data.notes || "");
       setIsDraft(data.is_draft || false);
+
+      // Validate the loaded theme
+      const error = validateTheme(themeJsonString);
+      setValidationError(error);
     } catch (error) {
       console.error("Error loading theme:", error);
       toast.error("Failed to load theme");
@@ -155,9 +171,32 @@ export default function ThemeEditor() {
     setThemeJson(JSON.stringify(newTheme, null, 2));
   };
 
-  const handleThemeJsonChange = (json: string) => {
-    setThemeJson(json);
-  };
+  const handleThemeJsonChange = useCallback(
+    (json: string) => {
+      setThemeJson(json);
+
+      // Clear existing timeout
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+
+      // Debounce validation - wait 500ms after user stops typing
+      validationTimeoutRef.current = setTimeout(() => {
+        const error = validateTheme(json);
+        setValidationError(error);
+      }, 500);
+    },
+    [validateTheme]
+  );
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (validationTimeoutRef.current) {
+        clearTimeout(validationTimeoutRef.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     if (id && user) {
@@ -179,8 +218,6 @@ export default function ThemeEditor() {
     await deleteTheme();
     setIsDeleteDialogOpen(false);
   };
-
-  const handleValidateTheme = () => validateTheme(themeJson);
 
   if (loading || !user || isLoadingTheme) {
     return (
@@ -220,9 +257,7 @@ export default function ThemeEditor() {
               <div className="flex items-center gap-2">
                 <ThemeEditorActions
                   onEdit={() => setIsEditSheetOpen(true)}
-                  onValidate={handleValidateTheme}
                   onSave={handleSaveTheme}
-                  onPreview={() => {}}
                   onApply={() => {}}
                   onPublish={() => {}}
                   onDelete={() => setIsDeleteDialogOpen(true)}
@@ -243,10 +278,11 @@ export default function ThemeEditor() {
                 activeTab={activeTab}
                 onTabChange={setActiveTab}
                 themeJson={themeJson}
-                onThemeJsonChange={setThemeJson}
+                onThemeJsonChange={handleThemeJsonChange}
                 editorTheme={editorTheme}
                 isMaximized={true}
                 themeId={theme?.id}
+                validationError={validationError}
               />
             </div>
           </Card>
@@ -261,9 +297,7 @@ export default function ThemeEditor() {
             <div className="flex items-center justify-between">
               <ThemeEditorActions
                 onEdit={() => setIsEditSheetOpen(true)}
-                onValidate={handleValidateTheme}
                 onSave={handleSaveTheme}
-                onPreview={() => {}}
                 onApply={() => {}}
                 onPublish={() => {}}
                 onDelete={() => setIsDeleteDialogOpen(true)}
@@ -283,10 +317,11 @@ export default function ThemeEditor() {
               activeTab={activeTab}
               onTabChange={setActiveTab}
               themeJson={themeJson}
-              onThemeJsonChange={setThemeJson}
+              onThemeJsonChange={handleThemeJsonChange}
               editorTheme={editorTheme}
               isMaximized={false}
               themeId={theme?.id}
+              validationError={validationError}
             />
           </div>
         </div>

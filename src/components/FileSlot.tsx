@@ -8,6 +8,7 @@ import {
 } from "@/components/ui/card";
 import { DeleteButton } from "@/components/ui/delete-button";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useUploadThemeFile } from "@/hooks/useUploadThemeFile";
 import { deleteThemeFile, type FileUseType } from "@/lib/theme-files";
 import { Copy, ImageIcon, Loader2, Upload } from "lucide-react";
@@ -25,6 +26,7 @@ interface FileSlotProps {
   themeId: string;
   onFileChange?: () => void | Promise<void>;
   onInsertBackground?: (url: string | undefined) => void;
+  isLoading?: boolean;
 }
 
 export function FileSlot({
@@ -36,6 +38,7 @@ export function FileSlot({
   themeId,
   onFileChange,
   onInsertBackground,
+  isLoading = false,
 }: FileSlotProps) {
   const { upload, progress, loading } = useUploadThemeFile();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -126,8 +129,14 @@ export function FileSlot({
           onChange={handleFileChange}
           className="hidden"
         />
-        {fileUrl ? (
+        {isLoading && (
           <div className="space-y-3">
+            <Skeleton className="aspect-video w-full rounded-lg" />
+            <Skeleton className="h-9 w-full" />
+          </div>
+        )}
+        {!isLoading && fileUrl && (
+          <div className="space-y-3 animate-in fade-in duration-300">
             <Dialog>
               <DialogTrigger asChild>
                 <div className="relative aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
@@ -137,7 +146,8 @@ export function FileSlot({
                     fill
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                     className="object-contain rounded-lg"
-                    priority={false}
+                    quality={50}
+                    placeholder="empty"
                   />
                 </div>
               </DialogTrigger>
@@ -188,8 +198,9 @@ export function FileSlot({
               />
             </div>
           </div>
-        ) : (
-          <div className="space-y-3">
+        )}
+        {!isLoading && !fileUrl && (
+          <div className="space-y-3 animate-in fade-in duration-300">
             <div className="aspect-video bg-muted rounded-lg flex flex-col items-center justify-center border-2 border-dashed border-border">
               <ImageIcon className="w-12 h-12 text-muted-foreground mb-2" />
               <p className="text-sm text-muted-foreground">No file uploaded</p>

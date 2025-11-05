@@ -12,6 +12,7 @@ interface ThemeEditorTabsProps {
   editorTheme: "vs" | "vs-dark";
   isMaximized?: boolean;
   themeId?: string;
+  validationError?: string | null;
 }
 
 export function ThemeEditorTabs({
@@ -22,6 +23,7 @@ export function ThemeEditorTabs({
   editorTheme,
   isMaximized = false,
   themeId,
+  validationError,
 }: ThemeEditorTabsProps) {
   const jsonTabContentClass = isMaximized
     ? "flex-1 p-0 overflow-hidden border border-border rounded-b-md"
@@ -85,6 +87,7 @@ export function ThemeEditorTabs({
           onChange={onThemeJsonChange}
           theme={editorTheme}
           height={editorHeight}
+          validationError={validationError}
         />
       </TabsContent>
       <TabsContent

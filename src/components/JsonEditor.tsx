@@ -1,5 +1,12 @@
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { parseColor, rgbaToHex } from "@/lib/color";
 import Editor from "@monaco-editor/react";
+import { CheckCircle2, XCircle } from "lucide-react";
 import { useRef } from "react";
 import jsonSchema from "../schema.json";
 
@@ -9,6 +16,7 @@ interface JsonEditorProps {
   theme: "vs" | "vs-dark";
   height?: string;
   className?: string;
+  validationError?: string | null;
 }
 
 export function JsonEditor({
@@ -17,11 +25,43 @@ export function JsonEditor({
   theme,
   height = "calc(100vh - 300px)",
   className = "",
+  validationError,
 }: JsonEditorProps) {
   const monacoInitializedRef = useRef(false);
+  const isValid = validationError === null;
+  const hasValidation = validationError !== undefined;
 
   return (
-    <div className={`${className} ${height === "100%" ? "flex-1" : ""}`}>
+    <div
+      className={`${className} ${height === "100%" ? "flex-1" : ""} relative`}
+    >
+      {hasValidation && (
+        <div className="absolute top-2 right-2 z-10">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <div className="cursor-pointer">
+                  {isValid ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-500" />
+                  ) : (
+                    <XCircle className="w-5 h-5 text-red-500" />
+                  )}
+                </div>
+              </TooltipTrigger>
+              {validationError && (
+                <TooltipContent>
+                  <p className="max-w-xs">{validationError}</p>
+                </TooltipContent>
+              )}
+              {isValid && (
+                <TooltipContent>
+                  <p>Theme JSON is valid</p>
+                </TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      )}
       <Editor
         theme={theme}
         beforeMount={(monaco) => {
@@ -156,7 +196,7 @@ export function JsonEditor({
         value={value}
         onChange={(value) => onChange(value || "")}
         options={{
-          minimap: { enabled: true },
+          minimap: { enabled: false },
           scrollBeyondLastLine: false,
           fontSize: 12,
           fontFamily:

@@ -18,11 +18,13 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
     publicPreviewUrl?: string;
     publicBannerUrl?: string;
   }>({});
+  const [isLoading, setIsLoading] = useState(true);
 
   // Track the previous publicBackgroundUrl to detect changes
   const previousPublicUrlRef = useRef<string | undefined>(undefined);
 
   const refreshFiles = useCallback(async () => {
+    setIsLoading(true);
     try {
       // Fetch signed URLs for display (thumbnails)
       const filesData = await getThemeFiles(themeId);
@@ -89,6 +91,8 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
       }
     } catch (error) {
       console.error("Failed to fetch theme files:", error);
+    } finally {
+      setIsLoading(false);
     }
   }, [themeId, themeEditor]);
 
@@ -120,6 +124,7 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
             themeEditor.updateTheme({ backgroundImage: url });
           }}
           publicUrl={files.publicBackgroundUrl}
+          isLoading={isLoading}
         />
         <FileSlot
           title="NFT Preview"
@@ -129,6 +134,7 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
           publicUrl={files.publicPreviewUrl}
           themeId={themeId}
           onFileChange={refreshFiles}
+          isLoading={isLoading}
         />
         <FileSlot
           title="NFT Banner"
@@ -138,6 +144,7 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
           publicUrl={files.publicBannerUrl}
           themeId={themeId}
           onFileChange={refreshFiles}
+          isLoading={isLoading}
         />
       </div>
     </div>

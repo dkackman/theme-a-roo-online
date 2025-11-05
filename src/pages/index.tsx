@@ -64,9 +64,7 @@ export default function Home() {
       });
 
       toast.success("Theme created successfully!");
-
       await loadUserThemes();
-
       router.push(`/theme-editor?id=${theme.id}`);
     } catch (error) {
       console.error("Error creating theme:", error);
@@ -84,8 +82,6 @@ export default function Home() {
     try {
       await themesApi.delete(themeId);
       toast.success("Theme deleted successfully!");
-
-      // Reload themes from hook
       await loadUserThemes();
     } catch (error) {
       console.error("Error deleting theme:", error);
