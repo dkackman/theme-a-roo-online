@@ -34,7 +34,7 @@ import {
   type ChangeEvent,
 } from "react";
 import { toast } from "sonner";
-import type { Theme } from "theme-o-rama";
+import { useSimpleTheme, type Theme } from "theme-o-rama";
 import { useAuth } from "../Contexts/AuthContext";
 import { ThemeEditorProvider } from "../Contexts/ThemeEditorContext";
 import { useThemeOperations } from "../hooks/useThemeOperations";
@@ -85,6 +85,9 @@ export default function ThemeEditor() {
     onThemeUpdate: setTheme,
   });
 
+  // Simple theme hook for applying themes
+  const { setTheme: setCurrentTheme, initializeTheme } = useSimpleTheme();
+
   useEffect(() => {
     if (!loading && !user) {
       router.push("/auth");
@@ -108,10 +111,8 @@ export default function ThemeEditor() {
       setEditorTheme(colorScheme === "dark" ? "vs-dark" : "vs");
     };
 
-    // Initial set
     updateEditorTheme();
 
-    // Watch for changes to the color-scheme on html element
     const observer = new MutationObserver(updateEditorTheme);
     if (typeof document !== "undefined") {
       observer.observe(document.documentElement, {
@@ -219,6 +220,37 @@ export default function ThemeEditor() {
     setIsDeleteDialogOpen(false);
   };
 
+  const handleApplyTheme = async () => {
+    try {
+      // Validate the theme first
+      const validationError = validateTheme(themeJson);
+      if (validationError) {
+        toast.error(`Cannot apply theme: ${validationError}`);
+        return;
+      }
+
+      // Parse the theme JSON
+      const themeToApply = JSON.parse(themeJson) as Theme;
+
+      // Initialize the theme (this processes images, colors, etc.)
+      const initializedTheme = await initializeTheme(themeToApply);
+
+      // Set it as the current theme
+      setCurrentTheme(initializedTheme);
+
+      toast.success("Theme applied successfully!");
+    } catch (error) {
+      console.error("Error applying theme:", error);
+      if (error instanceof SyntaxError) {
+        toast.error("Invalid JSON format. Please check your syntax.");
+      } else if (error instanceof Error) {
+        toast.error(`Failed to apply theme: ${error.message}`);
+      } else {
+        toast.error("Failed to apply theme");
+      }
+    }
+  };
+
   if (loading || !user || isLoadingTheme) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -258,7 +290,7 @@ export default function ThemeEditor() {
                 <ThemeEditorActions
                   onEdit={() => setIsEditSheetOpen(true)}
                   onSave={handleSaveTheme}
-                  onApply={() => {}}
+                  onApply={handleApplyTheme}
                   onPublish={() => {}}
                   onDelete={() => setIsDeleteDialogOpen(true)}
                   isSaving={isSaving}
@@ -298,7 +330,7 @@ export default function ThemeEditor() {
               <ThemeEditorActions
                 onEdit={() => setIsEditSheetOpen(true)}
                 onSave={handleSaveTheme}
-                onApply={() => {}}
+                onApply={handleApplyTheme}
                 onPublish={() => {}}
                 onDelete={() => setIsDeleteDialogOpen(true)}
                 isSaving={isSaving}

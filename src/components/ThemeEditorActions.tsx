@@ -23,19 +23,19 @@ export function ThemeEditorActions({
 }: ThemeEditorActionsProps) {
   return (
     <ButtonGroup className={className}>
-      <Button onClick={onSave} disabled={isSaving} variant="outline" size="sm">
+      <Button onClick={onSave} disabled={isSaving} variant="default" size="sm">
         <Save className="w-4 h-4 mr-2" />
         {isSaving ? "Saving..." : "Save"}
       </Button>
-      <Button onClick={onApply} variant="outline" size="sm">
+      <Button onClick={onApply} variant="secondary" size="sm">
         <Wand2 className="w-4 h-4 mr-2" />
         Apply
       </Button>
-      <Button onClick={onPublish} variant="outline" size="sm">
+      <Button onClick={onPublish} variant="secondary" size="sm">
         <Rocket className="w-4 h-4 mr-2" />
         Publish
       </Button>
-      <Button onClick={onEdit} variant="outline" size="sm">
+      <Button onClick={onEdit} variant="secondary" size="sm">
         <Settings2 className="w-4 h-4 mr-2" />
         Properties
       </Button>

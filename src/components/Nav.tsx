@@ -80,6 +80,16 @@ export default function Nav() {
                     <Link href="/">Home</Link>
                   </NavigationMenuLink>
                 </NavigationMenuItem>
+                <NavigationMenuItem>
+                  <NavigationMenuLink
+                    asChild
+                    className={navigationMenuTriggerStyle()}
+                    active={router.pathname === "/preview"}
+                  >
+                    <Link href="/preview">Preview</Link>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+
                 {isAdmin && (
                   <NavigationMenuItem>
                     <NavigationMenuLink
