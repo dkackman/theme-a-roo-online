@@ -64,6 +64,7 @@ export function ClientThemeProvider({ children }: ClientThemeProviderProps) {
   const handleThemeChange = useCallback((theme: Theme) => {
     try {
       localStorage.setItem("theme", JSON.stringify(theme));
+      localStorage.setItem("theme-name", theme.name); // used by FUOC script
     } catch (error) {
       console.warn("Failed to save theme preference:", error);
     }

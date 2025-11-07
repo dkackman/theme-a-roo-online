@@ -271,6 +271,8 @@ export default function ThemeEditor() {
     );
   }
 
+  const isThemeJsonValid = validationError === null;
+
   return (
     <ThemeEditorProvider
       theme={parsedTheme}
@@ -294,14 +296,10 @@ export default function ThemeEditor() {
                   onPublish={() => {}}
                   onDelete={() => setIsDeleteDialogOpen(true)}
                   isSaving={isSaving}
+                  isThemeValid={isThemeJsonValid}
                 />
-                <Button
-                  onClick={() => setIsMaximized(false)}
-                  variant="ghost"
-                  size="sm"
-                >
-                  <Minimize2 className="w-4 h-4 mr-2" />
-                  Minimize
+                <Button onClick={() => setIsMaximized(false)} size="sm">
+                  <Minimize2 className="w-4 h-4" />
                 </Button>
               </div>
             </CardHeader>
@@ -334,14 +332,14 @@ export default function ThemeEditor() {
                 onPublish={() => {}}
                 onDelete={() => setIsDeleteDialogOpen(true)}
                 isSaving={isSaving}
+                isThemeValid={isThemeJsonValid}
               />
               <Button
                 onClick={() => setIsMaximized(true)}
-                variant="ghost"
                 size="sm"
+                className="text-muted-foreground hover:text-foreground"
               >
-                <Maximize2 className="w-4 h-4 mr-2" />
-                Maximize
+                <Maximize2 className="w-4 h-4" />
               </Button>
             </div>
 
@@ -361,7 +359,7 @@ export default function ThemeEditor() {
 
       {/* Notes Side Sheet */}
       <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
-        <SheetContent className="w-full sm:max-w-md">
+        <SheetContent className="w-full sm:max-w-md bg-popover">
           <SheetHeader className="px-6 pt-6">
             <SheetTitle>Theme Properties</SheetTitle>
             <SheetDescription>Edit the theme properties.</SheetDescription>
@@ -392,6 +390,7 @@ export default function ThemeEditor() {
                     setNotes(e.target.value)
                   }
                   placeholder="Add your notes here..."
+                  className="bg-input"
                   rows={5}
                 />
               </Field>
