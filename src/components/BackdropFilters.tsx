@@ -58,37 +58,52 @@ export function BackdropFilters() {
       return;
     }
 
-    // Update theme with backdrop filter settings
-    if (!checked) {
-      return;
-    }
+    const newColors = {
+      ...theme.colors,
+      cardBackdropFilter: checked
+        ? "blur(16px) saturate(180%) brightness(1.1)"
+        : undefined,
+      popoverBackdropFilter: checked
+        ? "blur(20px) saturate(180%) brightness(1.1)"
+        : undefined,
+      inputBackdropFilter: checked
+        ? "blur(8px) saturate(150%) brightness(1.05)"
+        : undefined,
+    };
+
+    const newSidebar = {
+      ...theme.sidebar,
+      backdropFilter: checked
+        ? "blur(20px) saturate(180%) brightness(1.1)"
+        : undefined,
+    };
+
+    const newTables = {
+      ...theme.tables,
+      header: {
+        ...theme.tables?.header,
+        backdropFilter: checked
+          ? "blur(8px) saturate(150%) brightness(1.05)"
+          : undefined,
+      },
+      row: {
+        ...theme.tables?.row,
+        backdropFilter: checked
+          ? "blur(4px) saturate(120%) brightness(1.02)"
+          : undefined,
+      },
+      footer: {
+        ...theme.tables?.footer,
+        backdropFilter: checked
+          ? "blur(8px) saturate(150%) brightness(1.05)"
+          : undefined,
+      },
+    };
 
     updateTheme({
-      colors: {
-        ...theme.colors,
-        cardBackdropFilter: "blur(16px) saturate(180%) brightness(1.1)",
-        popoverBackdropFilter: "blur(20px) saturate(180%) brightness(1.1)",
-        inputBackdropFilter: "blur(8px) saturate(150%) brightness(1.05)",
-      },
-      sidebar: {
-        ...theme.sidebar,
-        backdropFilter: "blur(20px) saturate(180%) brightness(1.1)",
-      },
-      tables: {
-        ...theme.tables,
-        header: {
-          ...theme.tables?.header,
-          backdropFilter: "blur(8px) saturate(150%) brightness(1.05)",
-        },
-        row: {
-          ...theme.tables?.row,
-          backdropFilter: "blur(4px) saturate(120%) brightness(1.02)",
-        },
-        footer: {
-          ...theme.tables?.footer,
-          backdropFilter: "blur(8px) saturate(150%) brightness(1.05)",
-        },
-      },
+      colors: newColors,
+      sidebar: newSidebar,
+      tables: newTables,
     });
   };
 

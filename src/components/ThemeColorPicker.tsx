@@ -12,6 +12,8 @@ interface ThemeColorPickerProps {
 export function ThemeColorPicker({ className = "" }: ThemeColorPickerProps) {
   const { theme, updateTheme } = useThemeEditor();
 
+  const hasBackgroundImage = Boolean(theme?.backgroundImage);
+
   const getColorFromTheme = useCallback((): {
     r: number;
     g: number;
@@ -46,6 +48,9 @@ export function ThemeColorPicker({ className = "" }: ThemeColorPickerProps) {
   }, [theme, getColorFromTheme, shouldApplyToBackground]);
 
   const handleColorChange = (newColor: { r: number; g: number; b: number }) => {
+    if (hasBackgroundImage) {
+      return;
+    }
     setColor(newColor);
     // Convert RGB to HSL using the color helper
     const hsl = rgbToHsl(newColor);
@@ -62,6 +67,9 @@ export function ThemeColorPicker({ className = "" }: ThemeColorPickerProps) {
   };
 
   const handleApplyToBackgroundChange = (checked: boolean) => {
+    if (hasBackgroundImage) {
+      return;
+    }
     setApplyToBackground(checked);
     if (checked && theme) {
       updateTheme({
@@ -83,17 +91,29 @@ export function ThemeColorPicker({ className = "" }: ThemeColorPickerProps) {
   return (
     <div className={`space-y-4 ${className}`}>
       <div className="flex justify-center">
-        <RgbColorPicker
-          color={color}
-          onChange={handleColorChange}
-          style={{ width: "200px", height: "200px" }}
-        />
+        <div
+          className={`relative ${hasBackgroundImage ? "pointer-events-none opacity-50" : ""}`}
+        >
+          <RgbColorPicker
+            color={color}
+            onChange={handleColorChange}
+            style={{ width: "200px", height: "200px" }}
+          />
+          {hasBackgroundImage && (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <span className="rounded bg-background/80 px-2 py-1 text-xs text-muted-foreground shadow-sm">
+                Disabled while background image is set
+              </span>
+            </div>
+          )}
+        </div>
       </div>
       <div className="flex items-center justify-center space-x-2">
         <Checkbox
           id="apply-to-background"
           checked={applyToBackground}
           onCheckedChange={handleApplyToBackgroundChange}
+          disabled={hasBackgroundImage}
         />
         <Label htmlFor="apply-to-background" className="text-sm cursor-pointer">
           Apply to background color

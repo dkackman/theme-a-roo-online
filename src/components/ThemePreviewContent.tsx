@@ -1,6 +1,13 @@
 import { cn } from "@/lib/utils";
-import { applyThemeIsolated, type Theme } from "theme-o-rama";
 import { useEffect, useRef } from "react";
+import { applyThemeIsolated, type Theme } from "theme-o-rama";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
 
 interface ThemePreviewRendererProps {
   theme: Theme | null;
@@ -18,18 +25,16 @@ export function ThemePreviewRenderer({
   const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
-    if (!containerRef.current || !theme) {
-      return;
+    if (containerRef.current && theme) {
+      applyThemeIsolated(theme, containerRef.current);
     }
-
-    applyThemeIsolated(theme, containerRef.current);
   }, [theme]);
 
   return (
     <div
       ref={containerRef}
       className={cn(
-        "theme-preview relative h-full overflow-auto rounded-lg border bg-background text-foreground",
+        "theme-preview relative h-full overflow-auto rounded-lg border bg-background text-foreground theme-card-isolated",
         className
       )}
     >
@@ -49,11 +54,12 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
       </div>
 
       {/* Current Theme Info */}
-      <div className="space-y-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-        <div className="border-b px-6 py-4">
-          <h2 className="text-2xl font-semibold">Theme Details</h2>
-        </div>
-        <div className="px-6 pb-6">
+      <Card className="space-y-4">
+        <CardHeader>
+          <CardTitle>Theme Details</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CardDescription>Theme information</CardDescription>
           <div className="space-y-2 text-left">
             <p>
               <strong>Name:</strong> {theme?.name || "None"}
@@ -68,16 +74,18 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
               <strong>Most Like:</strong> {theme?.mostLike || "N/A"}
             </p>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       {/* Test Components */}
-      <div className="space-y-4 rounded-lg border bg-card text-card-foreground shadow-sm">
-        <div className="border-b px-6 py-4">
-          <h2 className="text-2xl font-semibold">Theme Test Components</h2>
-        </div>
-
-        <div className="space-y-6 px-6 pb-6">
+      <Card className="space-y-4">
+        <CardHeader>
+          <CardTitle>Theme Test Components</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <CardDescription>
+            Various test components to preview the theme
+          </CardDescription>
           {/* Buttons */}
           <div className="space-y-2">
             <h3 className="font-medium">Buttons</h3>
@@ -131,8 +139,8 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

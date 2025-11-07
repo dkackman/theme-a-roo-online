@@ -370,11 +370,15 @@ export default function ThemeEditor() {
           </div>
           <SheetFooter className="px-6 pb-6">
             <SheetClose asChild>
-              <Button variant="outline" disabled={isSavingNotes}>
+              <Button variant="secondary" disabled={isSavingNotes}>
                 Cancel
               </Button>
             </SheetClose>
-            <Button onClick={handleSaveProperties} disabled={isSavingNotes}>
+            <Button
+              variant="default"
+              onClick={handleSaveProperties}
+              disabled={isSavingNotes}
+            >
               {isSavingNotes ? "Saving..." : "Save"}
             </Button>
           </SheetFooter>
