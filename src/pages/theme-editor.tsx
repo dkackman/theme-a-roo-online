@@ -1,5 +1,6 @@
 import { ThemeEditorActions } from "@/components/ThemeEditorActions";
 import { ThemeEditorTabs } from "@/components/ThemeEditorTabs";
+import { ThemePreview } from "@/components/ThemePreview";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -26,13 +27,7 @@ import {
 import { Textarea } from "@/components/ui/textarea";
 import { FileText, Maximize2, Minimize2 } from "lucide-react";
 import { useRouter } from "next/router";
-import {
-  useCallback,
-  useEffect,
-  useRef,
-  useState,
-  type ChangeEvent,
-} from "react";
+import { useCallback, useEffect, useState, type ChangeEvent } from "react";
 import { toast } from "sonner";
 import { useSimpleTheme, type Theme } from "theme-o-rama";
 import { useAuth } from "../Contexts/AuthContext";
@@ -66,9 +61,6 @@ export default function ThemeEditor() {
   });
   const [activeTab, setActiveTab] = useState("json");
   const [validationError, setValidationError] = useState<string | null>(null);
-  const validationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
-    null
-  );
 
   // Theme operations hook
   const {
@@ -124,7 +116,7 @@ export default function ThemeEditor() {
     return () => observer.disconnect();
   }, []);
 
-  const loadTheme = async () => {
+  const loadTheme = useCallback(async () => {
     if (!user || !id || typeof id !== "string") {
       return;
     }
@@ -148,16 +140,14 @@ export default function ThemeEditor() {
       setNotes(data.notes || "");
       setIsDraft(data.is_draft || false);
 
-      // Validate the loaded theme
-      const error = validateTheme(themeJsonString);
-      setValidationError(error);
+      setValidationError(null);
     } catch (error) {
       console.error("Error loading theme:", error);
       toast.error("Failed to load theme");
     } finally {
       setIsLoadingTheme(false);
     }
-  };
+  }, [id, user]);
 
   // Parse theme JSON to get the theme object for the context
   const parsedTheme: Theme | null = (() => {
@@ -169,42 +159,19 @@ export default function ThemeEditor() {
   })();
 
   const handleThemeChange = (newTheme: Theme) => {
-    setThemeJson(JSON.stringify(newTheme, null, 2));
+    const jsonString = JSON.stringify(newTheme, null, 2);
+    setThemeJson(jsonString);
   };
 
-  const handleThemeJsonChange = useCallback(
-    (json: string) => {
-      setThemeJson(json);
-
-      // Clear existing timeout
-      if (validationTimeoutRef.current) {
-        clearTimeout(validationTimeoutRef.current);
-      }
-
-      // Debounce validation - wait 500ms after user stops typing
-      validationTimeoutRef.current = setTimeout(() => {
-        const error = validateTheme(json);
-        setValidationError(error);
-      }, 500);
-    },
-    [validateTheme]
-  );
-
-  // Cleanup timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (validationTimeoutRef.current) {
-        clearTimeout(validationTimeoutRef.current);
-      }
-    };
+  const handleThemeJsonChange = useCallback((json: string) => {
+    setThemeJson(json);
   }, []);
 
   useEffect(() => {
     if (id && user) {
-      loadTheme();
+      void loadTheme();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [id, user]);
+  }, [id, loadTheme, user]);
 
   const handleSaveTheme = () => saveTheme(themeJson);
 
@@ -280,7 +247,7 @@ export default function ThemeEditor() {
       onThemeChange={handleThemeChange}
       onThemeJsonChange={handleThemeJsonChange}
     >
-      {isMaximized && (
+      {isMaximized ? (
         <div className="fixed inset-x-0 top-16 bottom-0 z-50 bg-background flex flex-col">
           <Card className="flex-1 flex flex-col rounded-none border-0">
             <CardHeader className="flex flex-row items-center justify-between px-6 py-3 border-b">
@@ -317,8 +284,7 @@ export default function ThemeEditor() {
             </div>
           </Card>
         </div>
-      )}
-      {!isMaximized && (
+      ) : (
         <div className="container max-w-6xl mx-auto px-4">
           <div className="space-y-6">
             <div>
@@ -356,6 +322,12 @@ export default function ThemeEditor() {
           </div>
         </div>
       )}
+
+      <ThemePreview
+        themeJson={themeJson}
+        validateTheme={validateTheme}
+        onValidationChange={setValidationError}
+      />
 
       {/* Notes Side Sheet */}
       <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
