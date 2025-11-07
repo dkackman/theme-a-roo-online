@@ -4,7 +4,14 @@ import { useEffect, useState } from "react";
 import { ThemeSelector } from "../components/ThemeSelector";
 import { Button } from "../components/ui/button";
 import { Card } from "../components/ui/card";
+import { Switch } from "../components/ui/switch";
 import { useAuth } from "../Contexts/AuthContext";
+import {
+  defaultSettings,
+  loadSettings,
+  saveSettings,
+  type Settings as AppSettings,
+} from "../lib/settings";
 import { cn } from "../lib/utils";
 
 type SettingsSection = "theme" | "editor";
@@ -18,6 +25,21 @@ export default function Settings() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [activeSection, setActiveSection] = useState<SettingsSection>("theme");
+  const [settings, setSettings] = useState<AppSettings>(defaultSettings);
+
+  useEffect(() => {
+    const loaded = loadSettings();
+    setSettings(loaded);
+  }, []);
+
+  const handlePromptToSaveChange = (checked: boolean) => {
+    const nextSettings: AppSettings = {
+      ...settings,
+      promptToSave: checked,
+    };
+    setSettings(nextSettings);
+    saveSettings(nextSettings);
+  };
 
   useEffect(() => {
     if (!loading && !user) {
@@ -38,7 +60,31 @@ export default function Settings() {
       case "theme":
         return <ThemeSelector />;
       case "editor":
-        return <div>Editor settings</div>;
+        return (
+          <div className="space-y-6">
+            <div className="space-y-1">
+              <h2 className="text-xl font-semibold">Editor Settings</h2>
+              <p className="text-sm text-muted-foreground">
+                Configure how the theme editor behaves.
+              </p>
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border bg-muted/30 px-4 py-4">
+              <div className="pr-4">
+                <p className="font-medium leading-none">Prompt to save</p>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Ask before leaving the editor when there are unsaved changes.
+                  Will always save if not set.
+                </p>
+              </div>
+              <Switch
+                checked={settings.promptToSave}
+                onCheckedChange={handlePromptToSaveChange}
+                aria-label="Prompt to save themes"
+              />
+            </div>
+          </div>
+        );
       default:
         return <ThemeSelector />;
     }
