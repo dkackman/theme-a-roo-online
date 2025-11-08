@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { useEffect, useRef } from "react";
 import { applyThemeIsolated, type Theme } from "theme-o-rama";
+import { Button } from "./ui/button";
 import {
   Card,
   CardContent,
@@ -45,7 +46,7 @@ export function ThemePreviewRenderer({
 
 export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
   return (
-    <div className="max-w-4xl mx-auto space-y-8 p-6">
+    <div className="max-w-6xl mx-auto space-y-8 p-6">
       {/* Header */}
       <div className="text-center space-y-4">
         <h1 className="text-4xl font-bold">
@@ -78,11 +79,11 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
       </Card>
 
       {/* Test Components */}
-      <Card className="space-y-4">
+      <Card>
         <CardHeader>
           <CardTitle>Theme Test Components</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="space-y-4">
           <CardDescription>
             Various test components to preview the theme
           </CardDescription>
@@ -90,15 +91,12 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
           <div className="space-y-2">
             <h3 className="font-medium">Buttons</h3>
             <div className="flex flex-wrap gap-2">
-              <button className="rounded-md bg-primary px-4 py-2 text-primary-foreground hover:opacity-90">
-                Primary
-              </button>
-              <button className="rounded-md bg-secondary px-4 py-2 text-secondary-foreground hover:opacity-90">
-                Secondary
-              </button>
-              <button className="rounded-md bg-destructive px-4 py-2 text-destructive-foreground hover:opacity-90">
-                Destructive
-              </button>
+              <Button variant="default">Primary</Button>
+              <Button variant="secondary">Secondary</Button>
+              <Button variant="destructive">Destructive</Button>
+              <Button variant="outline">Outline</Button>
+              <Button variant="ghost">Ghost</Button>
+              <Button variant="link">Link</Button>
             </div>
           </div>
 
@@ -106,18 +104,26 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
           <div className="space-y-2">
             <h3 className="font-medium">Cards</h3>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <div className="space-y-2 rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-                <h4 className="font-semibold">Card 1</h4>
-                <p className="text-muted-foreground">
-                  This is a card with themed styling.
-                </p>
-              </div>
-              <div className="space-y-2 rounded-lg border bg-card p-4 text-card-foreground shadow-sm">
-                <h4 className="font-semibold">Card 2</h4>
-                <p className="text-muted-foreground">
-                  Cards adapt to the current theme.
-                </p>
-              </div>
+              <Card className="space-y-2">
+                <CardHeader>
+                  <CardTitle>Card 1</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription>
+                    This is a card with themed styling.
+                  </CardDescription>
+                </CardContent>
+              </Card>
+              <Card className="space-y-2">
+                <CardHeader>
+                  <CardTitle>Card 2</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <CardDescription>
+                    Cards adapt to the current theme.
+                  </CardDescription>
+                </CardContent>
+              </Card>
             </div>
           </div>
 
@@ -125,18 +131,16 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
           <div className="space-y-2">
             <h3 className="font-medium">Color Palette</h3>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <div className="rounded border bg-background p-3 text-foreground">
+              <div className="border bg-background p-3 text-foreground">
                 Background
               </div>
-              <div className="rounded bg-primary p-3 text-primary-foreground">
+              <div className="bg-primary p-3 text-primary-foreground">
                 Primary
               </div>
-              <div className="rounded bg-secondary p-3 text-secondary-foreground">
+              <div className="bg-secondary p-3 text-secondary-foreground">
                 Secondary
               </div>
-              <div className="rounded bg-muted p-3 text-muted-foreground">
-                Muted
-              </div>
+              <div className="bg-muted p-3 text-muted-foreground">Muted</div>
             </div>
           </div>
         </CardContent>
