@@ -38,6 +38,12 @@ export default function ThemeEditor() {
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [description, setDescription] = useState("");
   const [themeStatus, setThemeStatus] = useState<DbTheme["status"]>("draft");
+  const [authorName, setAuthorName] = useState("");
+  const [sponsor, setSponsor] = useState("");
+  const [twitter, setTwitter] = useState("");
+  const [website, setWebsite] = useState("");
+  const [did, setDid] = useState("");
+  const [royaltyAddress, setRoyaltyAddress] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editorTheme, setEditorTheme] = useState<"vs" | "vs-dark">("vs");
   const [isMaximized, setIsMaximized] = useState(() => {
@@ -126,9 +132,6 @@ export default function ThemeEditor() {
         themeJsonString = JSON.stringify(data.theme, null, 2);
       }
       setThemeJson(themeJsonString);
-      setDescription(data.description || "");
-      setThemeStatus(data.status);
-
       setValidationError(null);
     } catch (error) {
       console.error("Error loading theme:", error);
@@ -163,15 +166,32 @@ export default function ThemeEditor() {
   }, [id, loadTheme, user]);
 
   useEffect(() => {
-    if (theme) {
-      setThemeStatus(theme.status);
+    if (!theme) {
+      return;
     }
+    setThemeStatus(theme.status);
+    setDescription(theme.description ?? "");
+    setAuthorName(theme.author_name ?? "");
+    setSponsor(theme.sponsor ?? "");
+    setTwitter(theme.twitter ?? "");
+    setWebsite(theme.website ?? "");
+    setDid(theme.did ?? "");
+    setRoyaltyAddress(theme.royalty_address ?? "");
   }, [theme]);
 
   const handleSaveTheme = () => saveTheme(themeJson);
 
   const handleSaveProperties = async () => {
-    const success = await saveProperties(description, themeStatus);
+    const success = await saveProperties({
+      description,
+      status: themeStatus,
+      authorName,
+      sponsor,
+      twitter,
+      website,
+      did,
+      royaltyAddress,
+    });
     if (success) {
       setIsEditSheetOpen(false);
     }
@@ -330,6 +350,18 @@ export default function ThemeEditor() {
         onStatusChange={setThemeStatus}
         description={description}
         onDescriptionChange={setDescription}
+        authorName={authorName}
+        onAuthorNameChange={setAuthorName}
+        sponsor={sponsor}
+        onSponsorChange={setSponsor}
+        twitter={twitter}
+        onTwitterChange={setTwitter}
+        website={website}
+        onWebsiteChange={setWebsite}
+        did={did}
+        onDidChange={setDid}
+        royaltyAddress={royaltyAddress}
+        onRoyaltyAddressChange={setRoyaltyAddress}
         onSave={handleSaveProperties}
         isSaving={isSavingNotes}
       />

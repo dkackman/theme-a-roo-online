@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -29,6 +30,18 @@ type ThemePropertiesProps = {
   onStatusChange: (status: ThemeStatus) => void;
   description: string;
   onDescriptionChange: (description: string) => void;
+  authorName: string;
+  onAuthorNameChange: (value: string) => void;
+  sponsor: string;
+  onSponsorChange: (value: string) => void;
+  twitter: string;
+  onTwitterChange: (value: string) => void;
+  website: string;
+  onWebsiteChange: (value: string) => void;
+  did: string;
+  onDidChange: (value: string) => void;
+  royaltyAddress: string;
+  onRoyaltyAddressChange: (value: string) => void;
   onSave: () => void;
   isSaving?: boolean;
 };
@@ -40,6 +53,18 @@ export function ThemeProperties({
   onStatusChange,
   description,
   onDescriptionChange,
+  authorName,
+  onAuthorNameChange,
+  sponsor,
+  onSponsorChange,
+  twitter,
+  onTwitterChange,
+  website,
+  onWebsiteChange,
+  did,
+  onDidChange,
+  royaltyAddress,
+  onRoyaltyAddressChange,
   onSave,
   isSaving = false,
 }: ThemePropertiesProps) {
@@ -52,14 +77,23 @@ export function ThemeProperties({
     onDescriptionChange(event.target.value);
   };
 
+  const handleInputChange =
+    (callback: (value: string) => void) =>
+    (event: ChangeEvent<HTMLInputElement>) => {
+      if (isMinted) {
+        return;
+      }
+      callback(event.target.value);
+    };
+
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent className="w-full sm:max-w-md bg-popover">
+      <SheetContent className="w-full sm:max-w-md bg-popover flex flex-col">
         <SheetHeader className="px-6 pt-6">
           <SheetTitle>Theme Properties</SheetTitle>
           <SheetDescription>Edit the theme properties.</SheetDescription>
         </SheetHeader>
-        <div className="px-6 py-6">
+        <div className="px-6 flex-1 overflow-y-auto">
           <FieldGroup>
             <Field>
               <FieldLabel htmlFor="status">Status</FieldLabel>
@@ -99,6 +133,84 @@ export function ThemeProperties({
               />
             </Field>
           </FieldGroup>
+          <div className="mt-6 space-y-4">
+            <FieldGroup>
+              <Field>
+                <FieldLabel htmlFor="author">Author</FieldLabel>
+                <Input
+                  id="author"
+                  value={authorName}
+                  onChange={handleInputChange(onAuthorNameChange)}
+                  placeholder="Author name"
+                  className="bg-input"
+                  readOnly={isMinted}
+                  disabled={isMinted}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="sponsor">Sponsor</FieldLabel>
+                <Input
+                  id="sponsor"
+                  value={sponsor}
+                  onChange={handleInputChange(onSponsorChange)}
+                  placeholder="Sponsor name"
+                  className="bg-input"
+                  readOnly={isMinted}
+                  disabled={isMinted}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="twitter">Twitter</FieldLabel>
+                <Input
+                  id="twitter"
+                  value={twitter}
+                  onChange={handleInputChange(onTwitterChange)}
+                  placeholder="@handle"
+                  className="bg-input"
+                  readOnly={isMinted}
+                  disabled={isMinted}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="website">Website</FieldLabel>
+                <Input
+                  id="website"
+                  value={website}
+                  onChange={handleInputChange(onWebsiteChange)}
+                  placeholder="https://example.com"
+                  className="bg-input"
+                  readOnly={isMinted}
+                  disabled={isMinted}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="did">DID</FieldLabel>
+                <Input
+                  id="did"
+                  value={did}
+                  onChange={handleInputChange(onDidChange)}
+                  placeholder="Decentralized identifier"
+                  className="bg-input"
+                  readOnly={isMinted}
+                  disabled={isMinted}
+                />
+              </Field>
+              <Field>
+                <FieldLabel htmlFor="royaltyAddress">
+                  Royalty Address
+                </FieldLabel>
+                <Input
+                  id="royaltyAddress"
+                  value={royaltyAddress}
+                  onChange={handleInputChange(onRoyaltyAddressChange)}
+                  placeholder="Wallet address"
+                  className="bg-input"
+                  readOnly={isMinted}
+                  disabled={isMinted}
+                />
+              </Field>
+            </FieldGroup>
+          </div>
         </div>
         <SheetFooter className="px-6 pb-6">
           <SheetClose asChild>

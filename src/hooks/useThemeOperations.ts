@@ -7,11 +7,23 @@ import type { Database, Json } from "../lib/database.types";
 import { validateThemeJson } from "../lib/themes";
 
 type Theme = Database["public"]["Tables"]["themes"]["Row"];
+type ThemeStatus = Theme["status"];
 
 interface UseThemeOperationsProps {
   theme: Theme | null;
   user: User | null;
   onThemeUpdate: (theme: Theme) => void;
+}
+
+interface SavePropertiesPayload {
+  description: string;
+  status?: ThemeStatus;
+  authorName: string;
+  sponsor: string;
+  twitter: string;
+  website: string;
+  did: string;
+  royaltyAddress: string;
 }
 
 export function useThemeOperations({
@@ -52,19 +64,36 @@ export function useThemeOperations({
     }
   };
 
-  const saveProperties = async (
-    description: string,
-    status?: Theme["status"]
-  ) => {
+  const saveProperties = async ({
+    description,
+    status,
+    authorName,
+    sponsor,
+    twitter,
+    website,
+    did,
+    royaltyAddress,
+  }: SavePropertiesPayload) => {
     if (!theme || !user) {
       return;
     }
 
     setIsSavingNotes(true);
     try {
+      const toNullable = (value: string) => {
+        const trimmed = value.trim();
+        return trimmed.length > 0 ? trimmed : null;
+      };
+
       const updatedTheme = await themesApi.update(theme.id, {
         description: description.trim() || null,
         status,
+        author_name: toNullable(authorName),
+        sponsor: toNullable(sponsor),
+        twitter: toNullable(twitter),
+        website: toNullable(website),
+        did: toNullable(did),
+        royalty_address: toNullable(royaltyAddress),
       });
 
       toast.success("Theme properties saved successfully!");

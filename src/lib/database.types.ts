@@ -160,6 +160,7 @@ export type Database = {
           id: string;
           name: string;
           royalty_address: string | null;
+          sponsor: string | null;
           status: Database["public"]["Enums"]["theme_status"];
           theme: Json | null;
           twitter: string | null;
@@ -176,6 +177,7 @@ export type Database = {
           id?: string;
           name?: string;
           royalty_address?: string | null;
+          sponsor?: string | null;
           status?: Database["public"]["Enums"]["theme_status"];
           theme?: Json | null;
           twitter?: string | null;
@@ -192,6 +194,7 @@ export type Database = {
           id?: string;
           name?: string;
           royalty_address?: string | null;
+          sponsor?: string | null;
           status?: Database["public"]["Enums"]["theme_status"];
           theme?: Json | null;
           twitter?: string | null;
