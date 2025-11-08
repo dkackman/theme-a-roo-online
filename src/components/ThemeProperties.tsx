@@ -1,3 +1,12 @@
+import { Button } from "@/components/ui/button";
+import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Sheet,
   SheetClose,
@@ -7,16 +16,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { Database } from "@/lib/database.types";
 import { type ChangeEvent } from "react";
 
@@ -27,8 +27,8 @@ type ThemePropertiesProps = {
   onOpenChange: (open: boolean) => void;
   status: ThemeStatus;
   onStatusChange: (status: ThemeStatus) => void;
-  notes: string;
-  onNotesChange: (notes: string) => void;
+  description: string;
+  onDescriptionChange: (description: string) => void;
   onSave: () => void;
   isSaving?: boolean;
 };
@@ -38,18 +38,18 @@ export function ThemeProperties({
   onOpenChange,
   status,
   onStatusChange,
-  notes,
-  onNotesChange,
+  description,
+  onDescriptionChange,
   onSave,
   isSaving = false,
 }: ThemePropertiesProps) {
   const isMinted = status === "minted";
 
-  const handleNotesChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
+  const handleDescriptionChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     if (isMinted) {
       return;
     }
-    onNotesChange(event.target.value);
+    onDescriptionChange(event.target.value);
   };
 
   return (
@@ -86,12 +86,12 @@ export function ThemeProperties({
               </Select>
             </Field>
             <Field>
-              <FieldLabel htmlFor="notes">Notes</FieldLabel>
+              <FieldLabel htmlFor="description">Description</FieldLabel>
               <Textarea
-                id="notes"
-                value={notes}
-                onChange={handleNotesChange}
-                placeholder="Add your notes here..."
+                id="description"
+                value={description}
+                onChange={handleDescriptionChange}
+                placeholder="Add your description here..."
                 className="bg-input"
                 rows={5}
                 readOnly={isMinted}

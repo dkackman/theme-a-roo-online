@@ -47,10 +47,12 @@ export default function UserProfile() {
     name: string | null;
     twitter: string | null;
     website: string | null;
+    sponsor: string | null;
   }>({
     name: null,
     twitter: null,
     website: null,
+    sponsor: null,
   });
   const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   const [isOpen, setIsOpen] = useState(false);
@@ -59,6 +61,7 @@ export default function UserProfile() {
     name: "",
     twitter: "",
     website: "",
+    sponsor: "",
   });
 
   // Fetch user profile data
@@ -75,11 +78,13 @@ export default function UserProfile() {
           name: data.name,
           twitter: data.twitter,
           website: data.website,
+          sponsor: data.sponsor,
         });
         setFormData({
           name: data.name || "",
           twitter: data.twitter || "",
           website: data.website || "",
+          sponsor: data.sponsor || "",
         });
       } catch (error) {
         console.error("Error fetching profile:", error);
@@ -104,6 +109,7 @@ export default function UserProfile() {
         name: formData.name || null,
         twitter: formData.twitter || null,
         website: formData.website || null,
+        sponsor: formData.sponsor || null,
       });
 
       // Update local state
@@ -111,6 +117,7 @@ export default function UserProfile() {
         name: formData.name || null,
         twitter: formData.twitter || null,
         website: formData.website || null,
+        sponsor: formData.sponsor || null,
       });
 
       toast.success("Profile updated successfully!");
@@ -203,6 +210,17 @@ export default function UserProfile() {
                     }
                   />
                 </Field>
+                <Field>
+                  <FieldLabel htmlFor="sponsor">Sponsor Name</FieldLabel>
+                  <Input
+                    id="sponsor"
+                    placeholder="Your sponsor name"
+                    value={formData.sponsor}
+                    onChange={(e) =>
+                      setFormData({ ...formData, sponsor: e.target.value })
+                    }
+                  />
+                </Field>
               </FieldGroup>
             </div>
             <SheetFooter className="px-6 pb-6">
@@ -227,6 +245,12 @@ export default function UserProfile() {
             <Input value={profile.name} readOnly className="bg-muted" />
           </Field>
         )}
+
+        {/* Email */}
+        <Field>
+          <FieldLabel>Email</FieldLabel>
+          <Input value={user.email || ""} readOnly className="bg-muted" />
+        </Field>
 
         {/* Twitter */}
         {profile.twitter && (
@@ -257,21 +281,13 @@ export default function UserProfile() {
           </Field>
         )}
 
-        {/* Email */}
-        <Field>
-          <FieldLabel>Email</FieldLabel>
-          <Input value={user.email || ""} readOnly className="bg-muted" />
-        </Field>
-
-        {/* User ID */}
-        <Field>
-          <FieldLabel>User ID</FieldLabel>
-          <Input
-            value={user.id}
-            readOnly
-            className="bg-muted font-mono text-sm"
-          />
-        </Field>
+        {/* Sponsor */}
+        {profile.sponsor && (
+          <Field>
+            <FieldLabel>Sponsor Name</FieldLabel>
+            <Input value={profile.sponsor} readOnly className="bg-muted" />
+          </Field>
+        )}
 
         {/* User Role */}
         <Field>

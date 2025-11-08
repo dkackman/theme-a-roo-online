@@ -152,37 +152,52 @@ export type Database = {
       };
       themes: {
         Row: {
+          author_name: string | null;
           created_at: string | null;
+          description: string | null;
+          did: string | null;
           display_name: string;
           id: string;
           name: string;
-          notes: string | null;
+          royalty_address: string | null;
           status: Database["public"]["Enums"]["theme_status"];
           theme: Json | null;
+          twitter: string | null;
           updated_at: string | null;
           user_id: string;
+          website: string | null;
         };
         Insert: {
+          author_name?: string | null;
           created_at?: string | null;
+          description?: string | null;
+          did?: string | null;
           display_name?: string;
           id?: string;
           name?: string;
-          notes?: string | null;
+          royalty_address?: string | null;
           status?: Database["public"]["Enums"]["theme_status"];
           theme?: Json | null;
+          twitter?: string | null;
           updated_at?: string | null;
           user_id: string;
+          website?: string | null;
         };
         Update: {
+          author_name?: string | null;
           created_at?: string | null;
+          description?: string | null;
+          did?: string | null;
           display_name?: string;
           id?: string;
           name?: string;
-          notes?: string | null;
+          royalty_address?: string | null;
           status?: Database["public"]["Enums"]["theme_status"];
           theme?: Json | null;
+          twitter?: string | null;
           updated_at?: string | null;
           user_id?: string;
+          website?: string | null;
         };
         Relationships: [
           {
@@ -203,6 +218,7 @@ export type Database = {
           last_sign_in_at: string | null;
           name: string | null;
           role: string | null;
+          sponsor: string | null;
           twitter: string | null;
           updated_at: string | null;
           website: string | null;
@@ -215,6 +231,7 @@ export type Database = {
           last_sign_in_at?: string | null;
           name?: string | null;
           role?: string | null;
+          sponsor?: string | null;
           twitter?: string | null;
           updated_at?: string | null;
           website?: string | null;
@@ -227,6 +244,7 @@ export type Database = {
           last_sign_in_at?: string | null;
           name?: string | null;
           role?: string | null;
+          sponsor?: string | null;
           twitter?: string | null;
           updated_at?: string | null;
           website?: string | null;

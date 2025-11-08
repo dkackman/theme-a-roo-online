@@ -36,7 +36,7 @@ export default function ThemeEditor() {
   const [themeJson, setThemeJson] = useState("");
   const [isLoadingTheme, setIsLoadingTheme] = useState(true);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
-  const [notes, setNotes] = useState("");
+  const [description, setDescription] = useState("");
   const [themeStatus, setThemeStatus] = useState<DbTheme["status"]>("draft");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editorTheme, setEditorTheme] = useState<"vs" | "vs-dark">("vs");
@@ -126,7 +126,7 @@ export default function ThemeEditor() {
         themeJsonString = JSON.stringify(data.theme, null, 2);
       }
       setThemeJson(themeJsonString);
-      setNotes(data.notes || "");
+      setDescription(data.description || "");
       setThemeStatus(data.status);
 
       setValidationError(null);
@@ -171,7 +171,7 @@ export default function ThemeEditor() {
   const handleSaveTheme = () => saveTheme(themeJson);
 
   const handleSaveProperties = async () => {
-    const success = await saveProperties(notes, themeStatus);
+    const success = await saveProperties(description, themeStatus);
     if (success) {
       setIsEditSheetOpen(false);
     }
@@ -328,8 +328,8 @@ export default function ThemeEditor() {
         onOpenChange={setIsEditSheetOpen}
         status={themeStatus}
         onStatusChange={setThemeStatus}
-        notes={notes}
-        onNotesChange={setNotes}
+        description={description}
+        onDescriptionChange={setDescription}
         onSave={handleSaveProperties}
         isSaving={isSavingNotes}
       />

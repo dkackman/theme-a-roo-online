@@ -64,12 +64,13 @@ export function useUserThemes() {
             const convertedTheme = {
               name: dbTheme.name,
               displayName: dbTheme.display_name,
-              description: dbTheme.notes || `Custom theme by ${user.email}`,
+              description:
+                dbTheme.description ||
+                `Custom theme by ${user.user_metadata.name}`,
               schemaVersion: 1,
               ...themeData,
             } as Theme;
 
-            // Initialize the theme
             const initializedTheme = await initializeTheme(convertedTheme);
 
             return {

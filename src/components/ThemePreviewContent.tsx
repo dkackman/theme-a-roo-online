@@ -131,16 +131,18 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
           <div className="space-y-2">
             <h3 className="font-medium">Color Palette</h3>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <div className="border bg-background p-3 text-foreground">
+              <div className="rounded-sm border bg-background p-3 text-foreground">
                 Background
               </div>
-              <div className="bg-primary p-3 text-primary-foreground">
+              <div className="rounded-sm bg-primary p-3 text-primary-foreground">
                 Primary
               </div>
-              <div className="bg-secondary p-3 text-secondary-foreground">
+              <div className="rounded-sm bg-secondary p-3 text-secondary-foreground">
                 Secondary
               </div>
-              <div className="bg-muted p-3 text-muted-foreground">Muted</div>
+              <div className="rounded-sm bg-muted p-3 text-muted-foreground">
+                Muted
+              </div>
             </div>
           </div>
         </CardContent>

@@ -171,9 +171,9 @@ export default function Home() {
                       {dbTheme.display_name}
                     </CardTitle>
                     <CardDescription>
-                      {dbTheme.notes
-                        ? dbTheme.notes.substring(0, 60) +
-                          (dbTheme.notes.length > 60 ? "..." : "")
+                      {dbTheme.description
+                        ? dbTheme.description.substring(0, 60) +
+                          (dbTheme.description.length > 60 ? "..." : "")
                         : "No description"}
                     </CardDescription>
                   </CardHeader>

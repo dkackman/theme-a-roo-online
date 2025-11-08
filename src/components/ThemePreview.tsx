@@ -295,7 +295,7 @@ export function ThemePreview({
           onClick={() => setIsHidden(false)}
           title="Restore preview"
         >
-          <PanelBottomOpen className="h-4 w-4" />
+          <PanelBottomOpen className="h-4 w-4 text-muted-foreground" />
         </Button>
       </div>
     );
@@ -320,7 +320,7 @@ export function ThemePreview({
               }}
               title="Open full preview"
             >
-              <Maximize2 className="h-4 w-4" />
+              <Maximize2 className="h-4 w-4 text-muted-foreground" />
             </Button>
             <Button
               variant="ghost"
@@ -332,7 +332,7 @@ export function ThemePreview({
               }}
               title="Hide preview"
             >
-              <PanelBottomClose className="h-4 w-4" />
+              <PanelBottomClose className="h-4 w-4 text-muted-foreground" />
             </Button>
           </div>
         </div>

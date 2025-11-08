@@ -52,7 +52,10 @@ export function useThemeOperations({
     }
   };
 
-  const saveProperties = async (notes: string, status?: Theme["status"]) => {
+  const saveProperties = async (
+    description: string,
+    status?: Theme["status"]
+  ) => {
     if (!theme || !user) {
       return;
     }
@@ -60,7 +63,7 @@ export function useThemeOperations({
     setIsSavingNotes(true);
     try {
       const updatedTheme = await themesApi.update(theme.id, {
-        notes: notes.trim() || null,
+        description: description.trim() || null,
         status,
       });
 
