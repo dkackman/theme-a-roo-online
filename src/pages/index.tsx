@@ -17,7 +17,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
-import { Check, Download, Palette, PencilOff, Plus } from "lucide-react";
+import { Download, Palette, Plus } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -187,23 +187,9 @@ export default function Home() {
                   </CardContent>
                   <CardFooter>
                     <div className="flex items-center justify-between w-full">
-                      <div className="text-sm text-muted-foreground">
-                        {dbTheme.is_draft ? (
-                          <div
-                            title="Draft"
-                            className="flex items-center gap-2"
-                          >
-                            <PencilOff className="w-4 h-4 mr-2 text-muted-foreground" />
-                          </div>
-                        ) : (
-                          <div
-                            title="Active"
-                            className="flex items-center gap-2"
-                          >
-                            <Check className="w-4 h-4 mr-2 text-muted-foreground" />
-                          </div>
-                        )}
-                      </div>
+                      <span className="text-sm font-medium text-muted-foreground capitalize">
+                        {dbTheme.status}
+                      </span>
                       <div onClick={(e) => e.stopPropagation()}>
                         <DeleteButton
                           title="Delete Theme"

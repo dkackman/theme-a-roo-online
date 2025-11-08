@@ -52,7 +52,7 @@ export function useThemeOperations({
     }
   };
 
-  const saveProperties = async (notes: string, isDraft?: boolean) => {
+  const saveProperties = async (notes: string, status?: Theme["status"]) => {
     if (!theme || !user) {
       return;
     }
@@ -61,15 +61,15 @@ export function useThemeOperations({
     try {
       const updatedTheme = await themesApi.update(theme.id, {
         notes: notes.trim() || null,
-        is_draft: isDraft,
+        status,
       });
 
-      toast.success("Notes saved successfully!");
+      toast.success("Theme properties saved successfully!");
       onThemeUpdate(updatedTheme);
       return true; // Success indicator
     } catch (error) {
-      console.error("Error saving notes:", error);
-      toast.error("Failed to save notes");
+      console.error("Error saving theme properties:", error);
+      toast.error("Failed to save theme properties");
       return false; // Failure indicator
     } finally {
       setIsSavingNotes(false);

@@ -33,7 +33,7 @@ export function ThemeSelector() {
     a.displayName.localeCompare(b.displayName)
   );
   const customThemes = userThemes
-    .filter((userTheme) => !userTheme.dbTheme.is_draft)
+    .filter((userTheme) => userTheme.dbTheme.status !== "draft")
     .sort((a, b) => a.theme.displayName.localeCompare(b.theme.displayName));
 
   return (

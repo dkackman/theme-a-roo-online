@@ -1,6 +1,7 @@
 import { ThemeEditorActions } from "@/components/ThemeEditorActions";
 import { ThemeEditorTabs } from "@/components/ThemeEditorTabs";
 import { ThemePreview } from "@/components/ThemePreview";
+import { ThemeProperties } from "@/components/ThemeProperties";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -13,21 +14,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Field, FieldGroup, FieldLabel } from "@/components/ui/field";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet";
-import { Textarea } from "@/components/ui/textarea";
 import { FileText, Maximize2, Minimize2 } from "lucide-react";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useState, type ChangeEvent } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useSimpleTheme, type Theme } from "theme-o-rama";
 import { useAuth } from "../Contexts/AuthContext";
@@ -48,7 +37,7 @@ export default function ThemeEditor() {
   const [isLoadingTheme, setIsLoadingTheme] = useState(true);
   const [isEditSheetOpen, setIsEditSheetOpen] = useState(false);
   const [notes, setNotes] = useState("");
-  const [isDraft, setIsDraft] = useState(false);
+  const [themeStatus, setThemeStatus] = useState<DbTheme["status"]>("draft");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editorTheme, setEditorTheme] = useState<"vs" | "vs-dark">("vs");
   const [isMaximized, setIsMaximized] = useState(() => {
@@ -138,7 +127,7 @@ export default function ThemeEditor() {
       }
       setThemeJson(themeJsonString);
       setNotes(data.notes || "");
-      setIsDraft(data.is_draft || false);
+      setThemeStatus(data.status);
 
       setValidationError(null);
     } catch (error) {
@@ -173,10 +162,16 @@ export default function ThemeEditor() {
     }
   }, [id, loadTheme, user]);
 
+  useEffect(() => {
+    if (theme) {
+      setThemeStatus(theme.status);
+    }
+  }, [theme]);
+
   const handleSaveTheme = () => saveTheme(themeJson);
 
   const handleSaveProperties = async () => {
-    const success = await saveProperties(notes, isDraft);
+    const success = await saveProperties(notes, themeStatus);
     if (success) {
       setIsEditSheetOpen(false);
     }
@@ -328,62 +323,16 @@ export default function ThemeEditor() {
         validateTheme={validateTheme}
         onValidationChange={setValidationError}
       />
-
-      {/* Notes Side Sheet */}
-      <Sheet open={isEditSheetOpen} onOpenChange={setIsEditSheetOpen}>
-        <SheetContent className="w-full sm:max-w-md bg-popover">
-          <SheetHeader className="px-6 pt-6">
-            <SheetTitle>Theme Properties</SheetTitle>
-            <SheetDescription>Edit the theme properties.</SheetDescription>
-          </SheetHeader>
-          <div className="px-6 py-6">
-            <FieldGroup>
-              <Field>
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="is-draft"
-                    checked={isDraft}
-                    onCheckedChange={(checked) =>
-                      setIsDraft(checked as boolean)
-                    }
-                  />
-                  <FieldLabel htmlFor="is-draft">Draft</FieldLabel>
-                </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Mark this theme as a draft. Draft themes are not published.
-                </p>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="notes">Notes</FieldLabel>
-                <Textarea
-                  id="notes"
-                  value={notes}
-                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                    setNotes(e.target.value)
-                  }
-                  placeholder="Add your notes here..."
-                  className="bg-input"
-                  rows={5}
-                />
-              </Field>
-            </FieldGroup>
-          </div>
-          <SheetFooter className="px-6 pb-6">
-            <SheetClose asChild>
-              <Button variant="secondary" disabled={isSavingNotes}>
-                Cancel
-              </Button>
-            </SheetClose>
-            <Button
-              variant="default"
-              onClick={handleSaveProperties}
-              disabled={isSavingNotes}
-            >
-              {isSavingNotes ? "Saving..." : "Save"}
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+      <ThemeProperties
+        open={isEditSheetOpen}
+        onOpenChange={setIsEditSheetOpen}
+        status={themeStatus}
+        onStatusChange={setThemeStatus}
+        notes={notes}
+        onNotesChange={setNotes}
+        onSave={handleSaveProperties}
+        isSaving={isSavingNotes}
+      />
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog

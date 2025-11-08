@@ -155,9 +155,9 @@ export type Database = {
           created_at: string | null;
           display_name: string;
           id: string;
-          is_draft: boolean;
           name: string;
           notes: string | null;
+          status: Database["public"]["Enums"]["theme_status"];
           theme: Json | null;
           updated_at: string | null;
           user_id: string;
@@ -166,9 +166,9 @@ export type Database = {
           created_at?: string | null;
           display_name?: string;
           id?: string;
-          is_draft?: boolean;
           name?: string;
           notes?: string | null;
+          status?: Database["public"]["Enums"]["theme_status"];
           theme?: Json | null;
           updated_at?: string | null;
           user_id: string;
@@ -177,9 +177,9 @@ export type Database = {
           created_at?: string | null;
           display_name?: string;
           id?: string;
-          is_draft?: boolean;
           name?: string;
           notes?: string | null;
+          status?: Database["public"]["Enums"]["theme_status"];
           theme?: Json | null;
           updated_at?: string | null;
           user_id?: string;
@@ -253,6 +253,7 @@ export type Database = {
     Enums: {
       file_use_type: "background" | "banner" | "preview";
       network: "mainnet" | "testnet";
+      theme_status: "draft" | "ready" | "published" | "minted";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -385,6 +386,7 @@ export const Constants = {
     Enums: {
       file_use_type: ["background", "banner", "preview"],
       network: ["mainnet", "testnet"],
+      theme_status: ["draft", "ready", "published", "minted"],
     },
   },
 } as const;
