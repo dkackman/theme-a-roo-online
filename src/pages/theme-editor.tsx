@@ -31,6 +31,8 @@ export default function ThemeEditor() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const { id } = router.query;
+  const themeId = typeof id === "string" ? id : null;
+  const userId = user?.id ?? null;
 
   const [theme, setTheme] = useState<DbTheme | null>(null);
   const [themeJson, setThemeJson] = useState("");
@@ -112,13 +114,13 @@ export default function ThemeEditor() {
   }, []);
 
   const loadTheme = useCallback(async () => {
-    if (!user || !id || typeof id !== "string") {
+    if (!userId || !themeId) {
       return;
     }
 
     setIsLoadingTheme(true);
     try {
-      const data = await themesApi.getById(id, user.id);
+      const data = await themesApi.getById(themeId, userId);
       setTheme(data);
       let themeJsonString = "";
       if (typeof data.theme === "string") {
@@ -139,7 +141,7 @@ export default function ThemeEditor() {
     } finally {
       setIsLoadingTheme(false);
     }
-  }, [id, user]);
+  }, [themeId, userId]);
 
   // Parse theme JSON to get the theme object for the context
   const parsedTheme: Theme | null = (() => {
@@ -160,10 +162,10 @@ export default function ThemeEditor() {
   }, []);
 
   useEffect(() => {
-    if (id && user) {
+    if (themeId && userId) {
       void loadTheme();
     }
-  }, [id, loadTheme, user]);
+  }, [loadTheme, themeId, userId]);
 
   useEffect(() => {
     if (!theme) {
