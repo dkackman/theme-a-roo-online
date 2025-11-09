@@ -7,7 +7,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSimpleTheme, type Theme } from "theme-o-rama";
-import { ThemePreviewRenderer } from "./ThemePreviewContent";
+import { ThemePreviewRenderer } from "./ThemePreviewRenderer";
 import { Button } from "./ui/button";
 
 export interface ThemePreviewProps {
@@ -23,7 +23,7 @@ export function ThemePreview({
   validateTheme,
   onValidationChange,
   debounceMs = 500,
-  insetScale = 0.2,
+  insetScale = 0.33,
 }: ThemePreviewProps) {
   const { initializeTheme } = useSimpleTheme();
   const PREVIEW_HIDDEN_STORAGE_KEY = "theme-preview-hidden";

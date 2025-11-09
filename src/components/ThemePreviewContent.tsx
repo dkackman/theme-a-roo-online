@@ -1,6 +1,4 @@
-import { cn } from "@/lib/utils";
-import { useEffect, useRef } from "react";
-import { applyThemeIsolated, type Theme } from "theme-o-rama";
+import { type Theme } from "theme-o-rama";
 import { Button } from "./ui/button";
 import {
   Card,
@@ -9,39 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from "./ui/card";
-
-interface ThemePreviewRendererProps {
-  theme: Theme | null;
-  className?: string;
-}
-
 interface ThemePreviewContentProps {
   theme: Theme | null;
-}
-
-export function ThemePreviewRenderer({
-  theme,
-  className,
-}: ThemePreviewRendererProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
-
-  useEffect(() => {
-    if (containerRef.current && theme) {
-      applyThemeIsolated(theme, containerRef.current);
-    }
-  }, [theme]);
-
-  return (
-    <div
-      ref={containerRef}
-      className={cn(
-        "theme-preview relative h-full overflow-auto rounded-lg border bg-background text-foreground theme-card-isolated",
-        className
-      )}
-    >
-      <ThemePreviewContent theme={theme} />
-    </div>
-  );
 }
 
 export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
@@ -91,7 +58,7 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
           <div className="space-y-2">
             <h3 className="font-medium">Buttons</h3>
             <div className="flex flex-wrap gap-2">
-              <Button variant="default">Primary</Button>
+              <Button variant="default">Default</Button>
               <Button variant="secondary">Secondary</Button>
               <Button variant="destructive">Destructive</Button>
               <Button variant="outline">Outline</Button>
@@ -131,9 +98,6 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
           <div className="space-y-2">
             <h3 className="font-medium">Color Palette</h3>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-              <div className="rounded-sm border bg-background p-3 text-foreground">
-                Background
-              </div>
               <div className="rounded-sm bg-primary p-3 text-primary-foreground">
                 Primary
               </div>

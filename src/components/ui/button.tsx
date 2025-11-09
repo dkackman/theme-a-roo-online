@@ -46,15 +46,15 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     const Comp = asChild ? Slot : "button";
 
     // Get current theme styles from body data attribute
-    const themeStyles =
+    const themeStyle =
       typeof document !== "undefined"
-        ? document.body.getAttribute("data-theme-styles") || ""
+        ? document.documentElement.getAttribute("data-theme-style") || ""
         : "";
 
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
-        data-theme-style={themeStyles}
+        data-theme-style={themeStyle}
         ref={ref}
         {...props}
       />
