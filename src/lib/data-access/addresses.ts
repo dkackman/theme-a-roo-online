@@ -1,5 +1,5 @@
-import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
+import { supabase } from "../supabaseClient";
 
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
 type AddressInsert = Database["public"]["Tables"]["addresses"]["Insert"];
@@ -116,12 +116,9 @@ export const addressesApi = {
   },
 
   /**
-   * Update address metadata
+   * Update address name
    */
-  async updateMetadata(
-    addressId: string,
-    metadata: Database["public"]["Tables"]["addresses"]["Row"]["metadata"]
-  ) {
-    return await this.update(addressId, { metadata });
+  async updateName(addressId: string, name: string | null) {
+    return await this.update(addressId, { name });
   },
 };

@@ -104,7 +104,7 @@ export function ThemeProperties({
               >
                 <SelectTrigger
                   id="status"
-                  className="w-full"
+                  className="w-full bg-input"
                   disabled={isMinted}
                 >
                   <SelectValue placeholder="Select status" />

@@ -1,6 +1,8 @@
-import { Copy, Pencil, Trash2, Wallet } from "lucide-react";
-import { useState, type ChangeEvent } from "react";
+import { Wallet } from "lucide-react";
+import { useState } from "react";
 import type { Database } from "../lib/database.types";
+import AddressCard from "./AddressCard";
+import AddressProperties from "./AddressProperties";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,27 +13,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "./ui/alert-dialog";
-import { Badge } from "./ui/badge";
-import { Button } from "./ui/button";
-import { Field, FieldGroup, FieldLabel } from "./ui/field";
-import { Input } from "./ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "./ui/select";
-import {
-  Sheet,
-  SheetClose,
-  SheetContent,
-  SheetDescription,
-  SheetFooter,
-  SheetHeader,
-  SheetTitle,
-} from "./ui/sheet";
-import { Textarea } from "./ui/textarea";
 import {
   Tooltip,
   TooltipContent,
@@ -48,21 +29,12 @@ interface AddressListProps {
     id: string,
     updates: {
       address: string;
+      name: string | null;
       notes: string | null;
       network: number;
     }
   ) => Promise<void>;
 }
-
-const getNetworkLabel = (network: number): string => {
-  return network === 0 ? "Mainnet" : "Testnet";
-};
-
-const getNetworkBadgeVariant = (
-  network: number
-): "default" | "secondary" | "outline" => {
-  return network === 0 ? "default" : "secondary";
-};
 
 export default function AddressList({
   addresses = [],
@@ -72,10 +44,6 @@ export default function AddressList({
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
   const [deletingAddress, setDeletingAddress] = useState<Address | null>(null);
-  const [editAddress, setEditAddress] = useState("");
-  const [editNotes, setEditNotes] = useState("");
-  const [editNetwork, setEditNetwork] = useState<number>(0);
-  const [isSaving, setIsSaving] = useState(false);
 
   const copyToClipboard = async (text: string, id: string) => {
     try {
@@ -87,46 +55,27 @@ export default function AddressList({
     }
   };
 
-  const openEditSheet = (address: Address) => {
-    setEditingAddress(address);
-    setEditAddress(address.address);
-    setEditNotes(address.notes || "");
-    setEditNetwork(address.network);
-  };
-
-  const closeEditSheet = () => {
-    setEditingAddress(null);
-    setEditAddress("");
-    setEditNotes("");
-    setEditNetwork(0);
-  };
-
-  const handleSave = async () => {
-    if (!editingAddress || !onUpdate) {
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      await onUpdate(editingAddress.id, {
-        address: editAddress,
-        notes: editNotes.trim() || null,
-        network: editNetwork,
-      });
-      closeEditSheet();
-    } catch (err) {
-      console.error("Failed to update address:", err);
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
   const handleDelete = () => {
     if (!deletingAddress) {
       return;
     }
     onDelete(deletingAddress.id);
     setDeletingAddress(null);
+  };
+
+  const handleSave = async (
+    id: string,
+    updates: {
+      address: string;
+      name: string | null;
+      notes: string | null;
+      network: number;
+    }
+  ) => {
+    if (!onUpdate) {
+      return;
+    }
+    await onUpdate(id, updates);
   };
 
   if (!addresses.length) {
@@ -143,82 +92,17 @@ export default function AddressList({
 
   return (
     <>
-      <ul className="space-y-4">
-        {addresses.map((a) => (
-          <li
-            key={a.id}
-            className="border rounded-lg p-4 hover:bg-accent/50 transition-colors"
-          >
-            <div className="space-y-3">
-              {/* Address */}
-              <div className="flex items-center gap-2">
-                <div className="flex-1 min-w-0">
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">
-                    Address
-                  </label>
-                  <div className="flex items-center gap-2">
-                    <code className="text-sm font-mono truncate block bg-muted px-2 py-1 rounded">
-                      {a.address}
-                    </code>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => copyToClipboard(a.address, a.id)}
-                      className="flex-shrink-0"
-                      aria-label="Copy address"
-                    >
-                      <Copy className="w-4 h-4" />
-                      {copiedId === a.id && (
-                        <span className="ml-1 text-xs">Copied!</span>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-              </div>
-
-              {/* Network */}
-              <div>
-                <label className="block text-xs font-medium text-muted-foreground mb-1">
-                  Network
-                </label>
-                <Badge variant={getNetworkBadgeVariant(a.network)}>
-                  {getNetworkLabel(a.network)}
-                </Badge>
-              </div>
-
-              {/* Notes */}
-              {a.notes && (
-                <div>
-                  <label className="block text-xs font-medium text-muted-foreground mb-1">
-                    Notes
-                  </label>
-                  <p className="text-sm">{a.notes}</p>
-                </div>
-              )}
-
-              {/* Actions */}
-              <div className="flex justify-end gap-2 pt-2">
-                <Button
-                  onClick={() => openEditSheet(a)}
-                  variant="outline"
-                  size="sm"
-                >
-                  <Pencil className="w-4 h-4 mr-2" />
-                  Edit
-                </Button>
-                <Button
-                  onClick={() => setDeletingAddress(a)}
-                  variant="destructive"
-                  size="sm"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete
-                </Button>
-              </div>
-            </div>
-          </li>
-        ))}
-      </ul>
+      {addresses.map((a) => (
+        <AddressCard
+          key={a.id}
+          address={a}
+          name={a.name}
+          copiedId={copiedId}
+          onCopy={copyToClipboard}
+          onEdit={setEditingAddress}
+          onDelete={setDeletingAddress}
+        />
+      ))}
 
       {/* Delete Confirmation Dialog */}
       <TooltipProvider>
@@ -258,74 +142,12 @@ export default function AddressList({
       </TooltipProvider>
 
       {/* Edit Sheet */}
-      <Sheet
-        open={!!editingAddress}
-        onOpenChange={(open) => !open && closeEditSheet()}
-      >
-        <SheetContent className="w-full sm:max-w-md">
-          <SheetHeader className="px-6 pt-6">
-            <SheetTitle>Edit Address</SheetTitle>
-            <SheetDescription>
-              Make changes to your address information here.
-            </SheetDescription>
-          </SheetHeader>
-          <div className="px-6 py-6">
-            <FieldGroup className="gap-4">
-              <Field>
-                <FieldLabel htmlFor="address">Address</FieldLabel>
-                <Input
-                  id="address"
-                  value={editAddress}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setEditAddress(e.target.value)
-                  }
-                  placeholder="Enter address"
-                />
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="network">Network</FieldLabel>
-                <Select
-                  value={editNetwork.toString()}
-                  onValueChange={(value) => setEditNetwork(parseInt(value, 10))}
-                >
-                  <SelectTrigger id="network">
-                    <SelectValue placeholder="Select network" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0">Mainnet</SelectItem>
-                    <SelectItem value="1">Testnet</SelectItem>
-                  </SelectContent>
-                </Select>
-              </Field>
-              <Field>
-                <FieldLabel htmlFor="notes">Notes</FieldLabel>
-                <Textarea
-                  id="notes"
-                  value={editNotes}
-                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                    setEditNotes(e.target.value)
-                  }
-                  placeholder="Add notes (optional)"
-                  rows={5}
-                />
-              </Field>
-            </FieldGroup>
-          </div>
-          <SheetFooter className="px-6 pb-6">
-            <SheetClose asChild>
-              <Button variant="outline" disabled={isSaving}>
-                Cancel
-              </Button>
-            </SheetClose>
-            <Button
-              onClick={handleSave}
-              disabled={isSaving || !editAddress.trim()}
-            >
-              {isSaving ? "Saving..." : "Save changes"}
-            </Button>
-          </SheetFooter>
-        </SheetContent>
-      </Sheet>
+      <AddressProperties
+        address={editingAddress}
+        isOpen={!!editingAddress}
+        onClose={() => setEditingAddress(null)}
+        onSave={handleSave}
+      />
     </>
   );
 }
