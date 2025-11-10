@@ -85,54 +85,52 @@ export default function UserProfileProperties({
             profile.
           </SheetDescription>
         </SheetHeader>
-        <div className="px-6 py-6">
-          <FieldGroup className="gap-4">
-            <Field>
-              <FieldLabel htmlFor="name">Display Name</FieldLabel>
-              <Input
-                id="name"
-                placeholder="Your name"
-                value={formData.name}
-                onChange={(e) =>
-                  setFormData({ ...formData, name: e.target.value })
-                }
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="twitter">Twitter</FieldLabel>
-              <Input
-                id="twitter"
-                placeholder="twitter.com/username or @username"
-                value={formData.twitter}
-                onChange={(e) =>
-                  setFormData({ ...formData, twitter: e.target.value })
-                }
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="website">Website</FieldLabel>
-              <Input
-                id="website"
-                placeholder="https://example.com"
-                value={formData.website}
-                onChange={(e) =>
-                  setFormData({ ...formData, website: e.target.value })
-                }
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="sponsor">Sponsor Name</FieldLabel>
-              <Input
-                id="sponsor"
-                placeholder="Your sponsor name"
-                value={formData.sponsor}
-                onChange={(e) =>
-                  setFormData({ ...formData, sponsor: e.target.value })
-                }
-              />
-            </Field>
-          </FieldGroup>
-        </div>
+        <FieldGroup className="gap-4 px-6 overflow-y-auto">
+          <Field>
+            <FieldLabel htmlFor="name">Display Name</FieldLabel>
+            <Input
+              id="name"
+              placeholder="Your name"
+              value={formData.name}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="twitter">Twitter</FieldLabel>
+            <Input
+              id="twitter"
+              placeholder="twitter.com/username or @username"
+              value={formData.twitter}
+              onChange={(e) =>
+                setFormData({ ...formData, twitter: e.target.value })
+              }
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="website">Website</FieldLabel>
+            <Input
+              id="website"
+              placeholder="https://example.com"
+              value={formData.website}
+              onChange={(e) =>
+                setFormData({ ...formData, website: e.target.value })
+              }
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="sponsor">Sponsor Name</FieldLabel>
+            <Input
+              id="sponsor"
+              placeholder="Your sponsor name"
+              value={formData.sponsor}
+              onChange={(e) =>
+                setFormData({ ...formData, sponsor: e.target.value })
+              }
+            />
+          </Field>
+        </FieldGroup>
         <SheetFooter className="px-6 pb-6">
           <SheetClose asChild>
             <Button variant="outline" disabled={isSaving}>

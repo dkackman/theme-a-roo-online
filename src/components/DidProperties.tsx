@@ -121,109 +121,106 @@ export default function DidProperties({
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-full sm:max-w-md bg-popover overflow-y-auto">
+      <SheetContent className="w-full sm:max-w-md bg-popover">
         <SheetHeader className="px-6 pt-6">
           <SheetTitle>Edit DID</SheetTitle>
           <SheetDescription>
             Make changes to your DID information here.
           </SheetDescription>
         </SheetHeader>
-        <div className="px-6">
-          {editLauncherId.trim() && (
-            <div className="mb-2 flex justify-end">
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={handleRefreshFromMintGarden}
-                disabled={isRefreshing}
-                className="h-7 text-xs"
-              >
-                <RefreshCw
-                  className={`w-3 h-3 mr-1 ${isRefreshing ? "animate-spin" : ""}`}
+        {editLauncherId.trim() && (
+          <div className="flex justify-end px-6">
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={handleRefreshFromMintGarden}
+              disabled={isRefreshing}
+            >
+              <RefreshCw
+                className={`w-3 h-3 mr-1 ${isRefreshing ? "animate-spin" : ""}`}
+              />
+              Refresh from MintGarden
+            </Button>
+          </div>
+        )}
+        <FieldGroup className="gap-4 px-6 overflow-y-auto">
+          <Field>
+            <FieldLabel htmlFor="launcher_id">Launcher ID</FieldLabel>
+            <Input
+              id="launcher_id"
+              value={editLauncherId}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setEditLauncherId(e.target.value)
+              }
+              placeholder="Enter launcher ID"
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="network">Network</FieldLabel>
+            <Select
+              value={editNetwork.toString()}
+              onValueChange={(value) => setEditNetwork(parseInt(value, 10))}
+            >
+              <SelectTrigger id="network" className="bg-input">
+                <SelectValue placeholder="Select network" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Mainnet</SelectItem>
+                <SelectItem value="1">Testnet</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="name">Name</FieldLabel>
+            <Input
+              id="name"
+              value={editName}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setEditName(e.target.value)
+              }
+              placeholder="Enter a name (optional)"
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="avatar_uri">Avatar URI</FieldLabel>
+            <Input
+              id="avatar_uri"
+              value={editAvatarUri}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setEditAvatarUri(e.target.value)
+              }
+              placeholder="Enter avatar URI"
+            />
+            {editAvatarUri.trim() && (
+              <div className="mt-3">
+                <img
+                  src={editAvatarUri}
+                  alt="Avatar preview"
+                  className="w-16 h-16 rounded-lg object-cover border border-border"
+                  onError={(e) => {
+                    // Hide image on error
+                    e.currentTarget.style.display = "none";
+                  }}
                 />
-                Refresh from MintGarden
-              </Button>
-            </div>
-          )}
-          <FieldGroup className="gap-4">
-            <Field>
-              <FieldLabel htmlFor="launcher_id">Launcher ID</FieldLabel>
-              <Input
-                id="launcher_id"
-                value={editLauncherId}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setEditLauncherId(e.target.value)
-                }
-                placeholder="Enter launcher ID"
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="network">Network</FieldLabel>
-              <Select
-                value={editNetwork.toString()}
-                onValueChange={(value) => setEditNetwork(parseInt(value, 10))}
-              >
-                <SelectTrigger id="network" className="bg-input">
-                  <SelectValue placeholder="Select network" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0">Mainnet</SelectItem>
-                  <SelectItem value="1">Testnet</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="name">Name</FieldLabel>
-              <Input
-                id="name"
-                value={editName}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setEditName(e.target.value)
-                }
-                placeholder="Enter a name (optional)"
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="avatar_uri">Avatar URI</FieldLabel>
-              <Input
-                id="avatar_uri"
-                value={editAvatarUri}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setEditAvatarUri(e.target.value)
-                }
-                placeholder="Enter avatar URI"
-              />
-              {editAvatarUri.trim() && (
-                <div className="mt-3">
-                  <img
-                    src={editAvatarUri}
-                    alt="Avatar preview"
-                    className="w-16 h-16 rounded-lg object-cover border border-border"
-                    onError={(e) => {
-                      // Hide image on error
-                      e.currentTarget.style.display = "none";
-                    }}
-                  />
-                </div>
-              )}
-            </Field>
+              </div>
+            )}
+          </Field>
 
-            <Field>
-              <FieldLabel htmlFor="notes">Notes</FieldLabel>
-              <Textarea
-                id="notes"
-                value={editNotes}
-                onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                  setEditNotes(e.target.value)
-                }
-                className="bg-input"
-                placeholder="Add notes (optional)"
-                rows={3}
-              />
-            </Field>
-          </FieldGroup>
-        </div>
+          <Field>
+            <FieldLabel htmlFor="notes">Notes</FieldLabel>
+            <Textarea
+              id="notes"
+              value={editNotes}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                setEditNotes(e.target.value)
+              }
+              className="bg-input"
+              placeholder="Add notes (optional)"
+              rows={3}
+            />
+          </Field>
+        </FieldGroup>
         <SheetFooter className="px-6 pb-6">
           <SheetClose asChild>
             <Button variant="outline" disabled={isSaving}>

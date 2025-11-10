@@ -95,61 +95,59 @@ export default function AddressProperties({
             Make changes to your address information here.
           </SheetDescription>
         </SheetHeader>
-        <div className="px-6">
-          <FieldGroup className="gap-4">
-            <Field>
-              <FieldLabel htmlFor="name">Name</FieldLabel>
-              <Input
-                id="name"
-                value={editName}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setEditName(e.target.value)
-                }
-                placeholder="Enter name"
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="address">Address</FieldLabel>
-              <Input
-                id="address"
-                value={editAddress}
-                onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                  setEditAddress(e.target.value)
-                }
-                placeholder="Enter address"
-              />
-            </Field>
-            <Field>
-              <FieldLabel htmlFor="network">Network</FieldLabel>
-              <Select
-                value={editNetwork.toString()}
-                onValueChange={(value) => setEditNetwork(parseInt(value, 10))}
-              >
-                <SelectTrigger id="network" className="bg-input">
-                  <SelectValue placeholder="Select network" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="0">Mainnet</SelectItem>
-                  <SelectItem value="1">Testnet</SelectItem>
-                </SelectContent>
-              </Select>
-            </Field>
+        <FieldGroup className="gap-4 px-6 overflow-y-auto">
+          <Field>
+            <FieldLabel htmlFor="name">Name</FieldLabel>
+            <Input
+              id="name"
+              value={editName}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setEditName(e.target.value)
+              }
+              placeholder="Enter name"
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="address">Address</FieldLabel>
+            <Input
+              id="address"
+              value={editAddress}
+              onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                setEditAddress(e.target.value)
+              }
+              placeholder="Enter address"
+            />
+          </Field>
+          <Field>
+            <FieldLabel htmlFor="network">Network</FieldLabel>
+            <Select
+              value={editNetwork.toString()}
+              onValueChange={(value) => setEditNetwork(parseInt(value, 10))}
+            >
+              <SelectTrigger id="network" className="bg-input">
+                <SelectValue placeholder="Select network" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="0">Mainnet</SelectItem>
+                <SelectItem value="1">Testnet</SelectItem>
+              </SelectContent>
+            </Select>
+          </Field>
 
-            <Field>
-              <FieldLabel htmlFor="notes">Notes</FieldLabel>
-              <Textarea
-                id="notes"
-                value={editNotes}
-                onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                  setEditNotes(e.target.value)
-                }
-                className="bg-input"
-                placeholder="Add notes (optional)"
-                rows={3}
-              />
-            </Field>
-          </FieldGroup>
-        </div>
+          <Field>
+            <FieldLabel htmlFor="notes">Notes</FieldLabel>
+            <Textarea
+              id="notes"
+              value={editNotes}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                setEditNotes(e.target.value)
+              }
+              className="bg-input"
+              placeholder="Add notes (optional)"
+              rows={3}
+            />
+          </Field>
+        </FieldGroup>
         <SheetFooter className="px-6 pb-6">
           <SheetClose asChild>
             <Button variant="outline" disabled={isSaving}>
