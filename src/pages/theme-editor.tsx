@@ -1,4 +1,4 @@
-import { ThemeEditorActions } from "@/components/ThemeEditorActions";
+import { ThemeEditorHeader } from "@/components/ThemeEditorHeader";
 import { ThemeEditorTabs } from "@/components/ThemeEditorTabs";
 import { ThemePreview } from "@/components/ThemePreview";
 import { ThemeProperties } from "@/components/ThemeProperties";
@@ -12,11 +12,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { FileText, Maximize2, Minimize2 } from "lucide-react";
+import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/router";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, type CSSProperties } from "react";
 import { toast } from "sonner";
 import { useSimpleTheme, type Theme } from "theme-o-rama";
 import { useAuth } from "../Contexts/AuthContext";
@@ -26,6 +24,11 @@ import { themesApi } from "../lib/data-access";
 import type { Database } from "../lib/database.types";
 
 type DbTheme = Database["public"]["Tables"]["themes"]["Row"];
+
+type EditorLayoutMode = "normal" | "maximized";
+
+const LAYOUT_STORAGE_KEY = "theme-editor-layout";
+const SIDE_BY_SIDE_STORAGE_KEY = "theme-editor-side-by-side";
 
 export default function ThemeEditor() {
   const { user, loading } = useAuth();
@@ -48,14 +51,30 @@ export default function ThemeEditor() {
   const [royaltyAddress, setRoyaltyAddress] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [editorTheme, setEditorTheme] = useState<"vs" | "vs-dark">("vs");
-  const [isMaximized, setIsMaximized] = useState(() => {
-    // Initialize from localStorage
-    if (typeof window !== "undefined") {
-      const saved = localStorage.getItem("theme-editor-maximized");
-      return saved === "true";
+  const [layoutMode, setLayoutMode] = useState<EditorLayoutMode>(() => {
+    if (typeof window === "undefined") {
+      return "normal";
     }
-    return false;
+    const stored = window.localStorage.getItem(LAYOUT_STORAGE_KEY);
+    if (stored === "normal" || stored === "maximized") {
+      return stored;
+    }
+    const legacyMaximized = window.localStorage.getItem(
+      "theme-editor-maximized"
+    );
+    if (legacyMaximized === "true") {
+      return "maximized";
+    }
+    return "normal";
   });
+  const [isSideBySide, setIsSideBySide] = useState(() => {
+    if (typeof window === "undefined") {
+      return false;
+    }
+    const stored = window.localStorage.getItem(SIDE_BY_SIDE_STORAGE_KEY);
+    return stored === "true";
+  });
+  const isSideBySideLayout = layoutMode === "maximized" && isSideBySide;
   const [activeTab, setActiveTab] = useState("json");
   const [validationError, setValidationError] = useState<string | null>(null);
 
@@ -83,10 +102,50 @@ export default function ThemeEditor() {
     }
   }, [user, loading, router]);
 
-  // Save maximized state to localStorage
   useEffect(() => {
-    localStorage.setItem("theme-editor-maximized", String(isMaximized));
-  }, [isMaximized]);
+    if (typeof window === "undefined") {
+      return;
+    }
+    window.localStorage.setItem(LAYOUT_STORAGE_KEY, layoutMode);
+    if (layoutMode === "maximized") {
+      window.localStorage.setItem("theme-editor-maximized", "true");
+    } else {
+      window.localStorage.removeItem("theme-editor-maximized");
+      if (isSideBySide) {
+        setIsSideBySide(false);
+      }
+    }
+  }, [layoutMode, isSideBySide]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+    window.localStorage.setItem(
+      SIDE_BY_SIDE_STORAGE_KEY,
+      isSideBySide ? "true" : "false"
+    );
+  }, [isSideBySide]);
+
+  useEffect(() => {
+    if (typeof document === "undefined") {
+      return;
+    }
+    const mainElement = document.querySelector("main");
+    if (!mainElement) {
+      return;
+    }
+
+    if (isSideBySideLayout) {
+      mainElement.classList.add("max-w-full", "px-0");
+    } else {
+      mainElement.classList.remove("max-w-full", "px-0");
+    }
+
+    return () => {
+      mainElement.classList.remove("max-w-full", "px-0");
+    };
+  }, [layoutMode, isSideBySideLayout]);
 
   useEffect(() => {
     // Set editor theme based on html element's color-scheme style property
@@ -181,6 +240,27 @@ export default function ThemeEditor() {
     setRoyaltyAddress(theme.royalty_address ?? "");
   }, [theme]);
 
+  const handleToggleSideBySide = () => {
+    setLayoutMode((current) => {
+      if (current !== "maximized") {
+        setIsSideBySide(true);
+        return "maximized";
+      }
+      setIsSideBySide((prev) => !prev);
+      return current;
+    });
+  };
+
+  const handleToggleMaximize = () => {
+    setLayoutMode((current) => {
+      if (current === "maximized") {
+        setIsSideBySide(false);
+        return "normal";
+      }
+      return "maximized";
+    });
+  };
+
   const handleSaveTheme = () => saveTheme(themeJson);
 
   const handleSaveProperties = async () => {
@@ -256,6 +336,141 @@ export default function ThemeEditor() {
   }
 
   const isThemeJsonValid = validationError === null;
+  const isMaximizedLayout = layoutMode === "maximized";
+  const fullHeightEditorStyle = {
+    "--json-editor-height": "100%",
+  } as CSSProperties;
+  const defaultEditorStyle = {
+    "--json-editor-height": "min(70vh, 560px)",
+  } as CSSProperties;
+
+  const renderLayout = () => {
+    if (isMaximizedLayout && !isSideBySideLayout) {
+      return (
+        <div className="fixed inset-x-0 top-16 bottom-0 z-50 bg-background flex flex-col">
+          <Card className="flex-1 flex min-h-0 flex-col rounded-none border-0">
+            <ThemeEditorHeader
+              title={theme.display_name}
+              mode="maximized"
+              isSaving={isSaving}
+              isThemeValid={isThemeJsonValid}
+              onEdit={() => setIsEditSheetOpen(true)}
+              onSave={handleSaveTheme}
+              onApply={handleApplyTheme}
+              onPublish={() => {}}
+              onDelete={() => setIsDeleteDialogOpen(true)}
+              onToggleMaximize={handleToggleMaximize}
+              onToggleSideBySide={handleToggleSideBySide}
+            />
+            <div
+              className="flex-1 flex min-h-0 flex-col overflow-hidden"
+              style={fullHeightEditorStyle}
+            >
+              <ThemeEditorTabs
+                activeTab={activeTab}
+                onTabChange={setActiveTab}
+                themeJson={themeJson}
+                onThemeJsonChange={handleThemeJsonChange}
+                editorTheme={editorTheme}
+                themeId={theme?.id}
+                validationError={validationError}
+              />
+            </div>
+          </Card>
+        </div>
+      );
+    }
+
+    if (isSideBySideLayout) {
+      return (
+        <div className="fixed inset-x-0 top-16 bottom-0 z-50 bg-background flex flex-col">
+          <Card className="flex-1 flex min-h-0 flex-col rounded-none border-0">
+            <ThemeEditorHeader
+              title={theme.display_name}
+              mode="side-by-side"
+              isSaving={isSaving}
+              isThemeValid={isThemeJsonValid}
+              onEdit={() => setIsEditSheetOpen(true)}
+              onSave={handleSaveTheme}
+              onApply={handleApplyTheme}
+              onPublish={() => {}}
+              onDelete={() => setIsDeleteDialogOpen(true)}
+              onToggleMaximize={handleToggleMaximize}
+              onToggleSideBySide={handleToggleSideBySide}
+            />
+            <div className="flex min-h-0 flex-col gap-6 lg:grid lg:min-h-[calc(100vh-200px)] lg:grid-cols-2 lg:gap-8">
+              <div
+                className="flex h-full w-full min-h-0 flex-col"
+                style={fullHeightEditorStyle}
+              >
+                <ThemeEditorTabs
+                  activeTab={activeTab}
+                  onTabChange={setActiveTab}
+                  themeJson={themeJson}
+                  onThemeJsonChange={handleThemeJsonChange}
+                  editorTheme={editorTheme}
+                  themeId={theme?.id}
+                  validationError={validationError}
+                />
+              </div>
+              <div className="flex h-full w-full min-h-0 flex-col">
+                <ThemePreview
+                  themeJson={themeJson}
+                  validateTheme={validateTheme}
+                  onValidationChange={setValidationError}
+                  variant="inline"
+                />
+              </div>
+            </div>
+          </Card>
+        </div>
+      );
+    }
+
+    return (
+      <div className="container max-w-6xl mx-auto px-4">
+        <div className="space-y-6">
+          <ThemeEditorHeader
+            title={theme.display_name}
+            mode="normal"
+            isSaving={isSaving}
+            isThemeValid={isThemeJsonValid}
+            onEdit={() => setIsEditSheetOpen(true)}
+            onSave={handleSaveTheme}
+            onApply={handleApplyTheme}
+            onPublish={() => {}}
+            onDelete={() => setIsDeleteDialogOpen(true)}
+            onToggleMaximize={handleToggleMaximize}
+            onToggleSideBySide={handleToggleSideBySide}
+          />
+          <div style={defaultEditorStyle}>
+            <ThemeEditorTabs
+              activeTab={activeTab}
+              onTabChange={setActiveTab}
+              themeJson={themeJson}
+              onThemeJsonChange={handleThemeJsonChange}
+              editorTheme={editorTheme}
+              themeId={theme?.id}
+              validationError={validationError}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  const renderOverlayPreview = () => {
+    if (isSideBySideLayout) {
+      return null;
+    }
+    return (
+      <ThemePreview
+        themeJson={themeJson}
+        validateTheme={validateTheme}
+        onValidationChange={setValidationError}
+      />
+    );
+  };
 
   return (
     <ThemeEditorProvider
@@ -264,87 +479,9 @@ export default function ThemeEditor() {
       onThemeChange={handleThemeChange}
       onThemeJsonChange={handleThemeJsonChange}
     >
-      {isMaximized ? (
-        <div className="fixed inset-x-0 top-16 bottom-0 z-50 bg-background flex flex-col">
-          <Card className="flex-1 flex flex-col rounded-none border-0">
-            <CardHeader className="flex flex-row items-center justify-between px-6 py-3 border-b">
-              <CardTitle className="flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                {theme.display_name}
-              </CardTitle>
-              <div className="flex items-center gap-2">
-                <ThemeEditorActions
-                  onEdit={() => setIsEditSheetOpen(true)}
-                  onSave={handleSaveTheme}
-                  onApply={handleApplyTheme}
-                  onPublish={() => {}}
-                  onDelete={() => setIsDeleteDialogOpen(true)}
-                  isSaving={isSaving}
-                  isThemeValid={isThemeJsonValid}
-                />
-                <Button onClick={() => setIsMaximized(false)} size="sm">
-                  <Minimize2 className="w-4 h-4" />
-                </Button>
-              </div>
-            </CardHeader>
-            <div className="flex-1 flex flex-col overflow-hidden">
-              <ThemeEditorTabs
-                activeTab={activeTab}
-                onTabChange={setActiveTab}
-                themeJson={themeJson}
-                onThemeJsonChange={handleThemeJsonChange}
-                editorTheme={editorTheme}
-                isMaximized={true}
-                themeId={theme?.id}
-                validationError={validationError}
-              />
-            </div>
-          </Card>
-        </div>
-      ) : (
-        <div className="container max-w-6xl mx-auto px-4">
-          <div className="space-y-6">
-            <div>
-              <h1 className="text-3xl font-bold mb-4">{theme.display_name}</h1>
-            </div>
-            <div className="flex items-center justify-between">
-              <ThemeEditorActions
-                onEdit={() => setIsEditSheetOpen(true)}
-                onSave={handleSaveTheme}
-                onApply={handleApplyTheme}
-                onPublish={() => {}}
-                onDelete={() => setIsDeleteDialogOpen(true)}
-                isSaving={isSaving}
-                isThemeValid={isThemeJsonValid}
-              />
-              <Button
-                onClick={() => setIsMaximized(true)}
-                size="sm"
-                className="text-muted-foreground hover:text-foreground"
-              >
-                <Maximize2 className="w-4 h-4" />
-              </Button>
-            </div>
+      {renderLayout()}
 
-            <ThemeEditorTabs
-              activeTab={activeTab}
-              onTabChange={setActiveTab}
-              themeJson={themeJson}
-              onThemeJsonChange={handleThemeJsonChange}
-              editorTheme={editorTheme}
-              isMaximized={false}
-              themeId={theme?.id}
-              validationError={validationError}
-            />
-          </div>
-        </div>
-      )}
-
-      <ThemePreview
-        themeJson={themeJson}
-        validateTheme={validateTheme}
-        onValidationChange={setValidationError}
-      />
+      {renderOverlayPreview()}
       <ThemeProperties
         open={isEditSheetOpen}
         onOpenChange={setIsEditSheetOpen}

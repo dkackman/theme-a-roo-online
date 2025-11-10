@@ -16,6 +16,7 @@ export interface ThemePreviewProps {
   onValidationChange?: (error: string | null) => void;
   debounceMs?: number;
   insetScale?: number;
+  variant?: "overlay" | "inline";
 }
 
 export function ThemePreview({
@@ -24,6 +25,7 @@ export function ThemePreview({
   onValidationChange,
   debounceMs = 500,
   insetScale = 0.4,
+  variant = "overlay",
 }: ThemePreviewProps) {
   const { initializeTheme } = useSimpleTheme();
   const PREVIEW_HIDDEN_STORAGE_KEY = "theme-preview-hidden";
@@ -33,6 +35,7 @@ export function ThemePreview({
   const [isPreviewLoading, setIsPreviewLoading] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
+  const isInline = variant === "inline";
 
   const validationTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(
     null
@@ -40,6 +43,7 @@ export function ThemePreview({
   const requestIdRef = useRef(0);
   const hasRunInitialRef = useRef(false);
   const hasLoadedHiddenStateRef = useRef(false);
+  const hasInitializedHiddenRef = useRef(false);
   const latestValidateRef = useRef(validateTheme);
   const latestInitializeRef = useRef(initializeTheme);
 
@@ -52,9 +56,16 @@ export function ThemePreview({
   }, [initializeTheme]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (
+      isInline ||
+      typeof window === "undefined" ||
+      hasInitializedHiddenRef.current
+    ) {
       return;
     }
+
+    hasInitializedHiddenRef.current = true;
+
     try {
       const stored = window.localStorage.getItem(PREVIEW_HIDDEN_STORAGE_KEY);
       if (stored === "true") {
@@ -65,15 +76,17 @@ export function ThemePreview({
     } finally {
       hasLoadedHiddenStateRef.current = true;
     }
-  }, [PREVIEW_HIDDEN_STORAGE_KEY]);
+  }, [PREVIEW_HIDDEN_STORAGE_KEY, isInline]);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (
+      isInline ||
+      typeof window === "undefined" ||
+      !hasLoadedHiddenStateRef.current
+    ) {
       return;
     }
-    if (!hasLoadedHiddenStateRef.current) {
-      return;
-    }
+
     try {
       window.localStorage.setItem(
         PREVIEW_HIDDEN_STORAGE_KEY,
@@ -82,7 +95,19 @@ export function ThemePreview({
     } catch (error) {
       console.warn("Failed to persist preview hidden state:", error);
     }
-  }, [PREVIEW_HIDDEN_STORAGE_KEY, isHidden]);
+  }, [PREVIEW_HIDDEN_STORAGE_KEY, isHidden, isInline]);
+
+  useEffect(() => {
+    if (!isInline) {
+      return;
+    }
+    if (isHidden) {
+      setIsHidden(false);
+    }
+    if (isFullscreen) {
+      setIsFullscreen(false);
+    }
+  }, [isInline, isHidden, isFullscreen]);
 
   const updateValidationError = useCallback(
     (error: string | null) => {
@@ -253,6 +278,10 @@ export function ThemePreview({
 
   const dialogContent = useMemo(() => renderPreview(1), [renderPreview]);
 
+  if (isInline) {
+    return <div className="h-full">{dialogContent}</div>;
+  }
+
   let content = null;
 
   if (isFullscreen) {
@@ -265,7 +294,9 @@ export function ThemePreview({
               variant="ghost"
               size="icon"
               className="h-8 w-8"
-              onClick={() => setIsFullscreen(false)}
+              onClick={() => {
+                setIsFullscreen(false);
+              }}
               title="Close preview"
             >
               <Minimize2 className="h-4 w-4" />
@@ -292,7 +323,9 @@ export function ThemePreview({
           variant="ghost"
           size="sm"
           className="h-7 px-3"
-          onClick={() => setIsHidden(false)}
+          onClick={() => {
+            setIsHidden(false);
+          }}
           title="Restore preview"
         >
           <PanelBottomOpen className="h-4 w-4 text-muted-foreground" />
@@ -327,7 +360,6 @@ export function ThemePreview({
               size="icon"
               className="h-4 w-4"
               onClick={() => {
-                setIsFullscreen(false);
                 setIsHidden(true);
               }}
               title="Hide preview"

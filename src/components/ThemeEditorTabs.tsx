@@ -10,7 +10,6 @@ interface ThemeEditorTabsProps {
   themeJson: string;
   onThemeJsonChange: (value: string) => void;
   editorTheme: "vs" | "vs-dark";
-  isMaximized?: boolean;
   themeId?: string;
   validationError?: string | null;
 }
@@ -21,49 +20,20 @@ export function ThemeEditorTabs({
   themeJson,
   onThemeJsonChange,
   editorTheme,
-  isMaximized = false,
   themeId,
   validationError,
 }: ThemeEditorTabsProps) {
-  const jsonTabContentClass = isMaximized
-    ? "flex-1 p-0 overflow-hidden border border-border rounded-b-md"
-    : "space-y-4 border border-border rounded-b-md";
-
-  const backgroundTabContentClass = isMaximized
-    ? "flex-1 p-6 border border-border rounded-b-md overflow-auto"
-    : "p-6 border border-border rounded-b-md";
-
-  const editorHeight = isMaximized ? "100%" : "calc(100vh - 300px)";
-
   return (
     <Tabs
       value={activeTab}
       onValueChange={onTabChange}
-      className={isMaximized ? "flex-1 flex flex-col" : "w-full"}
+      className="flex h-full min-h-0 flex-col"
     >
-      {isMaximized && (
-        <div className="px-6 py-3 border-b">
-          <TabsList>
-            <TabsTrigger value="json">
-              <Braces className="w-4 h-4 mr-2" />
-              JSON Editor
-            </TabsTrigger>
-            <TabsTrigger value="files">
-              <FileText className="w-4 h-4 mr-2" />
-              Files
-            </TabsTrigger>
-            <TabsTrigger value="background">
-              <ImageIcon className="w-4 h-4 mr-2" />
-              Background
-            </TabsTrigger>
-          </TabsList>
-        </div>
-      )}
-      {!isMaximized && (
-        <TabsList>
+      <div className="flex-shrink-0">
+        <TabsList className="justify-start gap-2">
           <TabsTrigger value="json">
             <Braces className="w-4 h-4 mr-2" />
-            JSON
+            JSON Editor
           </TabsTrigger>
           <TabsTrigger value="files">
             <FileText className="w-4 h-4 mr-2" />
@@ -74,28 +44,24 @@ export function ThemeEditorTabs({
             Background
           </TabsTrigger>
         </TabsList>
-      )}
+      </div>
+
       <TabsContent
         value="json"
-        className={jsonTabContentClass}
-        style={
-          isMaximized ? { display: "flex", flexDirection: "column" } : undefined
-        }
+        className="flex flex-1 min-h-0 flex-col overflow-auto border border-border rounded-b-md"
       >
         <JsonEditor
           value={themeJson}
           onChange={onThemeJsonChange}
           theme={editorTheme}
-          height={editorHeight}
+          height={"var(--json-editor-height, 100%)"}
+          className="flex-1 min-h-0"
           validationError={validationError}
         />
       </TabsContent>
       <TabsContent
         value="files"
-        className={backgroundTabContentClass}
-        style={
-          isMaximized ? { display: "flex", flexDirection: "column" } : undefined
-        }
+        className="flex flex-1 min-h-0 flex-col overflow-auto border border-border rounded-b-md p-6"
       >
         {themeId ? (
           <ThemeFilesManager themeId={themeId} />
@@ -107,10 +73,7 @@ export function ThemeEditorTabs({
       </TabsContent>
       <TabsContent
         value="background"
-        className={backgroundTabContentClass}
-        style={
-          isMaximized ? { display: "flex", flexDirection: "column" } : undefined
-        }
+        className="flex flex-1 min-h-0 flex-col overflow-auto border border-border rounded-b-md p-6"
       >
         <BackgroundEditor />
       </TabsContent>
