@@ -50,6 +50,12 @@ export function ThemePreviewRenderer({
       mount.innerHTML = "";
     }
 
+    if (!mount) {
+      setMountNode(null);
+      setIframeDocument(doc);
+      return;
+    }
+
     setMountNode(mount);
     setIframeDocument(doc);
   }, []);
@@ -60,7 +66,7 @@ export function ThemePreviewRenderer({
     }
 
     const head = iframeDocument.head;
-    head.innerHTML = "";
+    //head.innerHTML = "";
 
     const parentStyles = Array.from(
       document.head.querySelectorAll<HTMLLinkElement | HTMLStyleElement>(
@@ -80,10 +86,14 @@ export function ThemePreviewRenderer({
     }
 
     return createPortal(
-      <IsolatedThemePreview theme={theme} className={className} />,
+      <IsolatedThemePreview
+        theme={theme}
+        iframeDocument={iframeDocument}
+        className={className}
+      />,
       mountNode
     );
-  }, [className, mountNode, theme]);
+  }, [className, iframeDocument, mountNode, theme]);
 
   // set the iframe background color so that it is opaque no matter what the theme is
   // this prevents the iframe from ever blending with the parent page
@@ -105,20 +115,22 @@ export function ThemePreviewRenderer({
   }, [theme]);
 
   return (
-    <div className="theme-preview-iframe-wrapper relative h-full w-full">
+    <div
+      className="theme-preview-iframe-wrapper relative h-full w-full"
+      style={{
+        isolation: "isolate",
+        mixBlendMode: "normal",
+        opacity: 1,
+        filter: "none",
+        backdropFilter: "none",
+        backgroundColor: backgroundColor,
+      }}
+    >
       <iframe
         ref={iframeRef}
         className="h-full w-full border-0"
-        sandbox="allow-same-origin allow-scripts"
+        sandbox="allow-same-origin"
         src={THEME_PREVIEW_IFRAME_TEMPLATE_URL}
-        style={{
-          isolation: "isolate",
-          mixBlendMode: "normal",
-          opacity: 1,
-          filter: "none",
-          backdropFilter: "none",
-          backgroundColor: backgroundColor,
-        }}
         onLoad={handleLoad}
         aria-label="Theme preview"
       />
@@ -127,37 +139,42 @@ export function ThemePreviewRenderer({
   );
 }
 
-function IsolatedThemePreview({ theme, className }: ThemePreviewRendererProps) {
-  const containerRef = useRef<HTMLDivElement | null>(null);
+interface IsolatedThemePreviewProps {
+  theme: Theme | null;
+  className?: string;
+  iframeDocument: Document | null;
+}
+
+function IsolatedThemePreview({
+  theme,
+  iframeDocument,
+  className,
+}: IsolatedThemePreviewProps) {
+  const root = iframeDocument?.documentElement;
 
   useEffect(() => {
-    const container = containerRef.current;
-    if (!container) {
+    if (!root) {
       return;
     }
 
     if (theme) {
-      applyTheme(theme, container);
+      applyTheme(theme, root);
     } else {
-      container.removeAttribute("style");
-      const themeClasses = Array.from(container.classList).filter(
-        (cls) =>
-          cls.startsWith("theme-") &&
-          cls !== "theme-preview" &&
-          cls !== "theme-card-isolated"
+      root.removeAttribute("style");
+      const themeClasses = Array.from(root.classList).filter((cls) =>
+        cls.startsWith("theme-")
       );
       if (themeClasses.length > 0) {
-        container.classList.remove(...themeClasses);
+        root.classList.remove(...themeClasses);
       }
-      container.removeAttribute("data-theme-style");
+      root.removeAttribute("data-theme-style");
     }
-  }, [theme]);
+  }, [root, theme]);
 
   return (
     <div
-      ref={containerRef}
       className={cn(
-        "theme-preview relative flex h-full min-h-full min-h-screen w-full flex-1 flex-col overflow-hidden theme-card-isolated",
+        "theme-preview relative flex h-full min-h-full min-h-screen w-full flex-1 flex-col overflow-auto theme-card-isolated",
         className
       )}
     >
