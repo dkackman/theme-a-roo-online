@@ -23,7 +23,7 @@ export function ThemePreview({
   validateTheme,
   onValidationChange,
   debounceMs = 500,
-  insetScale = 0.33,
+  insetScale = 0.4,
 }: ThemePreviewProps) {
   const { initializeTheme } = useSimpleTheme();
   const PREVIEW_HIDDEN_STORAGE_KEY = "theme-preview-hidden";

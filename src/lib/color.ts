@@ -133,3 +133,12 @@ export function rgbToHsl(
     l: Math.round(hsl.l),
   };
 }
+
+export function removeAlphaChannel(colorString: string): string | null {
+  const color = colord(colorString);
+  if (!color.isValid()) {
+    return null;
+  }
+
+  return color.alpha(1).toRgbString();
+}
