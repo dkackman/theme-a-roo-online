@@ -5,7 +5,8 @@ import { Columns, FileText, Maximize2, Minimize2 } from "lucide-react";
 
 interface ThemeEditorHeaderProps {
   title: string;
-  mode: "normal" | "side-by-side" | "maximized";
+  layoutMode: "normal" | "maximized";
+  isSideBySide: boolean;
   isSaving: boolean;
   isThemeValid: boolean;
   onEdit: () => void;
@@ -19,7 +20,8 @@ interface ThemeEditorHeaderProps {
 
 export function ThemeEditorHeader({
   title,
-  mode,
+  layoutMode,
+  isSideBySide,
   isSaving,
   isThemeValid,
   onEdit,
@@ -30,25 +32,24 @@ export function ThemeEditorHeader({
   onToggleMaximize,
   onToggleSideBySide,
 }: ThemeEditorHeaderProps) {
-  const isMaximized = mode === "maximized";
-  const isSideBySide = mode === "side-by-side";
+  const isMaximized = layoutMode === "maximized";
   const headingClassName = cn(
     "flex items-center gap-2 font-bold",
-    isMaximized || isSideBySide ? "text-xl" : "text-3xl"
+    isMaximized ? "text-xl" : "text-3xl"
   );
 
   return (
     <div
       className={cn(
         "flex items-center justify-between",
-        isMaximized || isSideBySide ? "px-6 py-3 border-b" : "mb-6"
+        isMaximized ? "py-3 border-b" : "mb-6"
       )}
     >
       <div className={headingClassName}>
         <FileText className="w-5 h-5" />
         {title}
       </div>
-      <div className="flex items-center gap-2">
+      <div className="flex items-center">
         <ThemeEditorActions
           onEdit={onEdit}
           onSave={onSave}
@@ -59,6 +60,7 @@ export function ThemeEditorHeader({
           isThemeValid={isThemeValid}
         />
         <Button
+          className="ml-2"
           onClick={onToggleSideBySide}
           size="sm"
           variant={isSideBySide ? "secondary" : "ghost"}
@@ -74,7 +76,7 @@ export function ThemeEditorHeader({
           variant="ghost"
           title={isMaximized ? "Exit maximized mode" : "Maximize editor"}
         >
-          {isMaximized || isSideBySide ? (
+          {isMaximized ? (
             <Minimize2 className="w-4 h-4" />
           ) : (
             <Maximize2 className="w-4 h-4" />
