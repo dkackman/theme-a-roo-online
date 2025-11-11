@@ -19,7 +19,7 @@ export function ThemeFilesManager({
   readonly = false,
 }: ThemeFilesManagerProps) {
   // Get theme editor context to update backgroundImage
-  const themeEditor = useThemeEditor();
+  const { theme, updateTheme } = useThemeEditor();
   const [files, setFiles] = useState<{
     publicBackgroundUrl?: string;
     publicPreviewUrl?: string;
@@ -48,7 +48,13 @@ export function ThemeFilesManager({
       // This handles both uploads (URL changes or is new) and deletes (URL becomes undefined)
       const previousUrl = previousPublicUrlRef.current;
       if (filesData.background !== previousUrl) {
-        themeEditor.updateTheme({ backgroundImage: filesData.background });
+        updateTheme({
+          backgroundImage: filesData.background,
+          colors: {
+            ...theme?.colors,
+            background: "transparent",
+          },
+        });
         previousPublicUrlRef.current = filesData.background;
       }
     } catch (error) {
@@ -56,7 +62,7 @@ export function ThemeFilesManager({
     } finally {
       setIsLoading(false);
     }
-  }, [themeId, themeEditor]);
+  }, [themeId, updateTheme, theme]);
 
   const refreshFile = useCallback(
     async (type: FileUseType) => {
@@ -79,11 +85,17 @@ export function ThemeFilesManager({
       });
 
       if (type === "background") {
-        themeEditor.updateTheme({ backgroundImage: url });
+        updateTheme({
+          backgroundImage: url,
+          colors: {
+            ...theme?.colors,
+            background: "transparent",
+          },
+        });
         previousPublicUrlRef.current = url;
       }
     },
-    [themeEditor, themeId]
+    [updateTheme, theme, themeId]
   );
 
   useEffect(() => {
@@ -110,7 +122,13 @@ export function ThemeFilesManager({
           themeId={themeId}
           onFileChange={() => refreshFile("background")}
           onInsertBackground={(url) => {
-            themeEditor.updateTheme({ backgroundImage: url });
+            updateTheme({
+              backgroundImage: url,
+              colors: {
+                ...theme?.colors,
+                background: "transparent",
+              },
+            });
           }}
           publicUrl={files.publicBackgroundUrl}
           isLoading={isLoading}
