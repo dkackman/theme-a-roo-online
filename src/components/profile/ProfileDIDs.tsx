@@ -89,6 +89,7 @@ export default function ProfileDIDs() {
     updates: {
       name: string | null;
       launcher_id: string;
+      avatar_uri: string | null;
       notes: string | null;
       network: number;
     }

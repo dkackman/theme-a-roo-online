@@ -13,6 +13,7 @@ interface DidListProps {
     updates: {
       name: string | null;
       launcher_id: string;
+      avatar_uri: string | null;
       notes: string | null;
       network: number;
     }
@@ -42,6 +43,7 @@ export default function DidList({
     updates: {
       name: string | null;
       launcher_id: string;
+      avatar_uri: string | null;
       notes: string | null;
       network: number;
     }
