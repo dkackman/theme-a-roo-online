@@ -1,5 +1,6 @@
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Loader2 } from "lucide-react";
 import * as React from "react";
 
 import { cn } from "@/lib/utils";
@@ -39,10 +40,26 @@ export interface ButtonProps
   extends React.ButtonHTMLAttributes<HTMLButtonElement>,
     VariantProps<typeof buttonVariants> {
   asChild?: boolean;
+  loading?: boolean;
+  loadingText?: string;
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  (
+    {
+      className,
+      variant,
+      size,
+      asChild = false,
+      loading = false,
+      loadingText,
+      disabled,
+      "aria-label": ariaLabel,
+      children,
+      ...props
+    },
+    ref
+  ) => {
     const Comp = asChild ? Slot : "button";
 
     // Get current theme styles from body data attribute
@@ -51,13 +68,28 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         ? document.documentElement.getAttribute("data-theme-style") || ""
         : "";
 
+    const getLoadingAriaLabel = () => {
+      if (ariaLabel) {
+        return `${ariaLabel} - ${loadingText || "Loading..."}`;
+      }
+      return loadingText || "Loading...";
+    };
+
     return (
       <Comp
         className={cn(buttonVariants({ variant, size, className }))}
         data-theme-style={themeStyle}
         ref={ref}
+        disabled={loading || disabled}
+        aria-label={loading ? getLoadingAriaLabel() : ariaLabel}
+        aria-busy={loading}
         {...props}
-      />
+      >
+        {loading && (
+          <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
+        )}
+        {loading && loadingText ? loadingText : children}
+      </Comp>
     );
   }
 );

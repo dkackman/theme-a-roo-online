@@ -99,59 +99,71 @@ export function NftPreviewDialog({
     }
   };
 
-  const handleDownload = async () => {
+  const handleDownload = () => {
     setIsGenerating(true);
-    try {
-      const blob = await captureImage();
-      if (!blob) {
-        return;
-      }
+    // Defer async work to next tick to ensure loading state renders immediately
+    setTimeout(() => {
+      (async () => {
+        try {
+          const blob = await captureImage();
+          if (!blob) {
+            setIsGenerating(false);
+            return;
+          }
 
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = `theme-preview-${themeId}.png`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+          const url = URL.createObjectURL(blob);
+          const link = document.createElement("a");
+          link.href = url;
+          link.download = `theme-preview-${themeId}.png`;
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
 
-      toast.success("Image downloaded successfully");
-    } catch (error) {
-      console.error("Failed to download image:", error);
-      toast.error("Failed to download image");
-    } finally {
-      setIsGenerating(false);
-    }
+          toast.success("Image downloaded successfully");
+        } catch (error) {
+          console.error("Failed to download image:", error);
+          toast.error("Failed to download image");
+        } finally {
+          setIsGenerating(false);
+        }
+      })();
+    }, 0);
   };
 
-  const handleUseImage = async () => {
+  const handleUseImage = () => {
     setIsUploading(true);
-    try {
-      const blob = await captureImage();
-      if (!blob) {
-        return;
-      }
+    // Defer async work to next tick to ensure loading state renders immediately
+    setTimeout(() => {
+      (async () => {
+        try {
+          const blob = await captureImage();
+          if (!blob) {
+            setIsUploading(false);
+            return;
+          }
 
-      const file = new File([blob], `theme-preview-${themeId}.png`, {
-        type: "image/png",
-      });
+          const file = new File([blob], `theme-preview-${themeId}.png`, {
+            type: "image/png",
+          });
 
-      await uploadThemeFile({
-        file,
-        theme_id: themeId,
-        file_use_type: "preview",
-      });
+          await uploadThemeFile({
+            file,
+            theme_id: themeId,
+            file_use_type: "preview",
+          });
 
-      toast.success("Preview image uploaded successfully");
-      onFileUploaded?.();
-      onOpenChange(false);
-    } catch (error) {
-      console.error("Failed to upload image:", error);
-      toast.error("Failed to upload image");
-    } finally {
-      setIsUploading(false);
-    }
+          toast.success("Preview image uploaded successfully");
+          onFileUploaded?.();
+          onOpenChange(false);
+        } catch (error) {
+          console.error("Failed to upload image:", error);
+          toast.error("Failed to upload image");
+        } finally {
+          setIsUploading(false);
+        }
+      })();
+    }, 0);
   };
 
   return (
@@ -205,22 +217,22 @@ export function NftPreviewDialog({
           <Button
             variant="secondary"
             onClick={handleDownload}
-            disabled={
-              isGenerating || isUploading || !initializedTheme || isInitializing
-            }
+            loading={isGenerating}
+            loadingText="Generating..."
+            disabled={isUploading || !initializedTheme || isInitializing}
           >
             <Download className="w-4 h-4 mr-2" />
-            {isGenerating ? "Generating..." : "Download"}
+            Download
           </Button>
           <Button
             variant="default"
             onClick={handleUseImage}
-            disabled={
-              isGenerating || isUploading || !initializedTheme || isInitializing
-            }
+            loading={isUploading}
+            loadingText="Uploading..."
+            disabled={isGenerating || !initializedTheme || isInitializing}
           >
             <Upload className="w-4 h-4 mr-2" />
-            {isUploading ? "Uploading..." : "Use this image"}
+            Use this image
           </Button>
         </DialogFooter>
       </DialogContent>

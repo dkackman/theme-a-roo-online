@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { useRouter } from "next/router";
+import { useRouter, type NextRouter } from "next/router";
 import {
   useCallback,
   useEffect,
@@ -89,7 +89,9 @@ export default function ThemeEditor() {
   const [validationError, setValidationError] = useState<string | null>(null);
   const [savedThemeJson, setSavedThemeJson] = useState<string>("");
   const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
-  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(
+    null
+  );
   const [settings] = useState(() => loadSettings());
 
   // Theme operations hook
@@ -273,7 +275,7 @@ export default function ThemeEditor() {
         setSavedThemeJson(savedJson);
       }
     }
-  }, [theme]);
+  }, [theme, savedThemeJson]);
 
   const handleToggleSideBySide = () => {
     if (layoutMode !== "maximized") {
@@ -380,9 +382,16 @@ export default function ThemeEditor() {
   useEffect(() => {
     originalPushRef.current = router.push;
 
-    router.push = ((url: any, as?: any, options?: any) => {
-      const urlString = typeof url === "string" ? url : url.pathname || router.asPath;
-      
+    router.push = ((
+      url: Parameters<NextRouter["push"]>[0],
+      as?: Parameters<NextRouter["push"]>[1],
+      options?: Parameters<NextRouter["push"]>[2]
+    ) => {
+      const urlString =
+        typeof url === "string"
+          ? url
+          : (url as { pathname?: string }).pathname || router.asPath;
+
       // Don't intercept if navigating to the same page
       if (urlString === router.asPath) {
         return originalPushRef.current.call(router, url, as, options);
@@ -748,7 +757,10 @@ export default function ThemeEditor() {
       {renderOverlayPreview()}
 
       {/* Save Prompt Dialog */}
-      <AlertDialog open={isPromptDialogOpen} onOpenChange={setIsPromptDialogOpen}>
+      <AlertDialog
+        open={isPromptDialogOpen}
+        onOpenChange={setIsPromptDialogOpen}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
@@ -757,7 +769,9 @@ export default function ThemeEditor() {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
-            <AlertDialogCancel onClick={handlePromptCancel}>Cancel</AlertDialogCancel>
+            <AlertDialogCancel onClick={handlePromptCancel}>
+              Cancel
+            </AlertDialogCancel>
             <Button
               variant="outline"
               onClick={handlePromptNo}
