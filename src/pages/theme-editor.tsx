@@ -12,12 +12,14 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { useRouter } from "next/router";
 import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -29,6 +31,7 @@ import { ThemeEditorProvider } from "../Contexts/ThemeEditorContext";
 import { useThemeOperations } from "../hooks/useThemeOperations";
 import { themesApi } from "../lib/data-access";
 import type { Database } from "../lib/database.types";
+import { loadSettings } from "../lib/settings";
 
 type DbTheme = Database["public"]["Tables"]["themes"]["Row"];
 
@@ -84,6 +87,10 @@ export default function ThemeEditor() {
   const isSideBySideLayout = layoutMode === "maximized" && isSideBySide;
   const [activeTab, setActiveTab] = useState("json");
   const [validationError, setValidationError] = useState<string | null>(null);
+  const [savedThemeJson, setSavedThemeJson] = useState<string>("");
+  const [isPromptDialogOpen, setIsPromptDialogOpen] = useState(false);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  const [settings] = useState(() => loadSettings());
 
   // Theme operations hook
   const {
@@ -199,6 +206,7 @@ export default function ThemeEditor() {
         themeJsonString = JSON.stringify(data.theme, null, 2);
       }
       setThemeJson(themeJsonString);
+      setSavedThemeJson(themeJsonString);
       setValidationError(null);
     } catch (error) {
       console.error("Error loading theme:", error);
@@ -245,6 +253,26 @@ export default function ThemeEditor() {
     setWebsite(theme.website ?? "");
     setDid(theme.did ?? "");
     setRoyaltyAddress(theme.royalty_address ?? "");
+
+    // Update savedThemeJson when theme is updated from database (after save)
+    // This ensures isDirty is accurate after saves
+    if (theme.theme) {
+      let savedJson = "";
+      if (typeof theme.theme === "string") {
+        try {
+          const parsed = JSON.parse(theme.theme);
+          savedJson = JSON.stringify(parsed, null, 2);
+        } catch {
+          savedJson = theme.theme;
+        }
+      } else {
+        savedJson = JSON.stringify(theme.theme, null, 2);
+      }
+      // Only update if it's different to avoid unnecessary re-renders
+      if (savedJson !== savedThemeJson) {
+        setSavedThemeJson(savedJson);
+      }
+    }
   }, [theme]);
 
   const handleToggleSideBySide = () => {
@@ -269,7 +297,7 @@ export default function ThemeEditor() {
     }
   };
 
-  const handleSaveTheme = useCallback(() => {
+  const handleSaveTheme = useCallback(async () => {
     // Check the same conditions as the save button
     const isThemeJsonValid = validationError === null;
     const canSave =
@@ -279,9 +307,217 @@ export default function ThemeEditor() {
       themeStatus !== "minted" &&
       themeStatus !== "published";
     if (canSave) {
-      saveTheme(themeJson);
+      await saveTheme(themeJson);
+      setSavedThemeJson(themeJson);
     }
   }, [isSaving, theme, validationError, themeStatus, themeJson, saveTheme]);
+
+  // Check if JSON is dirty (has unsaved changes)
+  const isDirty = useMemo(() => {
+    return themeJson !== savedThemeJson;
+  }, [themeJson, savedThemeJson]);
+
+  // Intercept navigation attempts using router.beforePopState
+  useEffect(() => {
+    const handleBeforePopState = ({ url }: { url: string }) => {
+      // Don't intercept if navigating to the same page
+      if (url === router.asPath) {
+        return true;
+      }
+
+      // If JSON is invalid, allow navigation without prompt
+      if (validationError !== null) {
+        return true;
+      }
+
+      // If not dirty, allow navigation
+      if (!isDirty) {
+        return true;
+      }
+
+      // If promptToSave is false, auto-save and allow navigation
+      if (!settings.promptToSave) {
+        const isThemeJsonValid = validationError === null;
+        const canSave =
+          !isSaving &&
+          theme &&
+          isThemeJsonValid &&
+          themeStatus !== "minted" &&
+          themeStatus !== "published";
+        if (canSave) {
+          saveTheme(themeJson).then(() => {
+            setSavedThemeJson(themeJson);
+          });
+        }
+        return true;
+      }
+
+      // Otherwise, prevent navigation and show prompt
+      setPendingNavigation(url);
+      setIsPromptDialogOpen(true);
+      return false; // Prevent navigation
+    };
+
+    router.beforePopState(handleBeforePopState);
+
+    return () => {
+      router.beforePopState(() => true);
+    };
+  }, [
+    router,
+    isDirty,
+    validationError,
+    settings.promptToSave,
+    themeJson,
+    theme,
+    themeStatus,
+    isSaving,
+    saveTheme,
+  ]);
+
+  // Intercept programmatic navigation (router.push) by wrapping router.push
+  const originalPushRef = useRef(router.push);
+  useEffect(() => {
+    originalPushRef.current = router.push;
+
+    router.push = ((url: any, as?: any, options?: any) => {
+      const urlString = typeof url === "string" ? url : url.pathname || router.asPath;
+      
+      // Don't intercept if navigating to the same page
+      if (urlString === router.asPath) {
+        return originalPushRef.current.call(router, url, as, options);
+      }
+
+      // If JSON is invalid, allow navigation without prompt
+      if (validationError !== null) {
+        return originalPushRef.current.call(router, url, as, options);
+      }
+
+      // If not dirty, allow navigation
+      if (!isDirty) {
+        return originalPushRef.current.call(router, url, as, options);
+      }
+
+      // If promptToSave is false, auto-save and allow navigation
+      if (!settings.promptToSave) {
+        const isThemeJsonValid = validationError === null;
+        const canSave =
+          !isSaving &&
+          theme &&
+          isThemeJsonValid &&
+          themeStatus !== "minted" &&
+          themeStatus !== "published";
+        if (canSave) {
+          saveTheme(themeJson).then(() => {
+            setSavedThemeJson(themeJson);
+          });
+        }
+        return originalPushRef.current.call(router, url, as, options);
+      }
+
+      // Otherwise, prevent navigation and show prompt
+      setPendingNavigation(urlString);
+      setIsPromptDialogOpen(true);
+      return Promise.resolve(false);
+    }) as typeof router.push;
+
+    return () => {
+      router.push = originalPushRef.current;
+    };
+  }, [
+    router,
+    isDirty,
+    validationError,
+    settings.promptToSave,
+    themeJson,
+    theme,
+    themeStatus,
+    isSaving,
+    saveTheme,
+  ]);
+
+  // Handle browser navigation (back/forward/close)
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // If JSON is invalid, allow navigation
+      if (validationError !== null) {
+        return;
+      }
+
+      // If not dirty, allow navigation
+      if (!isDirty) {
+        return;
+      }
+
+      // If promptToSave is false, auto-save
+      if (!settings.promptToSave) {
+        const isThemeJsonValid = validationError === null;
+        const canSave =
+          !isSaving &&
+          theme &&
+          isThemeJsonValid &&
+          themeStatus !== "minted" &&
+          themeStatus !== "published";
+        if (canSave) {
+          saveTheme(themeJson).then(() => {
+            setSavedThemeJson(themeJson);
+          });
+        }
+        return;
+      }
+
+      // Show browser prompt
+      e.preventDefault();
+      e.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener("beforeunload", handleBeforeUnload);
+    };
+  }, [
+    isDirty,
+    validationError,
+    settings.promptToSave,
+    themeJson,
+    theme,
+    themeStatus,
+    isSaving,
+    saveTheme,
+  ]);
+
+  const handlePromptYes = async () => {
+    setIsPromptDialogOpen(false);
+    const isThemeJsonValid = validationError === null;
+    const canSave =
+      !isSaving &&
+      theme &&
+      isThemeJsonValid &&
+      themeStatus !== "minted" &&
+      themeStatus !== "published";
+    if (canSave) {
+      await saveTheme(themeJson);
+      setSavedThemeJson(themeJson);
+    }
+    if (pendingNavigation) {
+      router.push(pendingNavigation);
+      setPendingNavigation(null);
+    }
+  };
+
+  const handlePromptNo = () => {
+    setIsPromptDialogOpen(false);
+    if (pendingNavigation) {
+      router.push(pendingNavigation);
+      setPendingNavigation(null);
+    }
+  };
+
+  const handlePromptCancel = () => {
+    setIsPromptDialogOpen(false);
+    setPendingNavigation(null);
+  };
 
   // Keyboard shortcut: Alt/Command+S to save (for non-Monaco contexts)
   useEffect(() => {
@@ -510,6 +746,32 @@ export default function ThemeEditor() {
       {renderLayout()}
 
       {renderOverlayPreview()}
+
+      {/* Save Prompt Dialog */}
+      <AlertDialog open={isPromptDialogOpen} onOpenChange={setIsPromptDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Unsaved Changes</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved changes. Do you want to save before leaving?
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="flex-col-reverse sm:flex-row gap-2">
+            <AlertDialogCancel onClick={handlePromptCancel}>Cancel</AlertDialogCancel>
+            <Button
+              variant="outline"
+              onClick={handlePromptNo}
+              className="sm:order-2"
+            >
+              No
+            </Button>
+            <AlertDialogAction onClick={handlePromptYes} className="sm:order-3">
+              Yes
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <ThemeProperties
         open={isEditSheetOpen}
         onOpenChange={setIsEditSheetOpen}
