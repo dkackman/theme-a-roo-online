@@ -510,7 +510,8 @@ export default function ThemeEditor() {
       setSavedThemeJson(themeJson);
     }
     if (pendingNavigation) {
-      router.push(pendingNavigation);
+      // Use original router.push to bypass our wrapper and navigate after saving
+      originalPushRef.current.call(router, pendingNavigation);
       setPendingNavigation(null);
     }
   };
@@ -518,7 +519,8 @@ export default function ThemeEditor() {
   const handlePromptNo = () => {
     setIsPromptDialogOpen(false);
     if (pendingNavigation) {
-      router.push(pendingNavigation);
+      // Use original router.push to bypass our wrapper and navigate without saving
+      originalPushRef.current.call(router, pendingNavigation);
       setPendingNavigation(null);
     }
   };
