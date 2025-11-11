@@ -17,6 +17,7 @@ import { useRouter } from "next/router";
 import {
   useCallback,
   useEffect,
+  useMemo,
   useState,
   type CSSProperties,
   type ReactNode,
@@ -208,13 +209,14 @@ export default function ThemeEditor() {
   }, [themeId, userId]);
 
   // Parse theme JSON to get the theme object for the context
-  const parsedTheme: Theme | null = (() => {
+  // Memoize to ensure it updates reactively when themeJson changes
+  const parsedTheme: Theme | null = useMemo(() => {
     try {
       return themeJson ? JSON.parse(themeJson) : null;
     } catch {
       return null;
     }
-  })();
+  }, [themeJson]);
 
   const handleThemeChange = (newTheme: Theme) => {
     const jsonString = JSON.stringify(newTheme, null, 2);

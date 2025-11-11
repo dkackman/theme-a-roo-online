@@ -104,6 +104,9 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
               <div className="rounded-sm bg-secondary p-3 text-secondary-foreground">
                 Secondary
               </div>
+              <div className="rounded-sm bg-accent p-3 text-accent-foreground">
+                Accent
+              </div>
               <div className="rounded-sm bg-muted p-3 text-muted-foreground">
                 Muted
               </div>

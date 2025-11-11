@@ -10,9 +10,10 @@ import {
 import { useThemeEditor } from "@/Contexts/ThemeEditorContext";
 import { uploadThemeFile } from "@/lib/theme-files";
 import html2canvas from "html2canvas-pro";
-import { Download, Upload, X } from "lucide-react";
-import { useRef, useState } from "react";
+import { AlertTriangle, Download, Upload, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { useSimpleTheme, type Theme } from "theme-o-rama";
 import { ThemeCard } from "./ThemeCard";
 
 interface NftPreviewDialogProps {
@@ -29,9 +30,48 @@ export function NftPreviewDialog({
   onFileUploaded,
 }: NftPreviewDialogProps) {
   const { theme } = useThemeEditor();
+  const { initializeTheme } = useSimpleTheme();
   const cardRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [initializedTheme, setInitializedTheme] = useState<Theme | null>(null);
+  const [isInitializing, setIsInitializing] = useState(false);
+
+  // Initialize the theme when it changes to merge inherited properties
+  useEffect(() => {
+    if (!theme || !open) {
+      setInitializedTheme(null);
+      return;
+    }
+
+    let cancelled = false;
+    setIsInitializing(true);
+
+    const initTheme = async () => {
+      try {
+        const initialized = await initializeTheme(theme);
+        if (!cancelled) {
+          setInitializedTheme(initialized);
+        }
+      } catch (error) {
+        console.error("Failed to initialize theme for preview:", error);
+        if (!cancelled) {
+          // Fallback to uninitialized theme if initialization fails
+          setInitializedTheme(theme);
+        }
+      } finally {
+        if (!cancelled) {
+          setIsInitializing(false);
+        }
+      }
+    };
+
+    void initTheme();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [theme, initializeTheme, open]);
 
   const captureImage = async (): Promise<Blob | null> => {
     if (!cardRef.current) {
@@ -124,16 +164,33 @@ export function NftPreviewDialog({
           </DialogDescription>
         </DialogHeader>
         <div className="py-4">
-          <div className="w-[320px] h-[320px] mx-auto flex items-center justify-center">
-            <div ref={cardRef} className="w-full h-full">
-              <ThemeCard
-                theme={theme}
-                isSelected={false}
-                onSelect={() => {}}
-                className="w-full h-full"
-                fullsize={true}
-              />
+          <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20 p-3">
+            <div className="flex gap-2">
+              <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 mt-0.5 flex-shrink-0" />
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+                <strong>Note:</strong> Not all theme properties may render
+                faithfully in the generated image. Please double-check the
+                resulting image before using it.
+              </p>
             </div>
+          </div>
+          <div className="w-[320px] h-[320px] mx-auto flex items-center justify-center">
+            {isInitializing ? (
+              <div className="flex items-center justify-center h-full">
+                <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+              </div>
+            ) : (
+              <div ref={cardRef} className="w-full h-full">
+                <ThemeCard
+                  key={initializedTheme?.name || theme?.name || "default"}
+                  theme={initializedTheme || theme}
+                  isSelected={false}
+                  onSelect={() => {}}
+                  className="w-full h-full"
+                  fullsize={true}
+                />
+              </div>
+            )}
           </div>
         </div>
         <DialogFooter className="flex gap-2">
@@ -148,7 +205,9 @@ export function NftPreviewDialog({
           <Button
             variant="secondary"
             onClick={handleDownload}
-            disabled={isGenerating || isUploading || !theme}
+            disabled={
+              isGenerating || isUploading || !initializedTheme || isInitializing
+            }
           >
             <Download className="w-4 h-4 mr-2" />
             {isGenerating ? "Generating..." : "Download"}
@@ -156,7 +215,9 @@ export function NftPreviewDialog({
           <Button
             variant="default"
             onClick={handleUseImage}
-            disabled={isGenerating || isUploading || !theme}
+            disabled={
+              isGenerating || isUploading || !initializedTheme || isInitializing
+            }
           >
             <Upload className="w-4 h-4 mr-2" />
             {isUploading ? "Uploading..." : "Use this image"}
