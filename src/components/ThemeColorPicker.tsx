@@ -10,7 +10,10 @@ interface ThemeColorPickerProps {
   readonly?: boolean;
 }
 
-export function ThemeColorPicker({ className = "", readonly = false }: ThemeColorPickerProps) {
+export function ThemeColorPicker({
+  className = "",
+  readonly = false,
+}: ThemeColorPickerProps) {
   const { theme, updateTheme } = useThemeEditor();
 
   const hasBackgroundImage = Boolean(theme?.backgroundImage);

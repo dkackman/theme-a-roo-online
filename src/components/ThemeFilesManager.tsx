@@ -6,13 +6,18 @@ import {
 } from "@/lib/theme-files";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FileSlot } from "./FileSlot";
+import { NftPreviewDialog } from "./NftPreviewDialog";
+import { Button } from "./ui/button";
 
 interface ThemeFilesManagerProps {
   themeId: string;
   readonly?: boolean;
 }
 
-export function ThemeFilesManager({ themeId, readonly = false }: ThemeFilesManagerProps) {
+export function ThemeFilesManager({
+  themeId,
+  readonly = false,
+}: ThemeFilesManagerProps) {
   // Get theme editor context to update backgroundImage
   const themeEditor = useThemeEditor();
   const [files, setFiles] = useState<{
@@ -21,6 +26,7 @@ export function ThemeFilesManager({ themeId, readonly = false }: ThemeFilesManag
     publicBannerUrl?: string;
   }>({});
   const [isLoading, setIsLoading] = useState(true);
+  const [isNftPreviewDialogOpen, setIsNftPreviewDialogOpen] = useState(false);
 
   // Track the previous publicBackgroundUrl to detect changes
   const previousPublicUrlRef = useRef<string | undefined>(undefined);
@@ -110,16 +116,27 @@ export function ThemeFilesManager({ themeId, readonly = false }: ThemeFilesManag
           isLoading={isLoading}
           readonly={readonly}
         />
-        <FileSlot
-          title="NFT Preview"
-          description="Small image for NFT previews"
-          fileType="preview"
-          publicUrl={files.publicPreviewUrl}
-          themeId={themeId}
-          onFileChange={() => refreshFile("preview")}
-          isLoading={isLoading}
-          readonly={readonly}
-        />
+        <div className="space-y-3">
+          <FileSlot
+            title="NFT Preview"
+            description="Small image for NFT previews"
+            fileType="preview"
+            publicUrl={files.publicPreviewUrl}
+            themeId={themeId}
+            onFileChange={() => refreshFile("preview")}
+            isLoading={isLoading}
+            readonly={readonly}
+          />
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsNftPreviewDialogOpen(true)}
+            disabled={readonly}
+            className="w-full"
+          >
+            Generate
+          </Button>
+        </div>
         <FileSlot
           title="NFT Banner"
           description="Large image for NFT showcases"
@@ -131,6 +148,13 @@ export function ThemeFilesManager({ themeId, readonly = false }: ThemeFilesManag
           readonly={readonly}
         />
       </div>
+
+      <NftPreviewDialog
+        open={isNftPreviewDialogOpen}
+        onOpenChange={setIsNftPreviewDialogOpen}
+        themeId={themeId}
+        onFileUploaded={refreshFiles}
+      />
     </div>
   );
 }

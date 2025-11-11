@@ -55,6 +55,7 @@
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "colord": "^2.9.3",
+    "html2canvas-pro": "^1.5.13",
     "lucide-react": "^0.546.0",
     "monaco-editor": "^0.54.0",
     "next": "^16.0.1",

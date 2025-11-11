@@ -422,6 +422,7 @@ export default function ThemeEditor() {
     readonly: isReadonly,
     themeStatus,
     onSave: handleSaveTheme,
+    validateTheme,
   };
 
   const renderEditorTabs = () => {

@@ -7,7 +7,10 @@ interface BackgroundEditorProps {
   readonly?: boolean;
 }
 
-export function BackgroundEditor({ className = "", readonly = false }: BackgroundEditorProps) {
+export function BackgroundEditor({
+  className = "",
+  readonly = false,
+}: BackgroundEditorProps) {
   return (
     <Card className={`${className} w-full`}>
       <CardHeader>
