@@ -21,7 +21,6 @@ interface FileSlotProps {
   title: string;
   description: string;
   fileType: FileUseType;
-  fileUrl?: string;
   publicUrl?: string;
   themeId: string;
   onFileChange?: () => void | Promise<void>;
@@ -33,7 +32,6 @@ export function FileSlot({
   title,
   description,
   fileType,
-  fileUrl,
   publicUrl,
   themeId,
   onFileChange,
@@ -92,7 +90,7 @@ export function FileSlot({
   };
 
   const handleCopy = async () => {
-    const urlToCopy = publicUrl || fileUrl;
+    const urlToCopy = publicUrl;
     if (!urlToCopy) {
       toast.error("No URL available to copy");
       return;
@@ -120,7 +118,7 @@ export function FileSlot({
             <Skeleton className="h-9 w-full" />
           </div>
         )}
-        {!isLoading && fileUrl && (
+        {!isLoading && publicUrl && (
           <div className="space-y-3 animate-in fade-in duration-300">
             <Dropzone
               accept={{ "image/*": [] }}
@@ -137,7 +135,7 @@ export function FileSlot({
                 title={"Click to replace"}
               >
                 <Image
-                  src={fileUrl}
+                  src={publicUrl}
                   alt={title}
                   fill
                   sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -158,7 +156,7 @@ export function FileSlot({
                 variant="secondary"
                 size="sm"
                 onClick={() => setIsPreviewOpen(true)}
-                disabled={loading || isDeleting || !fileUrl}
+                disabled={loading || isDeleting || !publicUrl}
                 className="flex-1"
               >
                 Preview
@@ -167,7 +165,7 @@ export function FileSlot({
                 variant="outline"
                 size="sm"
                 onClick={handleCopy}
-                disabled={loading || isDeleting || !fileUrl}
+                disabled={loading || isDeleting || !publicUrl}
                 title="Copy public URL to clipboard"
               >
                 <Copy className="w-4 h-4" />
@@ -177,12 +175,12 @@ export function FileSlot({
                 title={`Delete ${title}?`}
                 description="This action cannot be undone. This will permanently remove the file from storage."
                 onConfirm={confirmDelete}
-                disabled={loading || isDeleting || !fileUrl}
+                disabled={loading || isDeleting || !publicUrl}
               />
             </div>
           </div>
         )}
-        {!isLoading && !fileUrl && (
+        {!isLoading && !publicUrl && (
           <div className="space-y-3 animate-in fade-in duration-300">
             <Dropzone
               accept={{ "image/*": [] }}

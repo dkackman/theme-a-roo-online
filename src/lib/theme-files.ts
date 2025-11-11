@@ -205,16 +205,12 @@ export async function deleteThemeFile(
 
 async function getThemeFileUrl(
   fileId: string,
-  jwt: string,
-  usePublic: boolean = false
+  jwt: string
 ): Promise<string | undefined> {
   try {
     const url = new URL(`${SUPABASE_URL}/functions/v1/theme-files/url`);
     url.searchParams.set("id", fileId);
-
-    if (usePublic) {
-      url.searchParams.set("public", "true");
-    }
+    url.searchParams.set("public", "true");
 
     const res = await fetch(url.toString(), {
       method: "GET",
@@ -234,10 +230,7 @@ async function getThemeFileUrl(
   }
 }
 
-export async function getThemeFiles(
-  theme_id: string,
-  usePublicUrls: boolean = false
-): Promise<{
+export async function getThemeFiles(theme_id: string): Promise<{
   background?: string;
   preview?: string;
   banner?: string;
@@ -283,7 +276,7 @@ export async function getThemeFiles(
       // Full-size URLs (no width parameter)
       Promise.all(
         files.map(async (f) => {
-          const url = await getThemeFileUrl(f.id, jwt, usePublicUrls);
+          const url = await getThemeFileUrl(f.id, jwt);
           return { type: f.file_use_type as FileUseType, url };
         })
       ),
@@ -310,5 +303,47 @@ export async function getThemeFiles(
   } catch (error) {
     console.error("Error fetching theme files:", error);
     return {};
+  }
+}
+
+export async function getThemeFilePublicUrl(
+  theme_id: string,
+  file_use_type: FileUseType
+): Promise<string | undefined> {
+  try {
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      throw new Error(`Session error: ${sessionError.message}`);
+    }
+
+    const jwt = session?.access_token;
+    if (!jwt) {
+      throw new Error("Not authenticated");
+    }
+
+    const { data: file, error: fileError } = await supabase
+      .from("theme_files")
+      .select("id")
+      .eq("theme_id", theme_id)
+      .eq("file_use_type", file_use_type)
+      .eq("user_id", session.user.id)
+      .maybeSingle();
+
+    if (fileError) {
+      throw new Error(fileError.message);
+    }
+
+    if (!file) {
+      return undefined;
+    }
+
+    return getThemeFileUrl(file.id, jwt);
+  } catch (error) {
+    console.error("Error fetching theme file url:", error);
+    return undefined;
   }
 }

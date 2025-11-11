@@ -1,5 +1,9 @@
 import { useThemeEditor } from "@/Contexts/ThemeEditorContext";
-import { getThemeFiles } from "@/lib/theme-files";
+import {
+  getThemeFilePublicUrl,
+  getThemeFiles,
+  type FileUseType,
+} from "@/lib/theme-files";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FileSlot } from "./FileSlot";
 
@@ -11,9 +15,6 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
   // Get theme editor context to update backgroundImage
   const themeEditor = useThemeEditor();
   const [files, setFiles] = useState<{
-    background?: string;
-    preview?: string;
-    banner?: string;
     publicBackgroundUrl?: string;
     publicPreviewUrl?: string;
     publicBannerUrl?: string;
@@ -29,65 +30,19 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
       // Fetch signed URLs for display (thumbnails)
       const filesData = await getThemeFiles(themeId);
 
-      // Fetch public URLs for all files (if bucket is public)
-      let publicBackgroundUrl: string | undefined;
-      let publicPreviewUrl: string | undefined;
-      let publicBannerUrl: string | undefined;
-
-      // Fetch public URLs if we have any files
-      if (filesData.background || filesData.preview || filesData.banner) {
-        try {
-          const publicFilesData = await getThemeFiles(themeId, true);
-
-          // Helper function to validate and set public URL
-          const validatePublicUrl = (
-            url: string | undefined,
-            fallback: string | undefined
-          ) => {
-            if (!url) {
-              return undefined;
-            }
-            if (url.includes("token=") || !url.includes("/object/public/")) {
-              // If URL has token or wrong format, bucket is likely private
-              return fallback;
-            }
-            return url;
-          };
-
-          publicBackgroundUrl = validatePublicUrl(
-            publicFilesData.background,
-            filesData.background
-          );
-          publicPreviewUrl = validatePublicUrl(
-            publicFilesData.preview,
-            filesData.preview
-          );
-          publicBannerUrl = validatePublicUrl(
-            publicFilesData.banner,
-            filesData.banner
-          );
-        } catch (error) {
-          // If public URLs fail (bucket is private), fall back to signed URLs
-          console.warn("Failed to fetch public URLs:", error);
-          publicBackgroundUrl = filesData.background;
-          publicPreviewUrl = filesData.preview;
-          publicBannerUrl = filesData.banner;
-        }
-      }
-
       setFiles({
         ...filesData,
-        publicBackgroundUrl,
-        publicPreviewUrl,
-        publicBannerUrl,
+        publicBackgroundUrl: filesData.background,
+        publicPreviewUrl: filesData.preview,
+        publicBannerUrl: filesData.banner,
       });
 
       // Automatically insert/update the public URL in the theme when it changes
       // This handles both uploads (URL changes or is new) and deletes (URL becomes undefined)
       const previousUrl = previousPublicUrlRef.current;
-      if (publicBackgroundUrl !== previousUrl) {
-        themeEditor.updateTheme({ backgroundImage: publicBackgroundUrl });
-        previousPublicUrlRef.current = publicBackgroundUrl;
+      if (filesData.background !== previousUrl) {
+        themeEditor.updateTheme({ backgroundImage: filesData.background });
+        previousPublicUrlRef.current = filesData.background;
       }
     } catch (error) {
       console.error("Failed to fetch theme files:", error);
@@ -95,6 +50,34 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
       setIsLoading(false);
     }
   }, [themeId, themeEditor]);
+
+  const refreshFile = useCallback(
+    async (type: FileUseType) => {
+      const url = await getThemeFilePublicUrl(themeId, type);
+
+      setFiles((prev) => {
+        const next = { ...prev };
+        switch (type) {
+          case "background":
+            next.publicBackgroundUrl = url;
+            break;
+          case "preview":
+            next.publicPreviewUrl = url;
+            break;
+          case "banner":
+            next.publicBannerUrl = url;
+            break;
+        }
+        return next;
+      });
+
+      if (type === "background") {
+        themeEditor.updateTheme({ backgroundImage: url });
+        previousPublicUrlRef.current = url;
+      }
+    },
+    [themeEditor, themeId]
+  );
 
   useEffect(() => {
     if (!themeId) {
@@ -117,9 +100,8 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
           title="Background"
           description="Main theme app background image"
           fileType="background"
-          fileUrl={files.background}
           themeId={themeId}
-          onFileChange={refreshFiles}
+          onFileChange={() => refreshFile("background")}
           onInsertBackground={(url) => {
             themeEditor.updateTheme({ backgroundImage: url });
           }}
@@ -130,20 +112,18 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
           title="NFT Preview"
           description="Small image for NFT previews"
           fileType="preview"
-          fileUrl={files.preview}
           publicUrl={files.publicPreviewUrl}
           themeId={themeId}
-          onFileChange={refreshFiles}
+          onFileChange={() => refreshFile("preview")}
           isLoading={isLoading}
         />
         <FileSlot
           title="NFT Banner"
           description="Large image for NFT showcases"
           fileType="banner"
-          fileUrl={files.banner}
           publicUrl={files.publicBannerUrl}
           themeId={themeId}
-          onFileChange={refreshFiles}
+          onFileChange={() => refreshFile("banner")}
           isLoading={isLoading}
         />
       </div>
