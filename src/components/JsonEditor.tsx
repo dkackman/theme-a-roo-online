@@ -6,8 +6,8 @@ import {
 } from "@/components/ui/tooltip";
 import { parseColor, rgbaToHex } from "@/lib/color";
 import Editor from "@monaco-editor/react";
-import { CheckCircle2, XCircle } from "lucide-react";
-import { useRef } from "react";
+import { CheckCircle2, TriangleAlert, XCircle } from "lucide-react";
+import { useMemo, useRef } from "react";
 import jsonSchema from "../schema.json";
 
 interface JsonEditorProps {
@@ -16,6 +16,7 @@ interface JsonEditorProps {
   theme: "vs" | "vs-dark";
   height?: string;
   className?: string;
+  isValid?: boolean;
   validationError?: string | null;
   readonly?: boolean;
   onSave?: () => void;
@@ -27,13 +28,55 @@ export function JsonEditor({
   theme,
   height = "calc(100vh - 300px)",
   className = "",
+  isValid: isValidProp,
   validationError,
   readonly = false,
   onSave,
 }: JsonEditorProps) {
   const monacoInitializedRef = useRef(false);
-  const isValid = validationError === null;
-  const hasValidation = validationError !== undefined;
+
+  // Determine if theme is valid - isValid prop takes precedence
+  const isValid =
+    isValidProp !== undefined ? isValidProp : validationError === null;
+
+  // Check if backgroundImage exists and is not a URL
+  const backgroundImageWarning = useMemo(() => {
+    try {
+      const parsedTheme = JSON.parse(value);
+      const themeWithBackground = parsedTheme as typeof parsedTheme & {
+        backgroundImage?: string;
+      };
+      if (themeWithBackground.backgroundImage) {
+        const bgImage = themeWithBackground.backgroundImage;
+        // Check if it's a URL
+        const isUrl = (() => {
+          try {
+            new URL(bgImage);
+            return true;
+          } catch {
+            return /^(https?|data|blob):/i.test(bgImage);
+          }
+        })();
+        if (!isUrl) {
+          return "Local background image files are not supported. Please upload the background image file in the theme editor.";
+        }
+      }
+    } catch {
+      // If JSON is invalid, we can't check backgroundImage
+    }
+    return null;
+  }, [value]);
+
+  // Determine what to show: isValid takes precedence always
+  // If isValid is false -> show error (red)
+  // If isValid is true AND (validationError exists OR backgroundImage isn't URL) -> show warning (yellow)
+  // Otherwise -> show success (green)
+  const showError = isValid === false && validationError;
+  const showWarning =
+    isValid === true && (validationError || backgroundImageWarning);
+
+  const warningMessage = validationError || backgroundImageWarning;
+  const hasValidation = showError || showWarning || isValid === true;
 
   return (
     <div
@@ -45,19 +88,26 @@ export function JsonEditor({
             <Tooltip>
               <TooltipTrigger asChild>
                 <div className="cursor-pointer">
-                  {isValid ? (
+                  {showError && <XCircle className="w-5 h-5 text-red-500" />}
+                  {showWarning && !showError && (
+                    <TriangleAlert className="w-5 h-5 text-yellow-500" />
+                  )}
+                  {!showError && !showWarning && (
                     <CheckCircle2 className="w-5 h-5 text-green-500" />
-                  ) : (
-                    <XCircle className="w-5 h-5 text-red-500" />
                   )}
                 </div>
               </TooltipTrigger>
-              {validationError && (
+              {showError && validationError && (
                 <TooltipContent>
                   <p className="max-w-xs">{validationError}</p>
                 </TooltipContent>
               )}
-              {isValid && (
+              {showWarning && !showError && warningMessage && (
+                <TooltipContent>
+                  <p className="max-w-xs">{warningMessage}</p>
+                </TooltipContent>
+              )}
+              {!showError && !showWarning && (
                 <TooltipContent>
                   <p>Theme JSON is valid</p>
                 </TooltipContent>

@@ -420,6 +420,7 @@ export default function ThemeEditor() {
     onThemeJsonChange: handleThemeJsonChange,
     editorTheme,
     themeId: theme?.id,
+    isValid: isThemeJsonValid,
     validationError,
     readonly: isReadonly,
     themeStatus,

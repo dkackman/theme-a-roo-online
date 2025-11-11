@@ -4,11 +4,11 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import type { AppProps } from "next/app";
 import Head from "next/head";
 import { useRouter } from "next/router";
-import { Toaster } from "sonner";
 import "theme-o-rama/themes.css";
 import Layout from "../components/Layout";
 import { AuthProvider } from "../Contexts/AuthContext";
 import { ClientThemeProvider } from "../Contexts/ClientThemeProvider";
+import { Toaster } from "../components/ui/sonner";
 
 // Map routes to page titles
 const pageTitles: Record<string, string> = {
@@ -33,7 +33,7 @@ export default function MyApp({ Component, pageProps }: AppProps) {
         <Layout>
           <Component {...pageProps} />
         </Layout>
-        <Toaster position="bottom-right" richColors />
+        <Toaster position="bottom-right" richColors visibleToasts={5} />
         <Analytics debug={false} />
         <SpeedInsights debug={false} />
       </ClientThemeProvider>

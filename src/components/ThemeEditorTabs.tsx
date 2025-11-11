@@ -17,6 +17,7 @@ interface ThemeEditorTabsProps {
   onThemeJsonChange: (value: string) => void;
   editorTheme: "vs" | "vs-dark";
   themeId?: string;
+  isValid?: boolean;
   validationError?: string | null;
   readonly?: boolean;
   themeStatus?: "draft" | "ready" | "published" | "minted";
@@ -30,6 +31,7 @@ export function ThemeEditorTabs({
   onThemeJsonChange,
   editorTheme,
   themeId,
+  isValid,
   validationError,
   readonly = false,
   themeStatus,
@@ -101,6 +103,7 @@ export function ThemeEditorTabs({
           theme={editorTheme}
           height={"var(--json-editor-height, 100%)"}
           className="flex-1 min-h-0"
+          isValid={isValid}
           validationError={validationError}
           readonly={readonly}
           onSave={onSave}

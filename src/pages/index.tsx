@@ -19,11 +19,12 @@ import {
 } from "@/components/ui/empty";
 import { Download, Palette, Plus } from "lucide-react";
 import { useRouter } from "next/router";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../Contexts/AuthContext";
 import { useUserThemes } from "../hooks/useUserThemes";
 import { themesApi } from "../lib/data-access";
+import { validateThemeJson } from "../lib/themes";
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -34,6 +35,8 @@ export default function Home() {
   } = useUserThemes();
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (!loading && !user) {
@@ -89,6 +92,87 @@ export default function Home() {
     }
   };
 
+  const handleImportClick = () => {
+    fileInputRef.current?.click();
+  };
+
+  const isUrl = (str: string): boolean => {
+    try {
+      // Check if it's a valid URL (http://, https://, data:, blob:, etc.)
+      const _url = new URL(str);
+      return true;
+    } catch {
+      // If it's not a valid URL, check if it starts with common URL protocols
+      return /^(https?|data|blob):/i.test(str);
+    }
+  };
+
+  const handleFileChange = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    if (!user) {
+      return;
+    }
+
+    const file = event.target.files?.[0];
+    if (!file) {
+      return;
+    }
+
+    // Reset the input so the same file can be selected again
+    event.target.value = "";
+
+    setIsImporting(true);
+    try {
+      // Read file content
+      const fileContent = await file.text();
+
+      // Validate the theme using validateTheme from theme-o-rama
+      const validatedTheme = validateThemeJson(fileContent);
+
+      // Check if backgroundImage exists and is not a URL (i.e., it's a local file path)
+      const themeWithBackground = validatedTheme as typeof validatedTheme & {
+        backgroundImage?: string;
+      };
+      if (
+        themeWithBackground.backgroundImage &&
+        !isUrl(themeWithBackground.backgroundImage)
+      ) {
+        toast.warning(
+          "Local background image files are not supported. Please upload the background image file in the theme editor after importing."
+        );
+      }
+
+      // Set the name property to a new UUID v4
+      const themeToImport = {
+        ...validatedTheme,
+        name: crypto.randomUUID(),
+      };
+
+      // Save the imported theme
+      const theme = await themesApi.create({
+        name: themeToImport.name,
+        display_name: themeToImport.displayName,
+        theme: themeToImport,
+        user_id: user.id,
+      });
+
+      await loadUserThemes();
+      router.push(`/theme-editor?id=${theme.id}`);
+    } catch (error) {
+      console.error("Error importing theme:", error);
+      if (error instanceof SyntaxError) {
+        toast.error("Invalid JSON format. Please check your file.");
+      } else if (error instanceof Error) {
+        toast.error(`Failed to import theme: ${error.message}`);
+      } else {
+        toast.error("Failed to import theme. Please try again.");
+      }
+    } finally {
+      setIsImporting(false);
+    }
+  };
+
   if (loading || !user || isLoadingUserThemes) {
     return (
       <div className="flex justify-center items-center py-12">
@@ -99,6 +183,13 @@ export default function Home() {
 
   return (
     <div className="container max-w-6xl mx-auto px-4 py-8">
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="application/json,.json"
+        onChange={handleFileChange}
+        style={{ display: "none" }}
+      />
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -116,9 +207,13 @@ export default function Home() {
               <Plus className="w-4 h-4 mr-2" />
               {isCreating ? "Creating..." : "Create Theme"}
             </Button>
-            <Button onClick={() => {}} variant="outline">
+            <Button
+              onClick={handleImportClick}
+              variant="outline"
+              disabled={isImporting}
+            >
               <Download className="w-4 h-4 mr-2" />
-              Import
+              {isImporting ? "Importing..." : "Import"}
             </Button>
           </div>
         </div>
@@ -146,9 +241,13 @@ export default function Home() {
                     <Plus className="w-4 h-4 mr-2" />
                     {isCreating ? "Creating..." : "Create Theme"}
                   </Button>
-                  <Button onClick={() => {}} variant="outline">
+                  <Button
+                    onClick={handleImportClick}
+                    variant="outline"
+                    disabled={isImporting}
+                  >
                     <Download className="w-4 h-4 mr-2" />
-                    Import Theme
+                    {isImporting ? "Importing..." : "Import Theme"}
                   </Button>
                 </div>
               </EmptyContent>
