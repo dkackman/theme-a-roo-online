@@ -1,8 +1,9 @@
-import { Copy, Pencil, Trash2, User } from "lucide-react";
+import { Copy, Pencil, User } from "lucide-react";
 import type { Database } from "../lib/database.types";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { DeleteButton } from "./ui/delete-button";
 
 type Did = Database["public"]["Tables"]["dids"]["Row"];
 
@@ -11,7 +12,7 @@ interface DidCardProps {
   copiedId: string | null;
   onCopy: (text: string, id: string) => void;
   onEdit: (did: Did) => void;
-  onDelete: (did: Did) => void;
+  onDelete: (id: string) => void | Promise<void>;
 }
 
 const getNetworkLabel = (network: number): string => {
@@ -104,10 +105,13 @@ export default function DidCard({
             <Pencil className="w-4 h-4 mr-2" />
             Edit
           </Button>
-          <Button onClick={() => onDelete(did)} variant="destructive" size="sm">
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete
-          </Button>
+          <DeleteButton
+            title="Delete DID?"
+            description={`This will permanently delete ${
+              did.name ? `"${did.name}"` : "this DID"
+            }. This action cannot be undone.`}
+            onConfirm={() => onDelete(did.id)}
+          />
         </div>
       </CardContent>
     </Card>

@@ -114,8 +114,8 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
 
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         <FileSlot
-          title="Background Image"
-          description="Main theme background displayed throughout the app"
+          title="Background"
+          description="Main theme app background image"
           fileType="background"
           fileUrl={files.background}
           themeId={themeId}
@@ -128,7 +128,7 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
         />
         <FileSlot
           title="NFT Preview"
-          description="Small preview image for theme previews"
+          description="Small image for NFT previews"
           fileType="preview"
           fileUrl={files.preview}
           publicUrl={files.publicPreviewUrl}
@@ -138,7 +138,7 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
         />
         <FileSlot
           title="NFT Banner"
-          description="Large banner image for theme showcases"
+          description="Large image for NFT showcases"
           fileType="banner"
           fileUrl={files.banner}
           publicUrl={files.publicBannerUrl}

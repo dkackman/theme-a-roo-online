@@ -3,23 +3,6 @@ import { useState } from "react";
 import type { Database } from "../lib/database.types";
 import AddressCard from "./AddressCard";
 import AddressProperties from "./AddressProperties";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "./ui/alert-dialog";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "./ui/tooltip";
-
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
 
 interface AddressListProps {
@@ -43,7 +26,6 @@ export default function AddressList({
 }: AddressListProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [editingAddress, setEditingAddress] = useState<Address | null>(null);
-  const [deletingAddress, setDeletingAddress] = useState<Address | null>(null);
 
   const copyToClipboard = async (text: string, id: string) => {
     try {
@@ -53,14 +35,6 @@ export default function AddressList({
     } catch (err) {
       console.error("Failed to copy:", err);
     }
-  };
-
-  const handleDelete = () => {
-    if (!deletingAddress) {
-      return;
-    }
-    onDelete(deletingAddress.id);
-    setDeletingAddress(null);
   };
 
   const handleSave = async (
@@ -100,46 +74,9 @@ export default function AddressList({
           copiedId={copiedId}
           onCopy={copyToClipboard}
           onEdit={setEditingAddress}
-          onDelete={setDeletingAddress}
+          onDelete={onDelete}
         />
       ))}
-
-      {/* Delete Confirmation Dialog */}
-      <TooltipProvider>
-        <AlertDialog
-          open={!!deletingAddress}
-          onOpenChange={(open) => !open && setDeletingAddress(null)}
-        >
-          <AlertDialogContent>
-            <AlertDialogHeader>
-              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
-              <AlertDialogDescription>
-                This will permanently delete:{" "}
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <code className="text-xs cursor-help inline-block max-w-[400px] truncate align-bottom">
-                      {deletingAddress?.address}
-                    </code>
-                  </TooltipTrigger>
-                  <TooltipContent className="max-w-md break-all">
-                    {deletingAddress?.address}
-                  </TooltipContent>
-                </Tooltip>
-                <div className="mt-4"> This action cannot be undone. </div>
-              </AlertDialogDescription>
-            </AlertDialogHeader>
-            <AlertDialogFooter>
-              <AlertDialogCancel>Cancel</AlertDialogCancel>
-              <AlertDialogAction
-                onClick={handleDelete}
-                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              >
-                Delete
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
-      </TooltipProvider>
 
       {/* Edit Sheet */}
       <AddressProperties

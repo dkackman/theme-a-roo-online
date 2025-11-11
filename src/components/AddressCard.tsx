@@ -1,8 +1,9 @@
-import { Copy, Pencil, Trash2, Wallet } from "lucide-react";
+import { Copy, Pencil, Wallet } from "lucide-react";
 import type { Database } from "../lib/database.types";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { DeleteButton } from "./ui/delete-button";
 
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
 
@@ -12,7 +13,7 @@ interface AddressCardProps {
   copiedId: string | null;
   onCopy: (text: string, id: string) => void;
   onEdit: (address: Address) => void;
-  onDelete: (address: Address) => void;
+  onDelete: (id: string) => void | Promise<void>;
 }
 
 const getNetworkLabel = (network: number): string => {
@@ -94,14 +95,13 @@ export default function AddressCard({
             <Pencil className="w-4 h-4 mr-2" />
             Edit
           </Button>
-          <Button
-            onClick={() => onDelete(address)}
-            variant="destructive"
-            size="sm"
-          >
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete
-          </Button>
+          <DeleteButton
+            title="Delete address?"
+            description={`This will permanently delete ${
+              name ? `"${name}"` : "this address"
+            }. This action cannot be undone.`}
+            onConfirm={() => onDelete(address.id)}
+          />
         </div>
       </CardContent>
     </Card>

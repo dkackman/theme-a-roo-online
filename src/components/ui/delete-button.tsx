@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Trash2 } from "lucide-react";
 import { ReactNode } from "react";
+import { Button } from "./button";
 
 interface DeleteButtonProps {
   title: string;
@@ -33,15 +34,15 @@ export function DeleteButton({
     <AlertDialog>
       <AlertDialogTrigger asChild>
         {trigger || (
-          <button
-            className={`p-1.5 rounded-full hover:bg-destructive hover:text-destructive-foreground transition-colors ${
-              disabled ? "opacity-50 cursor-not-allowed" : ""
-            } ${className || ""}`}
+          <Button
             disabled={disabled}
             title={title}
+            variant="destructive"
+            className={className}
+            size="sm"
           >
             <Trash2 className="w-4 h-4" />
-          </button>
+          </Button>
         )}
       </AlertDialogTrigger>
       <AlertDialogContent>

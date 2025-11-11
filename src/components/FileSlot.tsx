@@ -7,15 +7,15 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DeleteButton } from "@/components/ui/delete-button";
-import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUploadThemeFile } from "@/hooks/useUploadThemeFile";
 import { deleteThemeFile, type FileUseType } from "@/lib/theme-files";
-import { Copy, ImageIcon, Loader2, Upload } from "lucide-react";
+import { Copy, ImageIcon, Loader2 } from "lucide-react";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Input } from "./ui/input";
+import { Dropzone } from "./ui/shadcn-io/dropzone";
 
 interface FileSlotProps {
   title: string;
@@ -42,16 +42,10 @@ export function FileSlot({
 }: FileSlotProps) {
   const { upload, progress, loading } = useUploadThemeFile();
   const [isDeleting, setIsDeleting] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  const handleFileSelect = () => {
-    fileInputRef.current?.click();
-  };
-
-  const handleFileChange = async (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    const file = event.target.files?.[0];
+  const handleDrop = async (acceptedFiles: File[]) => {
+    const file = acceptedFiles[0];
     if (!file) {
       return;
     }
@@ -67,10 +61,6 @@ export function FileSlot({
       // The parent component (ThemeFilesManager) will handle inserting the public URL
       if (onFileChange) {
         await onFileChange();
-      }
-
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
       }
     } catch (error) {
       console.error("Upload error:", error);
@@ -91,6 +81,8 @@ export function FileSlot({
       if (onFileChange) {
         await onFileChange();
       }
+
+      setIsPreviewOpen(false);
     } catch (error) {
       console.error("Delete error:", error);
       toast.error("Failed to delete file");
@@ -122,13 +114,6 @@ export function FileSlot({
         <CardDescription>{description}</CardDescription>
       </CardHeader>
       <CardContent>
-        <Input
-          ref={fileInputRef}
-          type="file"
-          accept="image/*"
-          onChange={handleFileChange}
-          className="hidden"
-        />
         {isLoading && (
           <div className="space-y-3">
             <Skeleton className="aspect-video w-full rounded-lg" />
@@ -137,54 +122,52 @@ export function FileSlot({
         )}
         {!isLoading && fileUrl && (
           <div className="space-y-3 animate-in fade-in duration-300">
-            <Dialog>
-              <DialogTrigger asChild>
-                <div className="relative aspect-video bg-muted rounded-lg flex items-center justify-center border-2 border-dashed border-border overflow-hidden cursor-pointer hover:opacity-90 transition-opacity">
-                  <Image
-                    src={fileUrl}
-                    alt={title}
-                    fill
-                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    className="object-contain rounded-lg"
-                    quality={50}
-                    placeholder="empty"
-                  />
-                </div>
-              </DialogTrigger>
-              <DialogContent className="!max-w-none !md:max-w-none w-auto h-auto max-w-[95vw] max-h-[95vh] p-0 bg-black/90">
-                <div className="relative flex items-center justify-center p-4">
-                  {}
-                  <Image
-                    src={fileUrl}
-                    alt={title}
-                    className="max-w-[93vw] max-h-[93vh] w-auto h-auto object-contain"
-                  />
-                </div>
-              </DialogContent>
-            </Dialog>
+            <Dropzone
+              accept={{ "image/*": [] }}
+              maxFiles={1}
+              disabled={loading || isDeleting}
+              onDrop={(acceptedFiles) => {
+                void handleDrop(acceptedFiles);
+              }}
+              onError={(error) => toast.error(error.message)}
+              className="p-0 border-2 border-dashed border-border rounded-lg bg-muted/40 hover:bg-muted/60 transition-colors"
+            >
+              <div
+                className="aspect-video w-full overflow-hidden rounded-lg"
+                title={"Click to replace"}
+              >
+                <Image
+                  src={fileUrl}
+                  alt={title}
+                  fill
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                  className="object-contain"
+                  quality={50}
+                  placeholder="empty"
+                />
+              </div>
+            </Dropzone>
             {loading && (
-              <div className="text-sm text-muted-foreground text-center">
-                Uploading... {progress}%
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Uploading... {progress}%</span>
               </div>
             )}
             <div className="flex gap-2">
               <Button
-                variant="outline"
+                variant="secondary"
                 size="sm"
-                onClick={handleFileSelect}
-                disabled={loading || isDeleting}
+                onClick={() => setIsPreviewOpen(true)}
+                disabled={loading || isDeleting || !fileUrl}
                 className="flex-1"
               >
-                <Upload className="w-4 h-4 mr-2" />
-                Replace
+                Preview
               </Button>
-
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleCopy}
                 disabled={loading || isDeleting || !fileUrl}
-                className="p-1.5"
                 title="Copy public URL to clipboard"
               >
                 <Copy className="w-4 h-4" />
@@ -194,39 +177,57 @@ export function FileSlot({
                 title={`Delete ${title}?`}
                 description="This action cannot be undone. This will permanently remove the file from storage."
                 onConfirm={confirmDelete}
-                disabled={loading || isDeleting}
+                disabled={loading || isDeleting || !fileUrl}
               />
             </div>
           </div>
         )}
         {!isLoading && !fileUrl && (
           <div className="space-y-3 animate-in fade-in duration-300">
-            <div className="aspect-video bg-muted rounded-lg flex flex-col items-center justify-center border-2 border-dashed border-border">
-              <ImageIcon className="w-12 h-12 text-muted-foreground mb-2" />
-              <p className="text-sm text-muted-foreground">No file uploaded</p>
-            </div>
+            <Dropzone
+              accept={{ "image/*": [] }}
+              maxFiles={1}
+              disabled={loading || isDeleting}
+              onDrop={(acceptedFiles) => {
+                void handleDrop(acceptedFiles);
+              }}
+              onError={(error) => toast.error(error.message)}
+              className="p-0 border-2 border-dashed border-border rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+            >
+              <div className="aspect-video w-full flex flex-col items-center justify-center gap-2">
+                <ImageIcon className="w-12 h-12 text-muted-foreground" />
+                <p className="text-sm text-muted-foreground text-center leading-relaxed">
+                  Drag and drop or click
+                  <br />
+                  to upload {title.toLowerCase()}
+                </p>
+              </div>
+            </Dropzone>
             {loading && (
-              <div className="text-sm text-muted-foreground text-center">
-                Uploading... {progress}%
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Uploading... {progress}%</span>
               </div>
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleFileSelect}
-              disabled={loading}
-              className="w-full"
-            >
-              {loading ? (
-                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              ) : (
-                <Upload className="w-4 h-4 mr-2" />
-              )}
-              Upload {title}
-            </Button>
           </div>
         )}
       </CardContent>
+      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
+        <DialogContent className="!max-w-none !md:max-w-none w-[90vw] max-w-[95vw] h-[90vh] max-h-[95vh] p-0 bg-black/90">
+          <div className="relative h-full w-full">
+            {publicUrl && (
+              <Image
+                src={publicUrl}
+                alt={title}
+                fill
+                className="object-contain"
+                sizes="100vw"
+                priority
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }
