@@ -8,7 +8,16 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Braces, FileText, ImageIcon, Info } from "lucide-react";
+import {
+  Braces,
+  CheckCircle2,
+  FileText,
+  ImageIcon,
+  TriangleAlert,
+  XCircle,
+} from "lucide-react";
+import { useMemo } from "react";
+import { Badge } from "./ui/badge";
 
 interface ThemeEditorTabsProps {
   activeTab: string;
@@ -31,7 +40,7 @@ export function ThemeEditorTabs({
   onThemeJsonChange,
   editorTheme,
   themeId,
-  isValid,
+  isValid: isValidProp,
   validationError,
   readonly = false,
   themeStatus,
@@ -51,6 +60,105 @@ export function ThemeEditorTabs({
         return null;
     }
   };
+
+  // Determine if theme is valid - isValid prop takes precedence
+  const isValid =
+    isValidProp !== undefined ? isValidProp : validationError === null;
+
+  // Check if backgroundImage exists and is not a URL
+  const backgroundImageWarning = useMemo(() => {
+    try {
+      const parsedTheme = JSON.parse(themeJson);
+      const themeWithBackground = parsedTheme as typeof parsedTheme & {
+        backgroundImage?: string;
+      };
+      if (themeWithBackground.backgroundImage) {
+        const bgImage = themeWithBackground.backgroundImage;
+        // Check if it's a URL
+        const isUrl = (() => {
+          try {
+            new URL(bgImage);
+            return true;
+          } catch {
+            return /^(https?|data|blob):/i.test(bgImage);
+          }
+        })();
+        if (!isUrl) {
+          return "Local background image files are not supported. Please upload the background image file in the theme editor.";
+        }
+      }
+    } catch {
+      // If JSON is invalid, we can't check backgroundImage
+    }
+    return null;
+  }, [themeJson]);
+
+  // Determine what to show: isValid takes precedence always
+  // If isValid is false -> show error (red)
+  // If isValid is true AND (validationError exists OR backgroundImage isn't URL) -> show warning (yellow)
+  // Otherwise -> show success (green)
+  const showError = isValid === false && validationError;
+  const showWarning =
+    isValid === true && (validationError || backgroundImageWarning);
+
+  const warningMessage = validationError || backgroundImageWarning;
+  const hasValidation = showError || showWarning || isValid === true;
+
+  const readOnlyBadge = useMemo(() => {
+    if (themeStatus === "published") {
+      return {
+        label: "Read-only",
+        message:
+          "Published themes are awaiting minting and cannot be modified. Change status to Ready to edit.",
+      };
+    }
+    if (themeStatus === "minted") {
+      return {
+        label: "Read-only",
+        message: "Minted themes are immutable and can no longer be changed.",
+      };
+    }
+    return null;
+  }, [themeStatus]);
+
+  const validationBadge = useMemo(() => {
+    if (!hasValidation) {
+      return null;
+    }
+
+    if (showError && validationError) {
+      return {
+        label: "Invalid",
+        message: validationError,
+        icon: <XCircle className="h-4 w-4" />,
+        variant: "destructive" as const,
+        className: "",
+        ariaLabel: "Theme JSON invalid",
+      };
+    }
+
+    if (showWarning && warningMessage) {
+      return {
+        label: "Warning",
+        message: warningMessage,
+        icon: <TriangleAlert className="h-4 w-4" />,
+        variant: "outline" as const,
+        className:
+          "border-yellow-500/30 bg-yellow-500/15 text-yellow-700 dark:text-yellow-400",
+        ariaLabel: "Theme JSON warning",
+      };
+    }
+
+    return {
+      label: "Valid",
+      message: "Theme JSON is valid",
+      icon: <CheckCircle2 className="h-4 w-4" />,
+      variant: "outline" as const,
+      className:
+        "border-emerald-500/50 bg-emerald-500/10 text-emerald-700 dark:text-emerald-400",
+      ariaLabel: "Theme JSON valid",
+    };
+  }, [hasValidation, showError, showWarning, validationError, warningMessage]);
 
   const statusMessage = getStatusMessage();
   return (
@@ -74,23 +182,66 @@ export function ThemeEditorTabs({
             Background
           </TabsTrigger>
         </TabsList>
-        {statusMessage && (
-          <TooltipProvider>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  className="inline-flex items-center justify-center rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:opacity-50 disabled:pointer-events-none ring-offset-background text-muted-foreground hover:text-foreground"
-                >
-                  <Info className="w-4 h-4" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent className="max-w-xs">
-                <p>{statusMessage}</p>
-              </TooltipContent>
-            </Tooltip>
-          </TooltipProvider>
-        )}
+        <div className="flex items-center gap-2">
+          {themeStatus && statusMessage && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Badge
+                      variant="outline"
+                      className="cursor-pointer border-border bg-background/60 text-xs font-normal capitalize text-muted-foreground hover:text-foreground"
+                    >
+                      {themeStatus}
+                    </Badge>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>{statusMessage}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {readOnlyBadge && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Badge
+                      variant="secondary"
+                      className="cursor-pointer bg-amber-500/10 text-xs font-normal text-amber-600 dark:text-amber-400"
+                    >
+                      {readOnlyBadge.label}
+                    </Badge>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>{readOnlyBadge.message}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {validationBadge && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span role="status" aria-label={validationBadge.ariaLabel}>
+                    <Badge
+                      variant={validationBadge.variant}
+                      className={`cursor-pointer ${validationBadge.className}`}
+                    >
+                      {validationBadge.icon}
+                      {validationBadge.label}
+                    </Badge>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p className="max-w-xs">{validationBadge.message}</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
       </div>
 
       <TabsContent
@@ -103,8 +254,6 @@ export function ThemeEditorTabs({
           theme={editorTheme}
           height={"var(--json-editor-height, 100%)"}
           className="flex-1 min-h-0"
-          isValid={isValid}
-          validationError={validationError}
           readonly={readonly}
           onSave={onSave}
         />
