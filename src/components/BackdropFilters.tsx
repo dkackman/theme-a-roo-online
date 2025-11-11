@@ -3,7 +3,11 @@ import { Label } from "@/components/ui/label";
 import { useEffect, useState } from "react";
 import { useThemeEditor } from "../Contexts/ThemeEditorContext";
 
-export function BackdropFilters() {
+interface BackdropFiltersProps {
+  readonly?: boolean;
+}
+
+export function BackdropFilters({ readonly = false }: BackdropFiltersProps) {
   const { theme, updateTheme } = useThemeEditor();
   const [backdropFilters, setBackdropFilters] = useState<boolean>(false);
   const [backgroundImage, setBackgroundImage] = useState<string | null>(null);
@@ -114,7 +118,7 @@ export function BackdropFilters() {
           id="backdropFilters"
           checked={backdropFilters}
           onCheckedChange={(checked) => handleToggle(checked === true)}
-          disabled={isLoading || !backgroundImage}
+          disabled={isLoading || !backgroundImage || readonly}
         />
         <Label
           htmlFor="backdropFilters"

@@ -9,9 +9,10 @@ import { FileSlot } from "./FileSlot";
 
 interface ThemeFilesManagerProps {
   themeId: string;
+  readonly?: boolean;
 }
 
-export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
+export function ThemeFilesManager({ themeId, readonly = false }: ThemeFilesManagerProps) {
   // Get theme editor context to update backgroundImage
   const themeEditor = useThemeEditor();
   const [files, setFiles] = useState<{
@@ -107,6 +108,7 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
           }}
           publicUrl={files.publicBackgroundUrl}
           isLoading={isLoading}
+          readonly={readonly}
         />
         <FileSlot
           title="NFT Preview"
@@ -116,6 +118,7 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
           themeId={themeId}
           onFileChange={() => refreshFile("preview")}
           isLoading={isLoading}
+          readonly={readonly}
         />
         <FileSlot
           title="NFT Banner"
@@ -125,6 +128,7 @@ export function ThemeFilesManager({ themeId }: ThemeFilesManagerProps) {
           themeId={themeId}
           onFileChange={() => refreshFile("banner")}
           isLoading={isLoading}
+          readonly={readonly}
         />
       </div>
     </div>

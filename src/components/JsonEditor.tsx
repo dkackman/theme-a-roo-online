@@ -17,6 +17,8 @@ interface JsonEditorProps {
   height?: string;
   className?: string;
   validationError?: string | null;
+  readonly?: boolean;
+  onSave?: () => void;
 }
 
 export function JsonEditor({
@@ -26,6 +28,8 @@ export function JsonEditor({
   height = "calc(100vh - 300px)",
   className = "",
   validationError,
+  readonly = false,
+  onSave,
 }: JsonEditorProps) {
   const monacoInitializedRef = useRef(false);
   const isValid = validationError === null;
@@ -191,6 +195,28 @@ export function JsonEditor({
             ).__jsonColorProviderRegistered = true;
           }
         }}
+        onMount={(editor, monaco) => {
+          // Add custom command for Alt/Command+S to save
+          if (onSave) {
+            // Alt+S (Windows/Linux) and Command+S (Mac)
+            // We'll handle both Alt+S and Command+S
+            // Alt+S binding
+            editor.addCommand(monaco.KeyMod.Alt | monaco.KeyCode.KeyS, () => {
+              onSave();
+            });
+            // Command+S (Mac) - KeyMod.CtrlCmd is Command on Mac, Ctrl on Windows
+            // We need to check if we're on Mac to avoid overriding Ctrl+S on Windows
+            const isMac = navigator.platform.toUpperCase().indexOf("MAC") >= 0;
+            if (isMac) {
+              editor.addCommand(
+                monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS,
+                () => {
+                  onSave();
+                }
+              );
+            }
+          }
+        }}
         height={height}
         defaultLanguage="json"
         value={value}
@@ -217,6 +243,7 @@ export function JsonEditor({
           contextmenu: true,
           mouseWheelZoom: true,
           smoothScrolling: true,
+          readOnly: readonly,
         }}
         loading={
           <div className="flex items-center justify-center h-32">

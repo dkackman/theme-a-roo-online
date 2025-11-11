@@ -26,6 +26,7 @@ interface FileSlotProps {
   onFileChange?: () => void | Promise<void>;
   onInsertBackground?: (url: string | undefined) => void;
   isLoading?: boolean;
+  readonly?: boolean;
 }
 
 export function FileSlot({
@@ -37,6 +38,7 @@ export function FileSlot({
   onFileChange,
   onInsertBackground,
   isLoading = false,
+  readonly = false,
 }: FileSlotProps) {
   const { upload, progress, loading } = useUploadThemeFile();
   const [isDeleting, setIsDeleting] = useState(false);
@@ -123,7 +125,7 @@ export function FileSlot({
             <Dropzone
               accept={{ "image/*": [] }}
               maxFiles={1}
-              disabled={loading || isDeleting}
+              disabled={loading || isDeleting || readonly}
               onDrop={(acceptedFiles) => {
                 void handleDrop(acceptedFiles);
               }}
@@ -175,7 +177,7 @@ export function FileSlot({
                 title={`Delete ${title}?`}
                 description="This action cannot be undone. This will permanently remove the file from storage."
                 onConfirm={confirmDelete}
-                disabled={loading || isDeleting || !publicUrl}
+                disabled={loading || isDeleting || !publicUrl || readonly}
               />
             </div>
           </div>
@@ -185,7 +187,7 @@ export function FileSlot({
             <Dropzone
               accept={{ "image/*": [] }}
               maxFiles={1}
-              disabled={loading || isDeleting}
+              disabled={loading || isDeleting || readonly}
               onDrop={(acceptedFiles) => {
                 void handleDrop(acceptedFiles);
               }}

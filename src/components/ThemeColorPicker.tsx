@@ -7,9 +7,10 @@ import { useThemeEditor } from "../Contexts/ThemeEditorContext";
 
 interface ThemeColorPickerProps {
   className?: string;
+  readonly?: boolean;
 }
 
-export function ThemeColorPicker({ className = "" }: ThemeColorPickerProps) {
+export function ThemeColorPicker({ className = "", readonly = false }: ThemeColorPickerProps) {
   const { theme, updateTheme } = useThemeEditor();
 
   const hasBackgroundImage = Boolean(theme?.backgroundImage);
@@ -48,7 +49,7 @@ export function ThemeColorPicker({ className = "" }: ThemeColorPickerProps) {
   }, [theme, getColorFromTheme, shouldApplyToBackground]);
 
   const handleColorChange = (newColor: { r: number; g: number; b: number }) => {
-    if (hasBackgroundImage) {
+    if (hasBackgroundImage || readonly) {
       return;
     }
     setColor(newColor);
@@ -67,7 +68,7 @@ export function ThemeColorPicker({ className = "" }: ThemeColorPickerProps) {
   };
 
   const handleApplyToBackgroundChange = (checked: boolean) => {
-    if (hasBackgroundImage) {
+    if (hasBackgroundImage || readonly) {
       return;
     }
     setApplyToBackground(checked);
@@ -92,17 +93,19 @@ export function ThemeColorPicker({ className = "" }: ThemeColorPickerProps) {
     <div className={`space-y-4 ${className}`}>
       <div className="flex justify-center">
         <div
-          className={`relative ${hasBackgroundImage ? "pointer-events-none opacity-50" : ""}`}
+          className={`relative ${hasBackgroundImage || readonly ? "pointer-events-none opacity-50" : ""}`}
         >
           <RgbColorPicker
             color={color}
             onChange={handleColorChange}
             style={{ width: "200px", height: "200px" }}
           />
-          {hasBackgroundImage && (
+          {(hasBackgroundImage || readonly) && (
             <div className="absolute inset-0 flex items-center justify-center">
               <span className="rounded bg-background/80 px-2 py-1 text-xs text-muted-foreground shadow-sm">
-                Disabled while background image is set
+                {hasBackgroundImage
+                  ? "Disabled while background image is set"
+                  : "Read-only mode"}
               </span>
             </div>
           )}
@@ -113,7 +116,7 @@ export function ThemeColorPicker({ className = "" }: ThemeColorPickerProps) {
           id="apply-to-background"
           checked={applyToBackground}
           onCheckedChange={handleApplyToBackgroundChange}
-          disabled={hasBackgroundImage}
+          disabled={hasBackgroundImage || readonly}
         />
         <Label htmlFor="apply-to-background" className="text-sm cursor-pointer">
           Apply to background color

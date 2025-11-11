@@ -11,6 +11,7 @@ interface ThemeEditorActionsProps {
   isSaving: boolean;
   className?: string;
   isThemeValid?: boolean;
+  themeStatus?: "draft" | "ready" | "published" | "minted";
 }
 
 export function ThemeEditorActions({
@@ -22,12 +23,18 @@ export function ThemeEditorActions({
   isSaving,
   className = "",
   isThemeValid = true,
+  themeStatus,
 }: ThemeEditorActionsProps) {
   return (
     <ButtonGroup className={className}>
       <Button
         onClick={onSave}
-        disabled={isSaving || !isThemeValid}
+        disabled={
+          isSaving ||
+          !isThemeValid ||
+          themeStatus === "minted" ||
+          themeStatus === "published"
+        }
         variant="default"
         size="sm"
       >
@@ -47,7 +54,7 @@ export function ThemeEditorActions({
         onClick={onPublish}
         variant="secondary"
         size="sm"
-        disabled={!isThemeValid}
+        disabled={!isThemeValid || themeStatus !== "ready"}
       >
         <Rocket className="w-4 h-4 mr-2" />
         Publish

@@ -267,7 +267,55 @@ export default function ThemeEditor() {
     }
   };
 
-  const handleSaveTheme = () => saveTheme(themeJson);
+  const handleSaveTheme = useCallback(() => {
+    // Check the same conditions as the save button
+    const isThemeJsonValid = validationError === null;
+    const canSave =
+      !isSaving &&
+      theme &&
+      isThemeJsonValid &&
+      themeStatus !== "minted" &&
+      themeStatus !== "published";
+    if (canSave) {
+      saveTheme(themeJson);
+    }
+  }, [isSaving, theme, validationError, themeStatus, themeJson, saveTheme]);
+
+  // Keyboard shortcut: Alt/Command+S to save (for non-Monaco contexts)
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      // Check if Alt+S (Windows/Linux) or Command+S (Mac) is pressed
+      if (
+        (event.altKey || event.metaKey) &&
+        event.key === "s" &&
+        !event.shiftKey &&
+        !event.ctrlKey
+      ) {
+        // Don't trigger if user is typing in an input field or textarea
+        const target = event.target as HTMLElement;
+        if (
+          target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable
+        ) {
+          return;
+        }
+
+        // Don't trigger if Monaco Editor has focus (it handles it internally)
+        if (target.closest(".monaco-editor")) {
+          return;
+        }
+
+        event.preventDefault();
+        handleSaveTheme();
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [handleSaveTheme]);
 
   const handleSaveProperties = async () => {
     const success = await saveProperties({
@@ -351,6 +399,7 @@ export default function ThemeEditor() {
     isSideBySide: isSideBySideLayout,
     isSaving,
     isThemeValid: isThemeJsonValid,
+    themeStatus,
     onEdit: () => setIsEditSheetOpen(true),
     onSave: handleSaveTheme,
     onApply: handleApplyTheme,
@@ -361,6 +410,7 @@ export default function ThemeEditor() {
   };
 
   // Common props for ThemeEditorTabs
+  const isReadonly = themeStatus === "minted" || themeStatus === "published";
   const tabsProps = {
     activeTab,
     onTabChange: setActiveTab,
@@ -369,6 +419,9 @@ export default function ThemeEditor() {
     editorTheme,
     themeId: theme?.id,
     validationError,
+    readonly: isReadonly,
+    themeStatus,
+    onSave: handleSaveTheme,
   };
 
   const renderEditorTabs = () => {

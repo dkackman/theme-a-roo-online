@@ -70,6 +70,23 @@ export function ThemeProperties({
 }: ThemePropertiesProps) {
   const isMinted = status === "minted";
 
+  const getStatusMessage = () => {
+    switch (status) {
+      case "draft":
+        return "This theme is in draft. It will not be pickable in settings.";
+      case "ready":
+        return "This theme is ready to be published. You can pick it in settings.";
+      case "published":
+        return "This theme is published and waiting to be minted. Published themes are read-only. Change the status to Ready if you need to change this theme.";
+      case "minted":
+        return "This theme has been minted. It is read-only and can no longer be changed.";
+      default:
+        return "Edit the theme properties.";
+    }
+  };
+
+  const statusMessage = getStatusMessage();
+
   const handleDescriptionChange = (event: ChangeEvent<HTMLTextAreaElement>) => {
     if (isMinted) {
       return;
@@ -91,7 +108,7 @@ export function ThemeProperties({
       <SheetContent className="w-full sm:max-w-md bg-popover">
         <SheetHeader className="px-6 pt-6">
           <SheetTitle>Theme Properties</SheetTitle>
-          <SheetDescription>Edit the theme properties.</SheetDescription>
+          <SheetDescription>{statusMessage}</SheetDescription>
         </SheetHeader>
         <FieldGroup className="gap-4 px-6 overflow-y-auto">
           <Field>
@@ -111,7 +128,9 @@ export function ThemeProperties({
               <SelectContent className="z-[90]">
                 <SelectItem value="draft">Draft</SelectItem>
                 <SelectItem value="ready">Ready</SelectItem>
-                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="published" disabled>
+                  Published
+                </SelectItem>
                 <SelectItem value="minted" disabled>
                   Minted
                 </SelectItem>

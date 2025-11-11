@@ -4,9 +4,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 interface BackgroundEditorProps {
   className?: string;
+  readonly?: boolean;
 }
 
-export function BackgroundEditor({ className = "" }: BackgroundEditorProps) {
+export function BackgroundEditor({ className = "", readonly = false }: BackgroundEditorProps) {
   return (
     <Card className={`${className} w-full`}>
       <CardHeader>
@@ -17,12 +18,12 @@ export function BackgroundEditor({ className = "" }: BackgroundEditorProps) {
           <div>
             <h3 className="font-semibold mb-4">Backdrop Filters</h3>
             <div className="ml-8">
-              <BackdropFilters />
+              <BackdropFilters readonly={readonly} />
             </div>
           </div>
           <div>
             <h3 className="font-semibold mb-4">Theme Color</h3>
-            <ThemeColorPicker />
+            <ThemeColorPicker readonly={readonly} />
           </div>
         </div>
       </CardContent>

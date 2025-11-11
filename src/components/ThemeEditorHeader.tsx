@@ -9,6 +9,7 @@ interface ThemeEditorHeaderProps {
   isSideBySide: boolean;
   isSaving: boolean;
   isThemeValid: boolean;
+  themeStatus?: "draft" | "ready" | "published" | "minted";
   onEdit: () => void;
   onSave: () => void;
   onApply: () => void;
@@ -24,6 +25,7 @@ export function ThemeEditorHeader({
   isSideBySide,
   isSaving,
   isThemeValid,
+  themeStatus,
   onEdit,
   onSave,
   onApply,
@@ -58,6 +60,7 @@ export function ThemeEditorHeader({
           onDelete={onDelete}
           isSaving={isSaving}
           isThemeValid={isThemeValid}
+          themeStatus={themeStatus}
         />
         <Button
           className="ml-2"
