@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/router";
 import { useAuth } from "../Contexts/AuthContext";
 import type { UserRole } from "../lib/types";
+import { cn } from "../lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
+import { buttonVariants } from "./ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -82,15 +84,26 @@ export default function Nav() {
                 </NavigationMenuItem>
 
                 {isAdmin && (
-                  <NavigationMenuItem>
-                    <NavigationMenuLink
-                      asChild
-                      className={navigationMenuTriggerStyle()}
-                      active={router.pathname === "/admin"}
-                    >
-                      <Link href="/admin">Admin</Link>
-                    </NavigationMenuLink>
-                  </NavigationMenuItem>
+                  <>
+                    <NavigationMenuItem>
+                      <NavigationMenuLink
+                        asChild
+                        className={navigationMenuTriggerStyle()}
+                        active={router.pathname === "/admin"}
+                      >
+                        <Link href="/admin">Admin</Link>
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                    <NavigationMenuItem>
+                      <NavigationMenuLink
+                        asChild
+                        className={navigationMenuTriggerStyle()}
+                        active={router.pathname === "/mint-queue"}
+                      >
+                        <Link href="/mint-queue">Mint Queue</Link>
+                      </NavigationMenuLink>
+                    </NavigationMenuItem>
+                  </>
                 )}
               </NavigationMenuList>
             </NavigationMenu>
@@ -152,15 +165,17 @@ export default function Nav() {
                     onClick={signOut}
                     className="text-destructive focus:text-destructive"
                   >
-                    <LogOut className="w-4 h-4 mr-3" />
-                    Sign Out
+                    <div className="flex items-center gap-3">
+                      <LogOut className="w-4 h-4" />
+                      Sign Out
+                    </div>
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
             ) : (
               <Link
                 href="/auth"
-                className="px-4 py-2 text-sm font-medium rounded-lg hover:bg-accent transition-colors"
+                className={cn(buttonVariants({ variant: "ghost" }))}
               >
                 Sign in
               </Link>

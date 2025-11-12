@@ -177,4 +177,35 @@ export const themesApi = {
     }
     return data as Theme;
   },
+
+  /**
+   * Get all published themes with user information (admin only)
+   */
+  async getPublishedWithUsers() {
+    const { data, error } = await supabase
+      .from("themes")
+      .select(
+        `
+        *,
+        user_profiles:user_id (
+          id,
+          email,
+          name
+        )
+      `
+      )
+      .eq("status", "published")
+      .order("updated_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+    return data as (Theme & {
+      user_profiles: {
+        id: string;
+        email: string;
+        name: string | null;
+      } | null;
+    })[];
+  },
 };
