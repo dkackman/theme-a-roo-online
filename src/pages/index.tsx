@@ -1,4 +1,5 @@
 import { ThemeCard } from "@/components/ThemeCard";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -17,6 +18,7 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Download, Palette, Plus } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
@@ -175,8 +177,24 @@ export default function Home() {
 
   if (loading || !user || isLoadingUserThemes) {
     return (
-      <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+      <div className="container max-w-6xl mx-auto px-4 py-8">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div className="space-y-2">
+              <Skeleton className="h-9 w-48" />
+              <Skeleton className="h-5 w-64" />
+            </div>
+            <div className="flex gap-2">
+              <Skeleton className="h-10 w-32" />
+              <Skeleton className="h-10 w-24" />
+            </div>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <Skeleton className="h-64 w-full rounded-lg" />
+            <Skeleton className="h-64 w-full rounded-lg" />
+            <Skeleton className="h-64 w-full rounded-lg" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -219,39 +237,41 @@ export default function Home() {
         </div>
 
         {userThemes.length === 0 ? (
-          <Card className="rounded-2xl shadow-xl p-10">
-            <Empty>
-              <EmptyHeader>
-                <EmptyMedia variant="icon">
-                  <Palette />
-                </EmptyMedia>
-                <EmptyTitle>No Themes Yet</EmptyTitle>
-                <EmptyDescription>
-                  You haven&apos;t created any themes yet. Get started by
-                  creating your first theme.
-                </EmptyDescription>
-              </EmptyHeader>
-              <EmptyContent>
-                <div className="flex gap-3 justify-center">
-                  <Button
-                    onClick={handleCreateTheme}
-                    variant="default"
-                    disabled={isCreating}
-                  >
-                    <Plus className="w-4 h-4 mr-2" />
-                    {isCreating ? "Creating..." : "Create Theme"}
-                  </Button>
-                  <Button
-                    onClick={handleImportClick}
-                    variant="outline"
-                    disabled={isImporting}
-                  >
-                    <Download className="w-4 h-4 mr-2" />
-                    {isImporting ? "Importing..." : "Import Theme"}
-                  </Button>
-                </div>
-              </EmptyContent>
-            </Empty>
+          <Card>
+            <CardContent className="p-10">
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <Palette />
+                  </EmptyMedia>
+                  <EmptyTitle>No Themes Yet</EmptyTitle>
+                  <EmptyDescription>
+                    You haven&apos;t created any themes yet. Get started by
+                    creating your first theme.
+                  </EmptyDescription>
+                </EmptyHeader>
+                <EmptyContent>
+                  <div className="flex gap-3 justify-center">
+                    <Button
+                      onClick={handleCreateTheme}
+                      variant="default"
+                      disabled={isCreating}
+                    >
+                      <Plus className="w-4 h-4 mr-2" />
+                      {isCreating ? "Creating..." : "Create Theme"}
+                    </Button>
+                    <Button
+                      onClick={handleImportClick}
+                      variant="outline"
+                      disabled={isImporting}
+                    >
+                      <Download className="w-4 h-4 mr-2" />
+                      {isImporting ? "Importing..." : "Import Theme"}
+                    </Button>
+                  </div>
+                </EmptyContent>
+              </Empty>
+            </CardContent>
           </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -286,9 +306,9 @@ export default function Home() {
                   </CardContent>
                   <CardFooter>
                     <div className="flex items-center justify-between w-full">
-                      <span className="text-sm font-medium text-muted-foreground capitalize">
+                      <Badge variant="outline" className="capitalize">
                         {dbTheme.status}
-                      </span>
+                      </Badge>
                       <div onClick={(e) => e.stopPropagation()}>
                         <DeleteButton
                           title="Delete Theme"

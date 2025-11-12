@@ -1,4 +1,4 @@
-import { ClipboardList, User as UserIcon, Wallet } from "lucide-react";
+import { ClipboardList, Loader2, User as UserIcon, Wallet } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import ProfileAddresses from "../components/profile/ProfileAddresses";
@@ -31,7 +31,10 @@ export default function Profile() {
   if (loading || !user) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+        <Loader2
+          className="h-8 w-8 animate-spin text-primary"
+          aria-hidden="true"
+        />
       </div>
     );
   }
@@ -72,7 +75,7 @@ export default function Profile() {
                         : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
                     )}
                   >
-                    <Icon className="w-4 h-4x" />
+                    <Icon className="w-4 h-4" />
                     <span>{section.label}</span>
                   </Button>
                 );

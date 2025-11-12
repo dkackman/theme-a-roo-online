@@ -4,6 +4,13 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { DeleteButton } from "./ui/delete-button";
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "./ui/field";
 
 type Did = Database["public"]["Tables"]["dids"]["Row"];
 
@@ -52,55 +59,57 @@ export default function DidCard({
           <span className="truncate">{did.name || did.launcher_id}</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {/* Launcher ID */}
-        <div className="flex items-center gap-2">
-          <div className="flex-1 min-w-0">
-            <label className="block text-xs font-medium text-muted-foreground mb-1">
-              Launcher ID
-            </label>
-            <div className="flex items-center gap-2">
-              <code className="text-sm font-mono truncate block bg-muted px-2 py-1 rounded">
-                {did.launcher_id}
-              </code>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onCopy(did.launcher_id, did.id)}
-                className="flex-shrink-0"
-                aria-label="Copy launcher ID"
-              >
-                <Copy className="w-4 h-4" />
-                {copiedId === did.id && (
-                  <span className="ml-1 text-xs">Copied!</span>
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
+      <CardContent>
+        <FieldGroup>
+          {/* Launcher ID */}
+          <Field orientation="vertical">
+            <FieldLabel>Launcher ID</FieldLabel>
+            <FieldContent>
+              <div className="flex items-center gap-2">
+                <code className="text-sm font-mono truncate flex-1 bg-muted px-2 py-1 rounded">
+                  {did.launcher_id}
+                </code>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onCopy(did.launcher_id, did.id)}
+                  className="flex-shrink-0"
+                  aria-label="Copy launcher ID"
+                >
+                  <Copy className="w-4 h-4" />
+                  {copiedId === did.id && (
+                    <span className="ml-1 text-xs">Copied!</span>
+                  )}
+                </Button>
+              </div>
+            </FieldContent>
+          </Field>
 
-        {/* Network */}
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Network
-          </label>
-          <Badge variant={getNetworkBadgeVariant(did.network)}>
-            {getNetworkLabel(did.network)}
-          </Badge>
-        </div>
+          {/* Network */}
+          <Field orientation="vertical">
+            <FieldLabel>Network</FieldLabel>
+            <FieldContent>
+              <Badge variant={getNetworkBadgeVariant(did.network)}>
+                {getNetworkLabel(did.network)}
+              </Badge>
+            </FieldContent>
+          </Field>
 
-        {/* Notes */}
-        {did.notes && (
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">
-              Notes
-            </label>
-            <p className="text-sm">{did.notes}</p>
-          </div>
-        )}
+          {/* Notes */}
+          {did.notes && (
+            <Field orientation="vertical">
+              <FieldLabel>Notes</FieldLabel>
+              <FieldContent>
+                <FieldDescription className="text-sm font-normal">
+                  {did.notes}
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+          )}
+        </FieldGroup>
 
         {/* Actions */}
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex justify-end gap-2 pt-4 mt-4 border-t">
           <Button onClick={() => onEdit(did)} variant="outline" size="sm">
             <Pencil className="w-4 h-4 mr-2" />
             Edit

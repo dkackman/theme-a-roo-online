@@ -1,6 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Field,
+  FieldContent,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   useCallback,
   useEffect,
@@ -121,23 +135,44 @@ export default function ProfileAddresses() {
         </p>
       </div>
 
-      <form onSubmit={addAddress} className="flex gap-3">
-        <Input
-          placeholder="Add a new address..."
-          value={address}
-          onChange={(e: ChangeEvent<HTMLInputElement>) =>
-            setAddress(e.target.value)
-          }
-        />
-        <Button type="submit" variant="default">
-          Add Address
-        </Button>
-      </form>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-sm">Add New Address</CardTitle>
+          <CardDescription>
+            Enter a blockchain address to add it to your profile.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <form onSubmit={addAddress}>
+            <FieldGroup>
+              <Field orientation="vertical">
+                <FieldLabel htmlFor="address">Address</FieldLabel>
+                <FieldContent>
+                  <div className="flex gap-3">
+                    <Input
+                      id="address"
+                      placeholder="Add a new address..."
+                      value={address}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        setAddress(e.target.value)
+                      }
+                      className="flex-1"
+                    />
+                    <Button type="submit" variant="default">
+                      Add Address
+                    </Button>
+                  </div>
+                </FieldContent>
+              </Field>
+            </FieldGroup>
+          </form>
+        </CardContent>
+      </Card>
 
       {loading ? (
-        <div className="text-center py-12">
-          <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
-          <p className="mt-4 text-muted-foreground">Loading...</p>
+        <div className="space-y-4">
+          <Skeleton className="h-48 w-full rounded-lg" />
+          <Skeleton className="h-48 w-full rounded-lg" />
         </div>
       ) : (
         <AddressList

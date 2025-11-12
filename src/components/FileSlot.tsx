@@ -148,8 +148,8 @@ export function FileSlot({
               </div>
             </Dropzone>
             {loading && (
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin" />
+              <div className="flex items-center justify-center gap-2 rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                 <span>Uploading... {progress}%</span>
               </div>
             )}
@@ -204,8 +204,8 @@ export function FileSlot({
               </div>
             </Dropzone>
             {loading && (
-              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
-                <Loader2 className="w-4 h-4 animate-spin" />
+              <div className="flex items-center justify-center gap-2 rounded-md bg-muted/50 px-3 py-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                 <span>Uploading... {progress}%</span>
               </div>
             )}

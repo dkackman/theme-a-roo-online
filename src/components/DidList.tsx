@@ -3,6 +3,13 @@ import { useState } from "react";
 import type { Database } from "../lib/database.types";
 import DidCard from "./DidCard";
 import DidProperties from "./DidProperties";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "./ui/empty";
 type Did = Database["public"]["Tables"]["dids"]["Row"];
 
 interface DidListProps {
@@ -56,13 +63,17 @@ export default function DidList({
 
   if (!dids.length) {
     return (
-      <div className="text-center py-12">
-        <ClipboardList className="mx-auto h-12 w-12 text-muted-foreground" />
-        <p className="mt-4 text-lg font-medium">No DIDs yet</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Add your first DID to get started!
-        </p>
-      </div>
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <ClipboardList />
+          </EmptyMedia>
+          <EmptyTitle>No DIDs yet</EmptyTitle>
+          <EmptyDescription>
+            Add your first DID to get started!
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
     );
   }
 

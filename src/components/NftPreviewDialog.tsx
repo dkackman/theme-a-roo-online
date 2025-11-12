@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardDescription } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -7,6 +8,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useThemeEditor } from "@/Contexts/ThemeEditorContext";
 import { uploadThemeFile } from "@/lib/theme-files";
 import html2canvas from "html2canvas-pro";
@@ -175,21 +177,21 @@ export function NftPreviewDialog({
             Generate a preview image for your NFT theme.
           </DialogDescription>
         </DialogHeader>
-        <div className="py-4">
-          <div className="mb-4 rounded-lg border border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20 p-3">
-            <div className="flex gap-2">
+        <div className="py-4 space-y-4">
+          <Card className="border-yellow-200 bg-yellow-50 dark:border-yellow-800 dark:bg-yellow-900/20">
+            <CardContent className="flex gap-2 p-3">
               <AlertTriangle className="h-4 w-4 text-yellow-600 dark:text-yellow-500 mt-0.5 flex-shrink-0" />
-              <p className="text-sm text-yellow-800 dark:text-yellow-200">
+              <CardDescription className="text-sm text-yellow-800 dark:text-yellow-200">
                 <strong>Note:</strong> Not all theme properties may render
                 faithfully in the generated image. Please double-check the
                 resulting image before using it.
-              </p>
-            </div>
-          </div>
+              </CardDescription>
+            </CardContent>
+          </Card>
           <div className="w-[320px] h-[320px] mx-auto flex items-center justify-center">
             {isInitializing ? (
-              <div className="flex items-center justify-center h-full">
-                <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+              <div className="flex items-center justify-center h-full w-full">
+                <Skeleton className="h-full w-full rounded-lg" />
               </div>
             ) : (
               <div ref={cardRef} className="w-full h-full">
@@ -205,7 +207,7 @@ export function NftPreviewDialog({
             )}
           </div>
         </div>
-        <DialogFooter className="flex gap-2">
+        <DialogFooter className="flex gap-2 flex-shrink-0 border-t pt-4">
           <Button
             variant="outline"
             onClick={() => onOpenChange(false)}

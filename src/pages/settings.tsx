@@ -1,4 +1,4 @@
-import { ClipboardList, Palette } from "lucide-react";
+import { ClipboardList, Loader2, Palette } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
 import { ThemeSelector } from "../components/ThemeSelector";
@@ -50,7 +50,10 @@ export default function Settings() {
   if (loading || !user) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+        <Loader2
+          className="h-8 w-8 animate-spin text-primary"
+          aria-hidden="true"
+        />
       </div>
     );
   }

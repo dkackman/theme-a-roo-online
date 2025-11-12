@@ -8,6 +8,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { FileSlot } from "./FileSlot";
 import { NftPreviewDialog } from "./NftPreviewDialog";
 import { Button } from "./ui/button";
+import { Card, CardContent } from "./ui/card";
 
 interface ThemeFilesManagerProps {
   themeId: string;
@@ -195,7 +196,7 @@ export function ThemeFilesManager({
           isLoading={isLoading}
           readonly={readonly}
         />
-        <div className="space-y-3">
+        <div className="flex flex-col gap-3">
           <FileSlot
             title="NFT Preview"
             description="Small image for NFT previews"
@@ -206,15 +207,19 @@ export function ThemeFilesManager({
             isLoading={isLoading}
             readonly={readonly}
           />
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setIsNftPreviewDialogOpen(true)}
-            disabled={readonly}
-            className="w-full"
-          >
-            Generate
-          </Button>
+          <Card>
+            <CardContent className="p-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setIsNftPreviewDialogOpen(true)}
+                disabled={readonly}
+                className="w-full"
+              >
+                Generate Preview
+              </Button>
+            </CardContent>
+          </Card>
         </div>
         <FileSlot
           title="NFT Banner"

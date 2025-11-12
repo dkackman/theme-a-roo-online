@@ -1,6 +1,13 @@
 import { BackdropFilters } from "./BackdropFilters";
 import { ThemeColorPicker } from "./ThemeColorPicker";
-import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { FieldGroup, FieldLabel } from "./ui/field";
 
 interface BackgroundEditorProps {
   className?: string;
@@ -15,20 +22,25 @@ export function BackgroundEditor({
     <Card className={`${className} w-full`}>
       <CardHeader>
         <CardTitle>Background</CardTitle>
+        <CardDescription>
+          Configure background effects and theme colors.
+        </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="space-y-8">
-          <div>
-            <h3 className="font-semibold mb-4">Backdrop Filters</h3>
-            <div className="ml-8">
-              <BackdropFilters readonly={readonly} />
-            </div>
+        <FieldGroup className="gap-8">
+          <div className="space-y-4">
+            <FieldLabel className="text-sm font-semibold">
+              Backdrop Filters
+            </FieldLabel>
+            <BackdropFilters readonly={readonly} />
           </div>
-          <div>
-            <h3 className="font-semibold mb-4">Theme Color</h3>
+          <div className="space-y-4">
+            <FieldLabel className="text-sm font-semibold">
+              Theme Color
+            </FieldLabel>
             <ThemeColorPicker readonly={readonly} />
           </div>
-        </div>
+        </FieldGroup>
       </CardContent>
     </Card>
   );

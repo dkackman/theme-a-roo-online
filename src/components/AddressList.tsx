@@ -3,6 +3,13 @@ import { useState } from "react";
 import type { Database } from "../lib/database.types";
 import AddressCard from "./AddressCard";
 import AddressProperties from "./AddressProperties";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "./ui/empty";
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
 
 interface AddressListProps {
@@ -54,13 +61,17 @@ export default function AddressList({
 
   if (!addresses.length) {
     return (
-      <div className="text-center py-12">
-        <Wallet className="mx-auto h-12 w-12 text-muted-foreground" />
-        <p className="mt-4 text-lg font-medium">No addresses yet</p>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Add your first address to get started!
-        </p>
-      </div>
+      <Empty>
+        <EmptyHeader>
+          <EmptyMedia variant="icon">
+            <Wallet />
+          </EmptyMedia>
+          <EmptyTitle>No addresses yet</EmptyTitle>
+          <EmptyDescription>
+            Add your first address to get started!
+          </EmptyDescription>
+        </EmptyHeader>
+      </Empty>
     );
   }
 

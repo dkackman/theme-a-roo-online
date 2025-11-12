@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
 import { useRouter, type NextRouter } from "next/router";
 import {
   useCallback,
@@ -709,7 +710,10 @@ export default function ThemeEditor() {
   if (loading || !user || isLoadingTheme) {
     return (
       <div className="flex justify-center items-center py-12">
-        <div className="animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
+        <Loader2
+          className="h-8 w-8 animate-spin text-primary"
+          aria-hidden="true"
+        />
       </div>
     );
   }

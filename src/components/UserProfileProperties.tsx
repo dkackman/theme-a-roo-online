@@ -1,7 +1,14 @@
 import { Pencil } from "lucide-react";
 import { useEffect, useState } from "react";
 import { Button } from "./ui/button";
-import { Field, FieldGroup, FieldLabel } from "./ui/field";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "./ui/card";
+import { Field, FieldContent, FieldGroup, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
 import {
   Sheet,
@@ -77,61 +84,81 @@ export default function UserProfileProperties({
           <Pencil className="w-4 h-4" />
         </Button>
       </SheetTrigger>
-      <SheetContent className="w-full sm:max-w-md bg-popover">
-        <SheetHeader className="px-6 pt-6">
+      <SheetContent className="w-full sm:max-w-md bg-popover flex flex-col">
+        <SheetHeader className="px-6 pt-6 flex-shrink-0">
           <SheetTitle>Edit Profile</SheetTitle>
           <SheetDescription>
             Update your personal information. Changes will be saved to your
             profile.
           </SheetDescription>
         </SheetHeader>
-        <FieldGroup className="gap-4 px-6 overflow-y-auto">
-          <Field>
-            <FieldLabel htmlFor="name">Display Name</FieldLabel>
-            <Input
-              id="name"
-              placeholder="Your name"
-              value={formData.name}
-              onChange={(e) =>
-                setFormData({ ...formData, name: e.target.value })
-              }
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="twitter">Twitter</FieldLabel>
-            <Input
-              id="twitter"
-              placeholder="twitter.com/username or @username"
-              value={formData.twitter}
-              onChange={(e) =>
-                setFormData({ ...formData, twitter: e.target.value })
-              }
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="website">Website</FieldLabel>
-            <Input
-              id="website"
-              placeholder="https://example.com"
-              value={formData.website}
-              onChange={(e) =>
-                setFormData({ ...formData, website: e.target.value })
-              }
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="sponsor">Sponsor Name</FieldLabel>
-            <Input
-              id="sponsor"
-              placeholder="Your sponsor name"
-              value={formData.sponsor}
-              onChange={(e) =>
-                setFormData({ ...formData, sponsor: e.target.value })
-              }
-            />
-          </Field>
-        </FieldGroup>
-        <SheetFooter className="px-6 pb-6">
+        <div className="flex-1 overflow-y-auto px-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Profile Information</CardTitle>
+              <CardDescription>
+                All fields are optional. Update as needed.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <FieldGroup>
+                <Field orientation="vertical">
+                  <FieldLabel htmlFor="name">Display Name</FieldLabel>
+                  <FieldContent>
+                    <Input
+                      id="name"
+                      placeholder="Your name"
+                      value={formData.name}
+                      onChange={(e) =>
+                        setFormData({ ...formData, name: e.target.value })
+                      }
+                    />
+                  </FieldContent>
+                </Field>
+                <Field orientation="vertical">
+                  <FieldLabel htmlFor="twitter">Twitter</FieldLabel>
+                  <FieldContent>
+                    <Input
+                      id="twitter"
+                      placeholder="twitter.com/username or @username"
+                      value={formData.twitter}
+                      onChange={(e) =>
+                        setFormData({ ...formData, twitter: e.target.value })
+                      }
+                    />
+                  </FieldContent>
+                </Field>
+                <Field orientation="vertical">
+                  <FieldLabel htmlFor="website">Website</FieldLabel>
+                  <FieldContent>
+                    <Input
+                      id="website"
+                      placeholder="https://example.com"
+                      value={formData.website}
+                      onChange={(e) =>
+                        setFormData({ ...formData, website: e.target.value })
+                      }
+                    />
+                  </FieldContent>
+                </Field>
+                <Field orientation="vertical">
+                  <FieldLabel htmlFor="sponsor">Sponsor Name</FieldLabel>
+                  <FieldContent>
+                    <Input
+                      id="sponsor"
+                      placeholder="Your sponsor name"
+                      value={formData.sponsor}
+                      onChange={(e) =>
+                        setFormData({ ...formData, sponsor: e.target.value })
+                      }
+                    />
+                  </FieldContent>
+                </Field>
+              </FieldGroup>
+            </CardContent>
+          </Card>
+        </div>
+        <SheetFooter className="px-6 pb-6 flex-shrink-0 border-t pt-4">
           <SheetClose asChild>
             <Button variant="outline" disabled={isSaving}>
               Cancel

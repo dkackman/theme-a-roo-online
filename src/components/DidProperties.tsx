@@ -3,7 +3,8 @@ import { type ChangeEvent, useEffect, useState } from "react";
 import type { Database } from "../lib/database.types";
 import { fetchProfileFromAPI } from "../lib/mintgarden";
 import { Button } from "./ui/button";
-import { Field, FieldGroup, FieldLabel } from "./ui/field";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Field, FieldContent, FieldGroup, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
 import {
   Select,
@@ -121,15 +122,15 @@ export default function DidProperties({
 
   return (
     <Sheet open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <SheetContent className="w-full sm:max-w-md bg-popover">
-        <SheetHeader className="px-6 pt-6">
+      <SheetContent className="w-full sm:max-w-md bg-popover flex flex-col">
+        <SheetHeader className="px-6 pt-6 flex-shrink-0">
           <SheetTitle>Edit DID</SheetTitle>
           <SheetDescription>
             Make changes to your DID information here.
           </SheetDescription>
         </SheetHeader>
         {editLauncherId.trim() && (
-          <div className="flex justify-end px-6">
+          <div className="flex justify-end px-6 flex-shrink-0">
             <Button
               type="button"
               variant="outline"
@@ -144,84 +145,114 @@ export default function DidProperties({
             </Button>
           </div>
         )}
-        <FieldGroup className="gap-4 px-6 overflow-y-auto">
-          <Field>
-            <FieldLabel htmlFor="launcher_id">Launcher ID</FieldLabel>
-            <Input
-              id="launcher_id"
-              value={editLauncherId}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setEditLauncherId(e.target.value)
-              }
-              placeholder="Enter launcher ID"
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="network">Network</FieldLabel>
-            <Select
-              value={editNetwork.toString()}
-              onValueChange={(value) => setEditNetwork(parseInt(value, 10))}
-            >
-              <SelectTrigger id="network" className="bg-input">
-                <SelectValue placeholder="Select network" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="0">Mainnet</SelectItem>
-                <SelectItem value="1">Testnet</SelectItem>
-              </SelectContent>
-            </Select>
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="name">Name</FieldLabel>
-            <Input
-              id="name"
-              value={editName}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setEditName(e.target.value)
-              }
-              placeholder="Enter a name (optional)"
-            />
-          </Field>
-          <Field>
-            <FieldLabel htmlFor="avatar_uri">Avatar URI</FieldLabel>
-            <Input
-              id="avatar_uri"
-              value={editAvatarUri}
-              onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                setEditAvatarUri(e.target.value)
-              }
-              placeholder="Enter avatar URI"
-            />
-            {editAvatarUri.trim() && (
-              <div className="mt-3">
-                <img
-                  src={editAvatarUri}
-                  alt="Avatar preview"
-                  className="w-16 h-16 rounded-lg object-cover border border-border"
-                  onError={(e) => {
-                    // Hide image on error
-                    e.currentTarget.style.display = "none";
-                  }}
-                />
-              </div>
-            )}
-          </Field>
+        <div className="flex-1 overflow-y-auto px-6 space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-sm">Required Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FieldGroup>
+                <Field orientation="vertical">
+                  <FieldLabel htmlFor="launcher_id">Launcher ID</FieldLabel>
+                  <FieldContent>
+                    <Input
+                      id="launcher_id"
+                      value={editLauncherId}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        setEditLauncherId(e.target.value)
+                      }
+                      placeholder="Enter launcher ID"
+                    />
+                  </FieldContent>
+                </Field>
+                <Field orientation="vertical">
+                  <FieldLabel htmlFor="network">Network</FieldLabel>
+                  <FieldContent>
+                    <Select
+                      value={editNetwork.toString()}
+                      onValueChange={(value) =>
+                        setEditNetwork(parseInt(value, 10))
+                      }
+                    >
+                      <SelectTrigger id="network" className="bg-input">
+                        <SelectValue placeholder="Select network" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="0">Mainnet</SelectItem>
+                        <SelectItem value="1">Testnet</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </FieldContent>
+                </Field>
+              </FieldGroup>
+            </CardContent>
+          </Card>
 
-          <Field>
-            <FieldLabel htmlFor="notes">Notes</FieldLabel>
-            <Textarea
-              id="notes"
-              value={editNotes}
-              onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
-                setEditNotes(e.target.value)
-              }
-              className="bg-input"
-              placeholder="Add notes (optional)"
-              rows={3}
-            />
-          </Field>
-        </FieldGroup>
-        <SheetFooter className="px-6 pb-6">
+          <Card className="bg-muted/20">
+            <CardHeader>
+              <CardTitle className="text-sm">Optional Information</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <FieldGroup>
+                <Field orientation="vertical">
+                  <FieldLabel htmlFor="name">Name</FieldLabel>
+                  <FieldContent>
+                    <Input
+                      id="name"
+                      value={editName}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        setEditName(e.target.value)
+                      }
+                      placeholder="Enter a name (optional)"
+                    />
+                  </FieldContent>
+                </Field>
+                <Field orientation="vertical">
+                  <FieldLabel htmlFor="avatar_uri">Avatar URI</FieldLabel>
+                  <FieldContent>
+                    <Input
+                      id="avatar_uri"
+                      value={editAvatarUri}
+                      onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                        setEditAvatarUri(e.target.value)
+                      }
+                      placeholder="Enter avatar URI"
+                    />
+                    {editAvatarUri.trim() && (
+                      <div className="mt-3">
+                        <img
+                          src={editAvatarUri}
+                          alt="Avatar preview"
+                          className="w-16 h-16 rounded-lg object-cover border border-border"
+                          onError={(e) => {
+                            // Hide image on error
+                            e.currentTarget.style.display = "none";
+                          }}
+                        />
+                      </div>
+                    )}
+                  </FieldContent>
+                </Field>
+                <Field orientation="vertical">
+                  <FieldLabel htmlFor="notes">Notes</FieldLabel>
+                  <FieldContent>
+                    <Textarea
+                      id="notes"
+                      value={editNotes}
+                      onChange={(e: ChangeEvent<HTMLTextAreaElement>) =>
+                        setEditNotes(e.target.value)
+                      }
+                      className="bg-input"
+                      placeholder="Add notes (optional)"
+                      rows={3}
+                    />
+                  </FieldContent>
+                </Field>
+              </FieldGroup>
+            </CardContent>
+          </Card>
+        </div>
+        <SheetFooter className="px-6 pb-6 flex-shrink-0 border-t pt-4">
           <SheetClose asChild>
             <Button variant="outline" disabled={isSaving}>
               Cancel

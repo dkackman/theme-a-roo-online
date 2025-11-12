@@ -7,7 +7,16 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DataTable } from "@/components/ui/data-table";
+import {
+  Empty,
+  EmptyDescription,
+  EmptyHeader,
+  EmptyMedia,
+  EmptyTitle,
+} from "@/components/ui/empty";
+import { Skeleton } from "@/components/ui/skeleton";
 import type { ColumnDef } from "@tanstack/react-table";
+import { Users } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { AdminOnly } from "../components/RoleProtected";
 import { useAuth } from "../Contexts/AuthContext";
@@ -156,46 +165,65 @@ export default function Admin() {
 
         {/* Stats Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card className="rounded-xl shadow-lg">
+          <Card>
             <CardHeader>
-              <CardTitle>Active Users</CardTitle>
+              <CardTitle className="text-sm">Active Users</CardTitle>
             </CardHeader>
             <CardContent>
-              <span className="text-3xl font-bold text-indigo-600">
-                {stats.totalUsers}
-              </span>
+              {loading ? (
+                <Skeleton className="h-9 w-20" />
+              ) : (
+                <span className="text-3xl font-bold text-indigo-600">
+                  {stats.totalUsers}
+                </span>
+              )}
             </CardContent>
           </Card>
-          <Card className="rounded-xl shadow-lg">
+          <Card>
             <CardHeader>
-              <CardTitle>Total # of Themes</CardTitle>
+              <CardTitle className="text-sm">Total Themes</CardTitle>
             </CardHeader>
             <CardContent>
-              <span className="text-3xl font-bold text-green-600">
-                {stats.totalThemes}
-              </span>
+              {loading ? (
+                <Skeleton className="h-9 w-20" />
+              ) : (
+                <span className="text-3xl font-bold text-green-600">
+                  {stats.totalThemes}
+                </span>
+              )}
             </CardContent>
           </Card>
         </div>
 
         {/* All Users Table */}
-        <Card className="rounded-2xl shadow-xl">
+        <Card>
           <CardHeader>
             <CardTitle>All Users</CardTitle>
+            <CardDescription>
+              View and manage all registered users in the system.
+            </CardDescription>
           </CardHeader>
           <CardContent>
             {loading && (
-              <div className="text-center py-12">
-                <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-primary border-t-transparent"></div>
-                <p className="mt-4 text-muted-foreground">Loading...</p>
+              <div className="space-y-4">
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
+                <Skeleton className="h-10 w-full" />
               </div>
             )}
             {!loading && allUsers.length === 0 && (
-              <div className="text-center py-12">
-                <p className="text-muted-foreground">
-                  No users in the system yet
-                </p>
-              </div>
+              <Empty>
+                <EmptyHeader>
+                  <EmptyMedia variant="icon">
+                    <Users />
+                  </EmptyMedia>
+                  <EmptyTitle>No users yet</EmptyTitle>
+                  <EmptyDescription>
+                    No users have been registered in the system yet.
+                  </EmptyDescription>
+                </EmptyHeader>
+              </Empty>
             )}
             {!loading && allUsers.length > 0 && (
               <DataTable

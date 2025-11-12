@@ -1,5 +1,10 @@
 import { Checkbox } from "@/components/ui/checkbox";
-import { Label } from "@/components/ui/label";
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldLabel,
+} from "@/components/ui/field";
 import { useEffect, useState } from "react";
 import { useThemeEditor } from "../Contexts/ThemeEditorContext";
 
@@ -111,33 +116,32 @@ export function BackdropFilters({ readonly = false }: BackdropFiltersProps) {
     });
   };
 
+  const getDescription = () => {
+    if (isLoading) {
+      return "Loading...";
+    }
+    if (!backgroundImage) {
+      return "Requires a background image to enable backdrop filters";
+    }
+    return "Adds blur effect to cards, popups, and other UI elements";
+  };
+
   return (
-    <div className="space-y-3">
-      <div className="flex items-center space-x-2">
+    <Field orientation="vertical">
+      <FieldLabel htmlFor="backdropFilters" className="flex items-center gap-2">
         <Checkbox
           id="backdropFilters"
           checked={backdropFilters}
           onCheckedChange={(checked) => handleToggle(checked === true)}
           disabled={isLoading || !backgroundImage || readonly}
         />
-        <Label
-          htmlFor="backdropFilters"
-          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-        >
-          Enable backdrop filters
-        </Label>
-      </div>
-      <p className="text-xs text-muted-foreground">
-        {(() => {
-          if (isLoading) {
-            return "Loading...";
-          }
-          if (!backgroundImage) {
-            return "Requires a background image to enable backdrop filters";
-          }
-          return "Adds blur effect to cards, popups, and other UI elements";
-        })()}
-      </p>
-    </div>
+        <span>Enable backdrop filters</span>
+      </FieldLabel>
+      <FieldContent>
+        <FieldDescription className="text-xs">
+          {getDescription()}
+        </FieldDescription>
+      </FieldContent>
+    </Field>
   );
 }

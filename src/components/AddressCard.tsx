@@ -4,6 +4,13 @@ import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { DeleteButton } from "./ui/delete-button";
+import {
+  Field,
+  FieldContent,
+  FieldDescription,
+  FieldGroup,
+  FieldLabel,
+} from "./ui/field";
 
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
 
@@ -42,55 +49,57 @@ export default function AddressCard({
           <span className="truncate">{name || address.address}</span>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {/* Address */}
-        <div className="flex items-center gap-2">
-          <div className="flex-1 min-w-0">
-            <label className="block text-xs font-medium text-muted-foreground mb-1">
-              Address
-            </label>
-            <div className="flex items-center gap-2">
-              <code className="text-sm font-mono truncate block bg-muted px-2 py-1 rounded">
-                {address.address}
-              </code>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => onCopy(address.address, address.id)}
-                className="flex-shrink-0"
-                aria-label="Copy address"
-              >
-                <Copy className="w-4 h-4" />
-                {copiedId === address.id && (
-                  <span className="ml-1 text-xs">Copied!</span>
-                )}
-              </Button>
-            </div>
-          </div>
-        </div>
+      <CardContent>
+        <FieldGroup>
+          {/* Address */}
+          <Field orientation="vertical">
+            <FieldLabel>Address</FieldLabel>
+            <FieldContent>
+              <div className="flex items-center gap-2">
+                <code className="text-sm font-mono truncate flex-1 bg-muted px-2 py-1 rounded">
+                  {address.address}
+                </code>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => onCopy(address.address, address.id)}
+                  className="flex-shrink-0"
+                  aria-label="Copy address"
+                >
+                  <Copy className="w-4 h-4" />
+                  {copiedId === address.id && (
+                    <span className="ml-1 text-xs">Copied!</span>
+                  )}
+                </Button>
+              </div>
+            </FieldContent>
+          </Field>
 
-        {/* Network */}
-        <div>
-          <label className="block text-xs font-medium text-muted-foreground mb-1">
-            Network
-          </label>
-          <Badge variant={getNetworkBadgeVariant(address.network)}>
-            {getNetworkLabel(address.network)}
-          </Badge>
-        </div>
+          {/* Network */}
+          <Field orientation="vertical">
+            <FieldLabel>Network</FieldLabel>
+            <FieldContent>
+              <Badge variant={getNetworkBadgeVariant(address.network)}>
+                {getNetworkLabel(address.network)}
+              </Badge>
+            </FieldContent>
+          </Field>
 
-        {/* Notes */}
-        {address.notes && (
-          <div>
-            <label className="block text-xs font-medium text-muted-foreground mb-1">
-              Notes
-            </label>
-            <p className="text-sm">{address.notes}</p>
-          </div>
-        )}
+          {/* Notes */}
+          {address.notes && (
+            <Field orientation="vertical">
+              <FieldLabel>Notes</FieldLabel>
+              <FieldContent>
+                <FieldDescription className="text-sm font-normal">
+                  {address.notes}
+                </FieldDescription>
+              </FieldContent>
+            </Field>
+          )}
+        </FieldGroup>
 
         {/* Actions */}
-        <div className="flex justify-end gap-2 pt-2">
+        <div className="flex justify-end gap-2 pt-4 mt-4 border-t">
           <Button onClick={() => onEdit(address)} variant="outline" size="sm">
             <Pencil className="w-4 h-4 mr-2" />
             Edit
