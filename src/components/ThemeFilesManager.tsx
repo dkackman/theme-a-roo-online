@@ -12,14 +12,19 @@ import { Button } from "./ui/button";
 interface ThemeFilesManagerProps {
   themeId: string;
   readonly?: boolean;
+  onPreviewChange?: (previewUrl?: string) => void;
 }
 
 export function ThemeFilesManager({
   themeId,
   readonly = false,
+  onPreviewChange,
 }: ThemeFilesManagerProps) {
   // Get theme editor context to update backgroundImage
   const { theme, updateTheme } = useThemeEditor();
+  const themeRef = useRef(theme);
+  const updateThemeRef = useRef(updateTheme);
+  const onPreviewChangeRef = useRef(onPreviewChange);
   const [files, setFiles] = useState<{
     publicBackgroundUrl?: string;
     publicPreviewUrl?: string;
@@ -28,14 +33,35 @@ export function ThemeFilesManager({
   const [isLoading, setIsLoading] = useState(true);
   const [isNftPreviewDialogOpen, setIsNftPreviewDialogOpen] = useState(false);
 
-  // Track the previous publicBackgroundUrl to detect changes
-  const previousPublicUrlRef = useRef<string | undefined>(undefined);
+  // Track the previous URLs to detect changes
+  const previousBackgroundUrlRef = useRef<string | undefined>(undefined);
+  const previousPreviewUrlRef = useRef<string | undefined>(undefined);
+  const cancelledRef = useRef(false);
+
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
+
+  useEffect(() => {
+    updateThemeRef.current = updateTheme;
+  }, [updateTheme]);
+
+  useEffect(() => {
+    onPreviewChangeRef.current = onPreviewChange;
+  }, [onPreviewChange]);
 
   const refreshFiles = useCallback(async () => {
     setIsLoading(true);
+    cancelledRef.current = false;
+
     try {
       // Fetch signed URLs for display (thumbnails)
       const filesData = await getThemeFiles(themeId);
+
+      // Check if component was unmounted or themeId changed during fetch
+      if (cancelledRef.current) {
+        return;
+      }
 
       setFiles({
         ...filesData,
@@ -44,65 +70,99 @@ export function ThemeFilesManager({
         publicBannerUrl: filesData.banner,
       });
 
+      // Only call onPreviewChange if the preview URL actually changed
+      if (filesData.preview !== previousPreviewUrlRef.current) {
+        onPreviewChangeRef.current?.(filesData.preview);
+        previousPreviewUrlRef.current = filesData.preview;
+      }
+
       // Automatically insert/update the public URL in the theme when it changes
       // This handles both uploads (URL changes or is new) and deletes (URL becomes undefined)
-      const previousUrl = previousPublicUrlRef.current;
+      const previousUrl = previousBackgroundUrlRef.current;
       if (filesData.background !== previousUrl) {
-        updateTheme({
+        const currentTheme = themeRef.current;
+        updateThemeRef.current({
           backgroundImage: filesData.background,
           colors: {
-            ...theme?.colors,
+            ...currentTheme?.colors,
             background: "transparent",
           },
         });
-        previousPublicUrlRef.current = filesData.background;
+        previousBackgroundUrlRef.current = filesData.background;
       }
     } catch (error) {
-      console.error("Failed to fetch theme files:", error);
+      if (!cancelledRef.current) {
+        console.error("Failed to fetch theme files:", error);
+      }
     } finally {
-      setIsLoading(false);
+      if (!cancelledRef.current) {
+        setIsLoading(false);
+      }
     }
-  }, [themeId, updateTheme, theme]);
+  }, [themeId]);
 
   const refreshFile = useCallback(
     async (type: FileUseType) => {
-      const url = await getThemeFilePublicUrl(themeId, type);
+      cancelledRef.current = false;
 
-      setFiles((prev) => {
-        const next = { ...prev };
-        switch (type) {
-          case "background":
-            next.publicBackgroundUrl = url;
-            break;
-          case "preview":
-            next.publicPreviewUrl = url;
-            break;
-          case "banner":
-            next.publicBannerUrl = url;
-            break;
+      try {
+        const url = await getThemeFilePublicUrl(themeId, type);
+
+        // Check if component was unmounted or themeId changed during fetch
+        if (cancelledRef.current) {
+          return;
         }
-        return next;
-      });
 
-      if (type === "background") {
-        updateTheme({
-          backgroundImage: url,
-          colors: {
-            ...theme?.colors,
-            background: "transparent",
-          },
+        setFiles((prev) => {
+          const next = { ...prev };
+          switch (type) {
+            case "background":
+              next.publicBackgroundUrl = url;
+              break;
+            case "preview":
+              next.publicPreviewUrl = url;
+              break;
+            case "banner":
+              next.publicBannerUrl = url;
+              break;
+          }
+          return next;
         });
-        previousPublicUrlRef.current = url;
+
+        if (type === "preview" && url !== previousPreviewUrlRef.current) {
+          onPreviewChangeRef.current?.(url);
+          previousPreviewUrlRef.current = url;
+        }
+
+        if (type === "background") {
+          const currentTheme = themeRef.current;
+          updateThemeRef.current({
+            backgroundImage: url,
+            colors: {
+              ...currentTheme?.colors,
+              background: "transparent",
+            },
+          });
+          previousBackgroundUrlRef.current = url;
+        }
+      } catch (error) {
+        if (!cancelledRef.current) {
+          console.error("Failed to refresh file:", error);
+        }
       }
     },
-    [updateTheme, theme, themeId]
+    [themeId]
   );
 
   useEffect(() => {
     if (!themeId) {
       return;
     }
+    cancelledRef.current = false;
     void refreshFiles();
+    return () => {
+      cancelledRef.current = true;
+    };
   }, [themeId, refreshFiles]);
 
   return (
@@ -122,10 +182,11 @@ export function ThemeFilesManager({
           themeId={themeId}
           onFileChange={() => refreshFile("background")}
           onInsertBackground={(url) => {
-            updateTheme({
+            const currentTheme = themeRef.current;
+            updateThemeRef.current({
               backgroundImage: url,
               colors: {
-                ...theme?.colors,
+                ...currentTheme?.colors,
                 background: "transparent",
               },
             });

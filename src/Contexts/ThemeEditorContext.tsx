@@ -1,4 +1,10 @@
-import { createContext, ReactNode, useContext } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useMemo,
+} from "react";
 import type { Theme } from "theme-o-rama";
 
 interface ThemeEditorContextType {
@@ -36,28 +42,40 @@ export function ThemeEditorProvider({
   onThemeChange,
   onThemeJsonChange,
 }: ThemeEditorProviderProps) {
-  const updateTheme = (updates: Partial<Theme>) => {
-    if (theme) {
-      const updatedTheme = { ...theme, ...updates };
-      onThemeChange(updatedTheme);
-    }
-  };
+  const updateTheme = useCallback(
+    (updates: Partial<Theme>) => {
+      if (theme) {
+        const updatedTheme = { ...theme, ...updates };
+        onThemeChange(updatedTheme);
+      }
+    },
+    [theme, onThemeChange]
+  );
 
-  const setTheme = (newTheme: Theme) => {
-    onThemeChange(newTheme);
-  };
+  const setTheme = useCallback(
+    (newTheme: Theme) => {
+      onThemeChange(newTheme);
+    },
+    [onThemeChange]
+  );
 
-  const setThemeJson = (json: string) => {
-    onThemeJsonChange(json);
-  };
+  const setThemeJson = useCallback(
+    (json: string) => {
+      onThemeJsonChange(json);
+    },
+    [onThemeJsonChange]
+  );
 
-  const value = {
-    theme,
-    themeJson,
-    setTheme,
-    setThemeJson,
-    updateTheme,
-  };
+  const value = useMemo(
+    () => ({
+      theme,
+      themeJson,
+      setTheme,
+      setThemeJson,
+      updateTheme,
+    }),
+    [theme, themeJson, setTheme, setThemeJson, updateTheme]
+  );
 
   return (
     <ThemeEditorContext.Provider value={value}>

@@ -31,7 +31,25 @@ interface ThemeEditorTabsProps {
   readonly?: boolean;
   themeStatus?: "draft" | "ready" | "published" | "minted";
   onSave?: () => void;
+  onPreviewChange?: (previewUrl?: string) => void;
 }
+
+const getStatusMessage = (
+  themeStatus?: "draft" | "ready" | "published" | "minted"
+) => {
+  switch (themeStatus) {
+    case "draft":
+      return "This theme is in draft. It will not be pickable in settings.";
+    case "ready":
+      return "This theme is ready to be published. You can pick it in settings.";
+    case "published":
+      return "This theme is published and waiting to be minted. Published themes are read-only. Change the status to Ready if you need to change this theme.";
+    case "minted":
+      return "This theme has been minted. It is read-only and can no longer be changed.";
+    default:
+      return null;
+  }
+};
 
 export function ThemeEditorTabs({
   activeTab,
@@ -45,22 +63,8 @@ export function ThemeEditorTabs({
   readonly = false,
   themeStatus,
   onSave,
+  onPreviewChange,
 }: ThemeEditorTabsProps) {
-  const getStatusMessage = () => {
-    switch (themeStatus) {
-      case "draft":
-        return "This theme is in draft. It will not be pickable in settings.";
-      case "ready":
-        return "This theme is ready to be published. You can pick it in settings.";
-      case "published":
-        return "This theme is published and waiting to be minted. Published themes are read-only. Change the status to Ready if you need to change this theme.";
-      case "minted":
-        return "This theme has been minted. It is read-only and can no longer be changed.";
-      default:
-        return null;
-    }
-  };
-
   // Determine if theme is valid - isValid prop takes precedence
   const isValid =
     isValidProp !== undefined ? isValidProp : validationError === null;
@@ -160,7 +164,10 @@ export function ThemeEditorTabs({
     };
   }, [hasValidation, showError, showWarning, validationError, warningMessage]);
 
-  const statusMessage = getStatusMessage();
+  const statusMessage = useMemo(
+    () => getStatusMessage(themeStatus),
+    [themeStatus]
+  );
   return (
     <Tabs
       value={activeTab}
@@ -263,7 +270,11 @@ export function ThemeEditorTabs({
         className="flex flex-1 min-h-0 flex-col overflow-auto border border-border rounded-b-md p-6"
       >
         {themeId ? (
-          <ThemeFilesManager themeId={themeId} readonly={readonly} />
+          <ThemeFilesManager
+            themeId={themeId}
+            readonly={readonly}
+            onPreviewChange={onPreviewChange}
+          />
         ) : (
           <div className="p-6 text-center text-muted-foreground">
             Theme ID not available

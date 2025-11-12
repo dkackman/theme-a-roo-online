@@ -1,3 +1,4 @@
+import { PublishDialog } from "@/components/PublishDialog";
 import { ThemeEditorHeader } from "@/components/ThemeEditorHeader";
 import { ThemeEditorTabs } from "@/components/ThemeEditorTabs";
 import { ThemePreview } from "@/components/ThemePreview";
@@ -32,6 +33,7 @@ import { useThemeOperations } from "../hooks/useThemeOperations";
 import { themesApi } from "../lib/data-access";
 import type { Database } from "../lib/database.types";
 import { loadSettings } from "../lib/settings";
+import { getThemeFiles } from "../lib/theme-files";
 
 type DbTheme = Database["public"]["Tables"]["themes"]["Row"];
 
@@ -60,6 +62,13 @@ export default function ThemeEditor() {
   const [did, setDid] = useState("");
   const [royaltyAddress, setRoyaltyAddress] = useState("");
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [isPublishDialogOpen, setIsPublishDialogOpen] = useState(false);
+  const [hasPreviewImage, setHasPreviewImage] = useState(false);
+  const [themeFiles, setThemeFiles] = useState<{
+    background?: string;
+    preview?: string;
+    banner?: string;
+  }>({});
   const [editorTheme, setEditorTheme] = useState<"vs" | "vs-dark">("vs");
   const [layoutMode, setLayoutMode] = useState<EditorLayoutMode>(() => {
     if (typeof window === "undefined") {
@@ -94,20 +103,58 @@ export default function ThemeEditor() {
   );
   const [settings] = useState(() => loadSettings());
 
+  // Refs for navigation interception to avoid frequent handler recreation
+  const validationErrorRef = useRef(validationError);
+  const themeJsonRef = useRef(themeJson);
+  const themeRef = useRef(theme);
+  const themeStatusRef = useRef(themeStatus);
+  const isSavingRef = useRef(false);
+  const saveThemeRef = useRef<((themeJson: string) => Promise<void>) | null>(
+    null
+  );
+  const isDirtyRef = useRef(false);
+
   // Theme operations hook
   const {
     saveTheme,
     saveProperties,
     deleteTheme,
+    publishTheme,
     validateTheme,
     isSaving,
     isSavingNotes,
     isDeleting,
+    isPublishing,
   } = useThemeOperations({
     theme,
     user,
     onThemeUpdate: setTheme,
   });
+
+  // Update refs when values change
+  useEffect(() => {
+    validationErrorRef.current = validationError;
+  }, [validationError]);
+
+  useEffect(() => {
+    themeJsonRef.current = themeJson;
+  }, [themeJson]);
+
+  useEffect(() => {
+    themeRef.current = theme;
+  }, [theme]);
+
+  useEffect(() => {
+    themeStatusRef.current = themeStatus;
+  }, [themeStatus]);
+
+  useEffect(() => {
+    isSavingRef.current = isSaving;
+  }, [isSaving]);
+
+  useEffect(() => {
+    saveThemeRef.current = saveTheme;
+  }, [saveTheme]);
 
   // Simple theme hook for applying themes
   const { setTheme: setCurrentTheme, initializeTheme } = useSimpleTheme();
@@ -218,6 +265,27 @@ export default function ThemeEditor() {
     }
   }, [themeId, userId]);
 
+  const loadThemeFiles = useCallback(async () => {
+    if (!themeId || !userId) {
+      return;
+    }
+    try {
+      const files = await getThemeFiles(themeId);
+      setHasPreviewImage(Boolean(files.preview));
+      setThemeFiles(files);
+    } catch (error) {
+      console.error("Failed to load preview status:", error);
+    }
+  }, [themeId, userId]);
+
+  const handlePreviewChange = useCallback((previewUrl?: string) => {
+    setHasPreviewImage(Boolean(previewUrl));
+    setThemeFiles((prev) => ({
+      ...prev,
+      preview: previewUrl,
+    }));
+  }, []);
+
   // Parse theme JSON to get the theme object for the context
   // Memoize to ensure it updates reactively when themeJson changes
   const parsedTheme: Theme | null = useMemo(() => {
@@ -240,8 +308,15 @@ export default function ThemeEditor() {
   useEffect(() => {
     if (themeId && userId) {
       void loadTheme();
+      void loadThemeFiles();
     }
-  }, [loadTheme, themeId, userId]);
+  }, [loadTheme, loadThemeFiles, themeId, userId]);
+
+  useEffect(() => {
+    if (isPublishDialogOpen) {
+      void loadThemeFiles();
+    }
+  }, [isPublishDialogOpen, loadThemeFiles]);
 
   useEffect(() => {
     if (!theme) {
@@ -319,6 +394,11 @@ export default function ThemeEditor() {
     return themeJson !== savedThemeJson;
   }, [themeJson, savedThemeJson]);
 
+  // Update isDirty ref when it changes
+  useEffect(() => {
+    isDirtyRef.current = isDirty;
+  }, [isDirty]);
+
   // Intercept navigation attempts using router.beforePopState
   useEffect(() => {
     const handleBeforePopState = ({ url }: { url: string }) => {
@@ -327,28 +407,38 @@ export default function ThemeEditor() {
         return true;
       }
 
+      // Use refs to get current values without recreating handler
+      const currentValidationError = validationErrorRef.current;
+      const currentIsDirty = isDirtyRef.current;
+      const currentThemeJson = themeJsonRef.current;
+      const currentTheme = themeRef.current;
+      const currentThemeStatus = themeStatusRef.current;
+      const currentIsSaving = isSavingRef.current;
+      const currentSaveTheme = saveThemeRef.current;
+
       // If JSON is invalid, allow navigation without prompt
-      if (validationError !== null) {
+      if (currentValidationError !== null) {
         return true;
       }
 
       // If not dirty, allow navigation
-      if (!isDirty) {
+      if (!currentIsDirty) {
         return true;
       }
 
       // If promptToSave is false, auto-save and allow navigation
       if (!settings.promptToSave) {
-        const isThemeJsonValid = validationError === null;
+        const isThemeJsonValid = currentValidationError === null;
         const canSave =
-          !isSaving &&
-          theme &&
+          !currentIsSaving &&
+          currentTheme &&
+          currentSaveTheme &&
           isThemeJsonValid &&
-          themeStatus !== "minted" &&
-          themeStatus !== "published";
+          currentThemeStatus !== "minted" &&
+          currentThemeStatus !== "published";
         if (canSave) {
-          saveTheme(themeJson).then(() => {
-            setSavedThemeJson(themeJson);
+          currentSaveTheme(currentThemeJson).then(() => {
+            setSavedThemeJson(currentThemeJson);
           });
         }
         return true;
@@ -365,17 +455,7 @@ export default function ThemeEditor() {
     return () => {
       router.beforePopState(() => true);
     };
-  }, [
-    router,
-    isDirty,
-    validationError,
-    settings.promptToSave,
-    themeJson,
-    theme,
-    themeStatus,
-    isSaving,
-    saveTheme,
-  ]);
+  }, [router, settings.promptToSave]);
 
   // Intercept programmatic navigation (router.push) by wrapping router.push
   const originalPushRef = useRef(router.push);
@@ -397,28 +477,38 @@ export default function ThemeEditor() {
         return originalPushRef.current.call(router, url, as, options);
       }
 
+      // Use refs to get current values without recreating handler
+      const currentValidationError = validationErrorRef.current;
+      const currentIsDirty = isDirtyRef.current;
+      const currentThemeJson = themeJsonRef.current;
+      const currentTheme = themeRef.current;
+      const currentThemeStatus = themeStatusRef.current;
+      const currentIsSaving = isSavingRef.current;
+      const currentSaveTheme = saveThemeRef.current;
+
       // If JSON is invalid, allow navigation without prompt
-      if (validationError !== null) {
+      if (currentValidationError !== null) {
         return originalPushRef.current.call(router, url, as, options);
       }
 
       // If not dirty, allow navigation
-      if (!isDirty) {
+      if (!currentIsDirty) {
         return originalPushRef.current.call(router, url, as, options);
       }
 
       // If promptToSave is false, auto-save and allow navigation
       if (!settings.promptToSave) {
-        const isThemeJsonValid = validationError === null;
+        const isThemeJsonValid = currentValidationError === null;
         const canSave =
-          !isSaving &&
-          theme &&
+          !currentIsSaving &&
+          currentTheme &&
+          currentSaveTheme &&
           isThemeJsonValid &&
-          themeStatus !== "minted" &&
-          themeStatus !== "published";
+          currentThemeStatus !== "minted" &&
+          currentThemeStatus !== "published";
         if (canSave) {
-          saveTheme(themeJson).then(() => {
-            setSavedThemeJson(themeJson);
+          currentSaveTheme(currentThemeJson).then(() => {
+            setSavedThemeJson(currentThemeJson);
           });
         }
         return originalPushRef.current.call(router, url, as, options);
@@ -433,43 +523,43 @@ export default function ThemeEditor() {
     return () => {
       router.push = originalPushRef.current;
     };
-  }, [
-    router,
-    isDirty,
-    validationError,
-    settings.promptToSave,
-    themeJson,
-    theme,
-    themeStatus,
-    isSaving,
-    saveTheme,
-  ]);
+  }, [router, settings.promptToSave]);
 
   // Handle browser navigation (back/forward/close)
   useEffect(() => {
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Use refs to get current values without recreating handler
+      const currentValidationError = validationErrorRef.current;
+      const currentIsDirty = isDirtyRef.current;
+      const currentThemeJson = themeJsonRef.current;
+      const currentTheme = themeRef.current;
+      const currentThemeStatus = themeStatusRef.current;
+      const currentIsSaving = isSavingRef.current;
+      const currentSaveTheme = saveThemeRef.current;
+
       // If JSON is invalid, allow navigation
-      if (validationError !== null) {
+      if (currentValidationError !== null) {
         return;
       }
 
       // If not dirty, allow navigation
-      if (!isDirty) {
+      if (!currentIsDirty) {
         return;
       }
 
       // If promptToSave is false, auto-save
       if (!settings.promptToSave) {
-        const isThemeJsonValid = validationError === null;
+        const isThemeJsonValid = currentValidationError === null;
         const canSave =
-          !isSaving &&
-          theme &&
+          !currentIsSaving &&
+          currentTheme &&
+          currentSaveTheme &&
           isThemeJsonValid &&
-          themeStatus !== "minted" &&
-          themeStatus !== "published";
+          currentThemeStatus !== "minted" &&
+          currentThemeStatus !== "published";
         if (canSave) {
-          saveTheme(themeJson).then(() => {
-            setSavedThemeJson(themeJson);
+          currentSaveTheme(currentThemeJson).then(() => {
+            setSavedThemeJson(currentThemeJson);
           });
         }
         return;
@@ -485,16 +575,7 @@ export default function ThemeEditor() {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [
-    isDirty,
-    validationError,
-    settings.promptToSave,
-    themeJson,
-    theme,
-    themeStatus,
-    isSaving,
-    saveTheme,
-  ]);
+  }, [settings.promptToSave]);
 
   const handlePromptYes = async () => {
     setIsPromptDialogOpen(false);
@@ -587,6 +668,13 @@ export default function ThemeEditor() {
     setIsDeleteDialogOpen(false);
   };
 
+  const handlePublishTheme = async () => {
+    const success = await publishTheme();
+    if (success) {
+      setIsPublishDialogOpen(false);
+    }
+  };
+
   const handleApplyTheme = async () => {
     try {
       // Validate the theme first
@@ -640,6 +728,10 @@ export default function ThemeEditor() {
 
   const isThemeJsonValid = validationError === null;
   const isMaximizedLayout = layoutMode === "maximized";
+  const hasDescription = description.trim().length > 0;
+  const hasAuthor = authorName.trim().length > 0;
+  const hasSponsor = sponsor.trim().length > 0;
+  const hasRoyaltyAddress = royaltyAddress.trim().length > 0;
 
   // Common props for ThemeEditorHeader
   const headerProps = {
@@ -652,7 +744,7 @@ export default function ThemeEditor() {
     onEdit: () => setIsEditSheetOpen(true),
     onSave: handleSaveTheme,
     onApply: handleApplyTheme,
-    onPublish: () => {},
+    onPublish: () => setIsPublishDialogOpen(true),
     onDelete: () => setIsDeleteDialogOpen(true),
     onToggleMaximize: handleToggleMaximize,
     onToggleSideBySide: handleToggleSideBySide,
@@ -673,6 +765,7 @@ export default function ThemeEditor() {
     themeStatus,
     onSave: handleSaveTheme,
     validateTheme,
+    onPreviewChange: handlePreviewChange,
   };
 
   const renderEditorTabs = () => {
@@ -787,6 +880,31 @@ export default function ThemeEditor() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <PublishDialog
+        open={isPublishDialogOpen}
+        onOpenChange={setIsPublishDialogOpen}
+        themeName={theme.display_name}
+        themeStatus={themeStatus}
+        isPublishing={isPublishing}
+        isSaving={isSaving}
+        hasUnsavedChanges={isDirty}
+        validationError={validationError}
+        hasPreviewImage={hasPreviewImage}
+        hasDescription={hasDescription}
+        hasAuthor={hasAuthor}
+        hasSponsor={hasSponsor}
+        hasRoyaltyAddress={hasRoyaltyAddress}
+        description={description}
+        authorName={authorName}
+        sponsor={sponsor}
+        twitter={twitter}
+        website={website}
+        did={did}
+        royaltyAddress={royaltyAddress}
+        themeFiles={themeFiles}
+        onConfirm={handlePublishTheme}
+      />
 
       <ThemeProperties
         open={isEditSheetOpen}
