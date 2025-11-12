@@ -6,21 +6,21 @@ import {
 } from "@/lib/theme-files";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { FileSlot } from "./FileSlot";
-import { NftPreviewDialog } from "./NftPreviewDialog";
+import { NftPreviewImageDialog } from "./NftPreviewImageDialog";
 import { Button } from "./ui/button";
 import { Card, CardContent } from "./ui/card";
 
-interface ThemeFilesManagerProps {
+interface ThemeFilesProps {
   themeId: string;
   readonly?: boolean;
   onPreviewChange?: (previewUrl?: string) => void;
 }
 
-export function ThemeFilesManager({
+export function ThemeFiles({
   themeId,
   readonly = false,
   onPreviewChange,
-}: ThemeFilesManagerProps) {
+}: ThemeFilesProps) {
   // Get theme editor context to update backgroundImage
   const { theme, updateTheme } = useThemeEditor();
   const themeRef = useRef(theme);
@@ -233,7 +233,7 @@ export function ThemeFilesManager({
         />
       </div>
 
-      <NftPreviewDialog
+      <NftPreviewImageDialog
         open={isNftPreviewDialogOpen}
         onOpenChange={setIsNftPreviewDialogOpen}
         themeId={themeId}

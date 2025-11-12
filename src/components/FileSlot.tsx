@@ -7,7 +7,6 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { DeleteButton } from "@/components/ui/delete-button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useUploadThemeFile } from "@/hooks/useUploadThemeFile";
 import { deleteThemeFile, type FileUseType } from "@/lib/theme-files";
@@ -15,6 +14,7 @@ import { Copy, ImageIcon, Loader2 } from "lucide-react";
 import Image from "next/image";
 import { useState } from "react";
 import { toast } from "sonner";
+import { ImagePreview } from "./ImagePreview";
 import { Dropzone } from "./ui/shadcn-io/dropzone";
 
 interface FileSlotProps {
@@ -42,7 +42,6 @@ export function FileSlot({
 }: FileSlotProps) {
   const { upload, progress, loading } = useUploadThemeFile();
   const [isDeleting, setIsDeleting] = useState(false);
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   const handleDrop = async (acceptedFiles: File[]) => {
     const file = acceptedFiles[0];
@@ -81,8 +80,6 @@ export function FileSlot({
       if (onFileChange) {
         await onFileChange();
       }
-
-      setIsPreviewOpen(false);
     } catch (error) {
       console.error("Delete error:", error);
       toast.error("Failed to delete file");
@@ -154,15 +151,23 @@ export function FileSlot({
               </div>
             )}
             <div className="flex gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={() => setIsPreviewOpen(true)}
-                disabled={loading || isDeleting || !publicUrl}
-                className="flex-1"
-              >
-                Preview
-              </Button>
+              {publicUrl && (
+                <ImagePreview
+                  imageUrl={publicUrl}
+                  alt={title}
+                  disabled={loading || isDeleting || !publicUrl}
+                  trigger={
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      disabled={loading || isDeleting || !publicUrl}
+                      className="flex-1"
+                    >
+                      Preview
+                    </Button>
+                  }
+                />
+              )}
               <Button
                 variant="outline"
                 size="sm"
@@ -212,22 +217,6 @@ export function FileSlot({
           </div>
         )}
       </CardContent>
-      <Dialog open={isPreviewOpen} onOpenChange={setIsPreviewOpen}>
-        <DialogContent className="!max-w-none !md:max-w-none w-[90vw] max-w-[95vw] h-[90vh] max-h-[95vh] p-0 bg-black/90">
-          <div className="relative h-full w-full">
-            {publicUrl && (
-              <Image
-                src={publicUrl}
-                alt={title}
-                fill
-                className="object-contain"
-                sizes="100vw"
-                priority
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </Card>
   );
 }

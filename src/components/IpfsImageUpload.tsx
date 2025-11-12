@@ -1,0 +1,245 @@
+import { useEffect, useState } from "react";
+import { Button } from "./ui/button";
+import { NftImageSummary } from "./NftImageSummary";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
+import { Textarea } from "./ui/textarea";
+import { uploadFile, type UploadedFile } from "../lib/ipfs";
+import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+
+const STORAGE_KEYS = {
+  PINATA_GATEWAY: "pinata-gateway",
+  PINATA_GROUP_NAME: "pinata-group-name",
+  PINATA_JWT: "pinata-jwt",
+};
+
+interface IpfsImageUploadProps {
+  themeFiles: {
+    background?: string;
+    preview?: string;
+    banner?: string;
+  };
+  themeId: string;
+  themeName: string;
+}
+
+export default function IpfsImageUpload({
+  themeFiles,
+  themeId,
+  themeName,
+}: IpfsImageUploadProps) {
+  const [apiKey, setApiKey] = useState<string>("");
+  const [gatewayUrl, setGatewayUrl] = useState<string>("");
+  const [groupName, setGroupName] = useState<string>("");
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadedUrls, setUploadedUrls] = useState<{
+    background?: string;
+    preview?: string;
+    banner?: string;
+  }>({});
+
+  // Load saved configuration from localStorage and sessionStorage
+  useEffect(() => {
+    const savedGateway = localStorage.getItem(STORAGE_KEYS.PINATA_GATEWAY);
+    const savedGroupName = localStorage.getItem(STORAGE_KEYS.PINATA_GROUP_NAME);
+    const savedJwt = sessionStorage.getItem("pinata-jwt");
+
+    if (savedGateway) {
+      setGatewayUrl(savedGateway);
+    }
+    if (savedGroupName) {
+      setGroupName(savedGroupName);
+    }
+    if (savedJwt) {
+      setApiKey(savedJwt);
+    }
+  }, []);
+
+  // Save gateway URL to localStorage whenever it changes
+  useEffect(() => {
+    if (gatewayUrl) {
+      localStorage.setItem(STORAGE_KEYS.PINATA_GATEWAY, gatewayUrl);
+    }
+  }, [gatewayUrl]);
+
+  // Save group name to localStorage whenever it changes
+  useEffect(() => {
+    if (groupName) {
+      localStorage.setItem(STORAGE_KEYS.PINATA_GROUP_NAME, groupName);
+    }
+  }, [groupName]);
+
+  // Save JWT token to sessionStorage whenever it changes
+  useEffect(() => {
+    if (apiKey) {
+      sessionStorage.setItem("pinata-jwt", apiKey);
+    } else {
+      sessionStorage.removeItem("pinata-jwt");
+    }
+  }, [apiKey]);
+
+  // Save uploaded URLs to localStorage for next step
+  useEffect(() => {
+    if (Object.keys(uploadedUrls).length > 0) {
+      localStorage.setItem(
+        `ipfs-uploaded-urls-${themeId}`,
+        JSON.stringify(uploadedUrls)
+      );
+    }
+  }, [uploadedUrls, themeId]);
+
+  const isUploadEnabled =
+    apiKey.trim().length > 0 &&
+    gatewayUrl.trim().length > 0 &&
+    groupName.trim().length > 0;
+
+  const handleUpload = async () => {
+    if (!isUploadEnabled || isUploading) {
+      return;
+    }
+
+    setIsUploading(true);
+    const results: UploadedFile[] = [];
+    const errors: string[] = [];
+
+    try {
+      // Create a basename from theme name (sanitize for filename)
+      const basename = themeName
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+      // Upload each image if present
+      const uploads = [
+        {
+          url: themeFiles.background,
+          fileUseType: "background" as const,
+        },
+        {
+          url: themeFiles.preview,
+          fileUseType: "preview" as const,
+        },
+        {
+          url: themeFiles.banner,
+          fileUseType: "banner" as const,
+        },
+      ].filter((item) => item.url);
+
+      for (const { url, fileUseType } of uploads) {
+        if (!url) continue;
+
+        try {
+          const result = await uploadFile(
+            apiKey,
+            gatewayUrl,
+            groupName,
+            basename,
+            fileUseType,
+            url
+          );
+          results.push(result);
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          errors.push(`${fileUseType}: ${errorMessage}`);
+        }
+      }
+
+      if (errors.length > 0) {
+        toast.error(
+          `Some uploads failed: ${errors.join(", ")}`,
+          { duration: 5000 }
+        );
+      }
+
+      if (results.length > 0) {
+        // Store uploaded URLs by fileUseType
+        const newUploadedUrls: typeof uploadedUrls = {};
+        for (const result of results) {
+          newUploadedUrls[result.fileUseType] = result.url;
+        }
+        setUploadedUrls(newUploadedUrls);
+
+        toast.success(
+          `Successfully uploaded ${results.length} image(s) to IPFS`,
+          { duration: 3000 }
+        );
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      toast.error(`Upload failed: ${errorMessage}`, { duration: 5000 });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  return (
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Pinata Configuration</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="api-key">JWT Token</Label>
+            <Textarea
+              id="api-key"
+              placeholder="Enter your Pinata JWT token"
+              value={apiKey}
+              onChange={(e) => setApiKey(e.target.value)}
+              className="font-mono text-sm resize-none"
+              rows={3}
+            />
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="gateway-url">Gateway URL</Label>
+              <Input
+                id="gateway-url"
+                placeholder="some-random-words-887.mypinata.cloud"
+                value={gatewayUrl}
+                onChange={(e) => setGatewayUrl(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="group-name">Group Name</Label>
+              <Input
+                id="group-name"
+                placeholder="Enter an optional group name"
+                value={groupName}
+                onChange={(e) => setGroupName(e.target.value)}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+      <div className="space-y-4">
+        <NftImageSummary
+          images={[
+            { label: "Background", url: themeFiles.background },
+            { label: "NFT Preview", url: themeFiles.preview },
+            { label: "NFT Banner", url: themeFiles.banner },
+          ]}
+        />
+        <div className="flex justify-end">
+          <Button
+            onClick={handleUpload}
+            disabled={!isUploadEnabled || isUploading}
+          >
+            {isUploading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Uploading...
+              </>
+            ) : (
+              "Upload to IPFS"
+            )}
+          </Button>
+        </div>
+      </div>
+    </>
+  );
+}

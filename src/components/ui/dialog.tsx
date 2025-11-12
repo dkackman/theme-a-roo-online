@@ -48,7 +48,7 @@ const DialogContent = React.forwardRef<
 
   if (currentTheme?.backgroundImage) {
     themeStyles.backgroundColor =
-      currentTheme?.inherits === "dark"
+      currentTheme?.mostLike === "dark"
         ? "rgba(0, 0, 0, 0.5)"
         : "rgba(255, 255, 255, 0.5)";
 

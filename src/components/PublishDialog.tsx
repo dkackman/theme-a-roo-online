@@ -15,13 +15,6 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Field,
-  FieldContent,
-  FieldDescription,
-  FieldGroup,
-  FieldLabel,
-} from "@/components/ui/field";
-import {
   Item,
   ItemContent,
   ItemDescription,
@@ -32,6 +25,8 @@ import type { Database } from "@/lib/database.types";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Info, Rocket, XCircle } from "lucide-react";
 import { useMemo } from "react";
+import { NftImageSummary } from "./NftImageSummary";
+import { NftSummary } from "./NftSummary";
 
 type ThemeStatus = Database["public"]["Enums"]["theme_status"];
 
@@ -146,34 +141,6 @@ export function PublishDialog({
 
   const canPublish = checklistItems.every((item) => item.passed);
 
-  const requiredDetails = useMemo(
-    () => [
-      { label: "Description", value: description, required: true },
-      { label: "Author", value: authorName, required: true },
-      { label: "Sponsor", value: sponsor, required: true },
-      { label: "Royalty Address", value: royaltyAddress, required: true },
-    ],
-    [description, authorName, sponsor, royaltyAddress]
-  );
-
-  const optionalDetails = useMemo(
-    () => [
-      { label: "Twitter", value: twitter },
-      { label: "Website", value: website },
-      { label: "DID", value: did },
-    ],
-    [twitter, website, did]
-  );
-
-  const images = useMemo(
-    () => [
-      { label: "Background", url: themeFiles.background },
-      { label: "NFT Preview", url: themeFiles.preview },
-      { label: "NFT Banner", url: themeFiles.banner },
-    ],
-    [themeFiles.background, themeFiles.preview, themeFiles.banner]
-  );
-
   const handleConfirm = () => {
     if (!canPublish || isPublishing) {
       return;
@@ -205,97 +172,24 @@ export function PublishDialog({
           </Card>
 
           {canPublish ? (
-            <div className="space-y-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Required details</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <FieldGroup>
-                    {requiredDetails.map(({ label, value }) => (
-                      <Field key={label} orientation="vertical">
-                        <FieldLabel className="text-xs uppercase tracking-wide">
-                          {label}
-                        </FieldLabel>
-                        <FieldContent>
-                          <FieldDescription className="text-sm font-normal">
-                            {value?.trim() ? value : "Not provided"}
-                          </FieldDescription>
-                        </FieldContent>
-                      </Field>
-                    ))}
-                  </FieldGroup>
-                </CardContent>
-              </Card>
-
-              {optionalDetails.some((d) => d.value?.trim()) && (
-                <Card className="bg-muted/20 border-border/60">
-                  <CardHeader>
-                    <CardTitle className="text-sm">Optional details</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <FieldGroup>
-                      {optionalDetails.map(({ label, value }) => (
-                        <Field key={label} orientation="vertical">
-                          <FieldLabel className="text-xs uppercase tracking-wide">
-                            {label}
-                          </FieldLabel>
-                          <FieldContent>
-                            <FieldDescription className="text-sm font-normal">
-                              {value?.trim() ? value : "Not provided"}
-                            </FieldDescription>
-                          </FieldContent>
-                        </Field>
-                      ))}
-                    </FieldGroup>
-                  </CardContent>
-                </Card>
-              )}
-
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-sm">Theme imagery</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {images.some((image) => image.url) ? (
-                    <div className="grid gap-3 sm:grid-cols-3">
-                      {images.map(({ label, url }) => (
-                        <Card
-                          key={label}
-                          className={cn(
-                            "overflow-hidden bg-muted/20 border-border/60 flex flex-col",
-                            !url && "items-center justify-center"
-                          )}
-                        >
-                          <CardHeader className="px-3 py-2 pb-2">
-                            <CardTitle className="text-xs font-medium uppercase tracking-wide">
-                              {label}
-                            </CardTitle>
-                          </CardHeader>
-                          <CardContent className="p-0">
-                            {url ? (
-                              <img
-                                src={url}
-                                alt={`${label} preview`}
-                                className="h-32 w-full object-cover"
-                              />
-                            ) : (
-                              <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs px-3 py-6">
-                                Not provided
-                              </div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <CardDescription className="text-sm">
-                      No theme imagery uploaded yet.
-                    </CardDescription>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
+            <>
+              <NftSummary
+                description={description}
+                authorName={authorName}
+                sponsor={sponsor}
+                twitter={twitter}
+                website={website}
+                did={did}
+                royaltyAddress={royaltyAddress}
+              />
+              <NftImageSummary
+                images={[
+                  { label: "Background", url: themeFiles.background },
+                  { label: "NFT Preview", url: themeFiles.preview },
+                  { label: "NFT Banner", url: themeFiles.banner },
+                ]}
+              />
+            </>
           ) : (
             <Card>
               <CardHeader>

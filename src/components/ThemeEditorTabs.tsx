@@ -1,6 +1,6 @@
 import { BackgroundEditor } from "@/components/BackgroundEditor";
 import { JsonEditor } from "@/components/JsonEditor";
-import { ThemeFilesManager } from "@/components/ThemeFilesManager";
+import { ThemeFiles } from "@/components/ThemeFiles";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -270,7 +270,7 @@ export function ThemeEditorTabs({
         className="flex flex-1 min-h-0 flex-col overflow-auto border border-border rounded-b-md p-6"
       >
         {themeId ? (
-          <ThemeFilesManager
+          <ThemeFiles
             themeId={themeId}
             readonly={readonly}
             onPreviewChange={onPreviewChange}

@@ -63,7 +63,6 @@ export default function MintQueue() {
   const [themes, setThemes] = useState<ThemeWithUser[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [preparingThemeId, setPreparingThemeId] = useState<string | null>(null);
   const [mintingThemeId, setMintingThemeId] = useState<string | null>(null);
   const [mintDialogOpen, setMintDialogOpen] = useState(false);
   const [themeToMint, setThemeToMint] = useState<ThemeWithUser | null>(null);
@@ -156,17 +155,8 @@ export default function MintQueue() {
     }
   }, [user, authLoading, loadPublishedThemes]);
 
-  const handlePrepareNFT = async (themeId: string) => {
-    setPreparingThemeId(themeId);
-    try {
-      toast.success("Theme prepared for NFT minting");
-      await loadPublishedThemes();
-    } catch (error) {
-      console.error("Error preparing theme:", error);
-      toast.error("Failed to prepare theme. Please try again.");
-    } finally {
-      setPreparingThemeId(null);
-    }
+  const handlePrepareNFT = (themeId: string) => {
+    router.push(`/prepare-nft?id=${themeId}`);
   };
 
   const handleSetToMinted = async () => {
@@ -309,15 +299,10 @@ export default function MintQueue() {
                     variant="outline"
                     size="sm"
                     onClick={() => handlePrepareNFT(dbTheme.id)}
-                    disabled={
-                      preparingThemeId === dbTheme.id ||
-                      dbTheme.status === "minted"
-                    }
+                    disabled={dbTheme.status === "minted"}
                     className="flex-1"
                   >
-                    {preparingThemeId === dbTheme.id
-                      ? "Preparing..."
-                      : "Prepare NFT"}
+                    Prepare NFT
                   </Button>
                   <Button
                     variant="default"

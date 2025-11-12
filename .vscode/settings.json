@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["fullsize", "supabase"],
+  "cSpell.words": ["fullsize", "mypinata", "supabase"],
   "deno.enable": false,
   "deno.enablePaths": ["edge-src"],
   "eslint.workingDirectories": [

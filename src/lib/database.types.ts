@@ -153,6 +153,7 @@ export type Database = {
       themes: {
         Row: {
           author_name: string | null;
+          collection_name: string | null;
           created_at: string | null;
           description: string | null;
           did: string | null;
@@ -170,6 +171,7 @@ export type Database = {
         };
         Insert: {
           author_name?: string | null;
+          collection_name?: string | null;
           created_at?: string | null;
           description?: string | null;
           did?: string | null;
@@ -187,6 +189,7 @@ export type Database = {
         };
         Update: {
           author_name?: string | null;
+          collection_name?: string | null;
           created_at?: string | null;
           description?: string | null;
           did?: string | null;

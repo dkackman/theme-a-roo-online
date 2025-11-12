@@ -8,97 +8,49 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useThemeEditor } from "@/Contexts/ThemeEditorContext";
 import { uploadThemeFile } from "@/lib/theme-files";
-import html2canvas from "html2canvas-pro";
 import { AlertTriangle, Download, Upload, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
-import { useSimpleTheme, type Theme } from "theme-o-rama";
-import { ThemeCard } from "./ThemeCard";
+import { NftPreviewImage, captureNftPreview } from "./NftPreviewImage";
 
-interface NftPreviewDialogProps {
+interface NftPreviewImageDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   themeId: string;
   onFileUploaded?: () => void;
 }
 
-export function NftPreviewDialog({
+export function NftPreviewImageDialog({
   open,
   onOpenChange,
   themeId,
   onFileUploaded,
-}: NftPreviewDialogProps) {
+}: NftPreviewImageDialogProps) {
   const { theme } = useThemeEditor();
-  const { initializeTheme } = useSimpleTheme();
   const cardRef = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
-  const [initializedTheme, setInitializedTheme] = useState<Theme | null>(null);
-  const [isInitializing, setIsInitializing] = useState(false);
+  const [isReady, setIsReady] = useState(false);
 
-  // Initialize the theme when it changes to merge inherited properties
-  useEffect(() => {
-    if (!theme || !open) {
-      setInitializedTheme(null);
-      return;
+  const handlePreviewReady = (ref: React.RefObject<HTMLDivElement | null>) => {
+    if (ref.current) {
+      cardRef.current = ref.current;
+      setIsReady(true);
     }
-
-    let cancelled = false;
-    setIsInitializing(true);
-
-    const initTheme = async () => {
-      try {
-        const initialized = await initializeTheme(theme);
-        if (!cancelled) {
-          setInitializedTheme(initialized);
-        }
-      } catch (error) {
-        console.error("Failed to initialize theme for preview:", error);
-        if (!cancelled) {
-          // Fallback to uninitialized theme if initialization fails
-          setInitializedTheme(theme);
-        }
-      } finally {
-        if (!cancelled) {
-          setIsInitializing(false);
-        }
-      }
-    };
-
-    void initTheme();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [theme, initializeTheme, open]);
+  };
 
   const captureImage = async (): Promise<Blob | null> => {
-    if (!cardRef.current) {
-      return null;
-    }
-
-    try {
-      const canvas = await html2canvas(cardRef.current, {
-        width: 320,
-        height: 320,
-        scale: 2, // Higher quality
-        useCORS: true,
-        backgroundColor: null,
-      });
-
-      return new Promise<Blob | null>((resolve) => {
-        canvas.toBlob((blob: Blob | null) => {
-          resolve(blob);
-        }, "image/png");
-      });
-    } catch (error) {
-      console.error("Failed to capture image:", error);
+    const blob = await captureNftPreview(cardRef, {
+      width: 320,
+      height: 320,
+      scale: 2,
+    });
+    if (!blob) {
       toast.error("Failed to generate image");
-      return null;
     }
+    return blob;
   };
 
   const handleDownload = () => {
@@ -188,23 +140,12 @@ export function NftPreviewDialog({
               </CardDescription>
             </CardContent>
           </Card>
-          <div className="w-[320px] h-[320px] mx-auto flex items-center justify-center">
-            {isInitializing ? (
-              <div className="flex items-center justify-center h-full w-full">
-                <Skeleton className="h-full w-full rounded-lg" />
-              </div>
-            ) : (
-              <div ref={cardRef} className="w-full h-full">
-                <ThemeCard
-                  key={initializedTheme?.name || theme?.name || "default"}
-                  theme={initializedTheme || theme}
-                  isSelected={false}
-                  onSelect={() => {}}
-                  className="w-full h-full"
-                  fullsize={true}
-                />
-              </div>
-            )}
+          <div className="mx-auto">
+            <NftPreviewImage
+              theme={theme}
+              size={320}
+              onReady={handlePreviewReady}
+            />
           </div>
         </div>
         <DialogFooter className="flex gap-2 flex-shrink-0 border-t pt-4">
@@ -221,7 +162,7 @@ export function NftPreviewDialog({
             onClick={handleDownload}
             loading={isGenerating}
             loadingText="Generating..."
-            disabled={isUploading || !initializedTheme || isInitializing}
+            disabled={isUploading || !isReady || !theme}
           >
             <Download className="w-4 h-4 mr-2" />
             Download
@@ -231,7 +172,7 @@ export function NftPreviewDialog({
             onClick={handleUseImage}
             loading={isUploading}
             loadingText="Uploading..."
-            disabled={isGenerating || !initializedTheme || isInitializing}
+            disabled={isGenerating || !isReady || !theme}
           >
             <Upload className="w-4 h-4 mr-2" />
             Use this image
