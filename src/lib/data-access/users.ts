@@ -1,5 +1,5 @@
-import { supabase } from "../supabaseClient";
 import type { Database } from "../database.types";
+import { supabase } from "../supabase-client";
 
 type UserProfile = Database["public"]["Tables"]["user_profiles"]["Row"];
 type UserProfileInsert =

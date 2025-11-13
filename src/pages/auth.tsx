@@ -2,7 +2,7 @@ import { Github } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useState, type ChangeEvent, type FormEvent } from "react";
 import { useAuth } from "../Contexts/AuthContext";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../lib/supabase-client";
 
 export default function Auth() {
   const { user } = useAuth();

@@ -162,13 +162,14 @@ export type Database = {
       themes: {
         Row: {
           author_name: string | null;
-          collection_name: string | null;
+          collection_id: string | null;
           created_at: string | null;
           description: string | null;
           did: string | null;
           display_name: string;
           id: string;
           name: string;
+          nft_metadata_url: string | null;
           royalty_address: string | null;
           sponsor: string | null;
           status: Database["public"]["Enums"]["theme_status"];
@@ -180,13 +181,14 @@ export type Database = {
         };
         Insert: {
           author_name?: string | null;
-          collection_name?: string | null;
+          collection_id?: string | null;
           created_at?: string | null;
           description?: string | null;
           did?: string | null;
           display_name?: string;
           id?: string;
           name?: string;
+          nft_metadata_url?: string | null;
           royalty_address?: string | null;
           sponsor?: string | null;
           status?: Database["public"]["Enums"]["theme_status"];
@@ -198,13 +200,14 @@ export type Database = {
         };
         Update: {
           author_name?: string | null;
-          collection_name?: string | null;
+          collection_id?: string | null;
           created_at?: string | null;
           description?: string | null;
           did?: string | null;
           display_name?: string;
           id?: string;
           name?: string;
+          nft_metadata_url?: string | null;
           royalty_address?: string | null;
           sponsor?: string | null;
           status?: Database["public"]["Enums"]["theme_status"];

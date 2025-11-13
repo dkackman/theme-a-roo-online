@@ -1,12 +1,14 @@
 import { StepIndicator } from "@/components/StepIndicator";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { CheckCircle2, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSimpleTheme, type Theme } from "theme-o-rama";
 import IpfsImageUpload from "../components/IpfsImageUpload";
+import { NftMetadataStep } from "../components/NftMetadataStep";
 import { NftSummary } from "../components/NftSummary";
+import { ReviewStep } from "../components/ReviewStep";
 import { AdminOnly } from "../components/RoleProtected";
 import { useAuth } from "../Contexts/AuthContext";
 import { ThemeEditorProvider } from "../Contexts/ThemeEditorContext";
@@ -14,7 +16,7 @@ import { themesApi } from "../lib/data-access";
 import type { Database } from "../lib/database.types";
 import { getThemeFiles } from "../lib/theme-files";
 
-type Step = "preview" | "upload-images" | "metadata" | "review" | "complete";
+type Step = "preview" | "upload-images" | "metadata" | "review";
 
 const steps: { id: Step; label: string; description: string }[] = [
   {
@@ -34,13 +36,8 @@ const steps: { id: Step; label: string; description: string }[] = [
   },
   {
     id: "review",
-    label: "Review",
-    description: "Review and confirm",
-  },
-  {
-    id: "complete",
-    label: "Complete",
-    description: "NFT prepared successfully",
+    label: "Review and Complete",
+    description: "Review and mint the theme",
   },
 ];
 
@@ -68,6 +65,10 @@ export default function PrepareNft() {
     preview?: string;
     banner?: string;
   }>({});
+  const [metadataIpfsUrl, setMetadataIpfsUrl] = useState<string | null>(null);
+  const [canProceedFromUpload, setCanProceedFromUpload] = useState(false);
+  const [canProceedFromMetadata, setCanProceedFromMetadata] = useState(false);
+  const [previousStep, setPreviousStep] = useState<Step | null>(null);
 
   // Track the last loaded themeId/user to prevent unnecessary reloads
   const lastLoadedRef = useRef<{ themeId: string; userId: string } | null>(
@@ -136,6 +137,11 @@ export default function PrepareNft() {
         console.error("Failed to load theme files:", error);
       }
 
+      // Load metadata IPFS URL if it exists (for ReviewStep)
+      if (data.nft_metadata_url) {
+        setMetadataIpfsUrl(data.nft_metadata_url);
+      }
+
       // Mark this themeId/user as loaded
       lastLoadedRef.current = { themeId, userId: user.id };
     } catch (error) {
@@ -198,42 +204,36 @@ export default function PrepareNft() {
 
   const currentStepIndex = steps.findIndex((s) => s.id === currentStep);
 
-  // Check if all present theme images have IPFS links
-  const canProceedFromUploadStep = () => {
-    if (currentStep !== "upload-images") {
-      return true;
-    }
-
-    // Check each image type - if the image exists, it must have an IPFS URL
-    const imagesToCheck = [
-      { type: "background" as const, hasImage: !!themeFiles.background },
-      { type: "preview" as const, hasImage: !!themeFiles.preview },
-      { type: "banner" as const, hasImage: !!themeFiles.banner },
-    ];
-
-    for (const { type, hasImage } of imagesToCheck) {
-      if (hasImage && !ipfsUrls[type]) {
-        return false;
-      }
-    }
-
-    return true;
-  };
-
   const handleNext = () => {
-    if (!canProceedFromUploadStep()) {
+    if (currentStep === "upload-images" && !canProceedFromUpload) {
+      return;
+    }
+    if (currentStep === "metadata" && !canProceedFromMetadata) {
       return;
     }
 
     const nextIndex = currentStepIndex + 1;
     if (nextIndex < steps.length) {
+      setPreviousStep(currentStep);
       setCurrentStep(steps[nextIndex].id);
     }
+  };
+
+  const handleMetadataUploaded = (ipfsUrl: string) => {
+    setMetadataIpfsUrl(ipfsUrl);
+    // Reload theme to get updated data
+    loadTheme();
+  };
+
+  const handleStatusUpdated = async () => {
+    // Reload theme to get updated status
+    await loadTheme();
   };
 
   const handlePrevious = () => {
     const prevIndex = currentStepIndex - 1;
     if (prevIndex >= 0) {
+      setPreviousStep(currentStep);
       setCurrentStep(steps[prevIndex].id);
     }
   };
@@ -279,9 +279,10 @@ export default function PrepareNft() {
                 themeId={themeId!}
                 themeName={dbTheme.display_name}
                 onIpfsUrlsChange={setIpfsUrls}
+                onCanProceedChange={setCanProceedFromUpload}
               />
             )}
-            {!canProceedFromUploadStep() && (
+            {!canProceedFromUpload && (
               <Card className="border-yellow-500/50 bg-yellow-500/10">
                 <CardContent className="pt-6">
                   <p className="text-sm text-yellow-700 dark:text-yellow-400">
@@ -293,66 +294,47 @@ export default function PrepareNft() {
             )}
           </div>
         );
-      case "metadata":
-        return (
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold mb-2">Configure Metadata</h2>
-              <p className="text-muted-foreground mb-4">
-                Set up the metadata for this NFT.
-              </p>
+      case "metadata": {
+        if (!theme || !dbTheme) {
+          return (
+            <div className="space-y-4">
+              <p className="text-muted-foreground">Loading theme data...</p>
             </div>
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground text-center">
-                  Metadata configuration coming soon...
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        );
-      case "review":
+          );
+        }
+
         return (
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold mb-2">Review</h2>
-              <p className="text-muted-foreground mb-4">
-                Review all information before completing the NFT preparation.
-              </p>
-            </div>
-            <Card>
-              <CardContent className="pt-6">
-                <p className="text-muted-foreground text-center">
-                  Review content coming soon...
-                </p>
-              </CardContent>
-            </Card>
-          </div>
+          <NftMetadataStep
+            theme={theme}
+            dbTheme={dbTheme}
+            themeId={themeId!}
+            ipfsUrls={ipfsUrls}
+            previousStep={previousStep}
+            onMetadataUploaded={handleMetadataUploaded}
+            onCanProceedChange={setCanProceedFromMetadata}
+          />
         );
-      case "complete":
+      }
+      case "review": {
+        if (!dbTheme) {
+          return (
+            <div className="space-y-4">
+              <p className="text-muted-foreground">Loading theme data...</p>
+            </div>
+          );
+        }
+
         return (
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold mb-2">Complete</h2>
-              <p className="text-muted-foreground mb-4">
-                NFT preparation completed successfully!
-              </p>
-            </div>
-            <Card>
-              <CardContent className="pt-6">
-                <div className="text-center space-y-4">
-                  <CheckCircle2 className="w-16 h-16 mx-auto text-green-600" />
-                  <p className="font-medium text-lg">
-                    NFT Prepared Successfully
-                  </p>
-                  <p className="text-muted-foreground">
-                    This NFT is now ready for minting.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          <ReviewStep
+            themeId={themeId!}
+            metadataIpfsUrl={metadataIpfsUrl}
+            previewIpfsUrl={ipfsUrls.preview}
+            royaltyAddress={dbTheme.royalty_address}
+            isMinted={dbTheme.status === "minted"}
+            onStatusUpdated={handleStatusUpdated}
+          />
         );
+      }
       default:
         return null;
     }
@@ -414,15 +396,19 @@ export default function PrepareNft() {
                   >
                     Previous
                   </Button>
-                  {currentStep !== "complete" && (
+                  {currentStep !== "review" && (
                     <Button
                       onClick={handleNext}
-                      disabled={!canProceedFromUploadStep()}
+                      disabled={
+                        (currentStep === "upload-images" &&
+                          !canProceedFromUpload) ||
+                        (currentStep === "metadata" && !canProceedFromMetadata)
+                      }
                     >
                       Next
                     </Button>
                   )}
-                  {currentStep === "complete" && (
+                  {currentStep === "review" && (
                     <Button onClick={() => router.push("/mint-queue")}>
                       Back to Mint Queue
                     </Button>

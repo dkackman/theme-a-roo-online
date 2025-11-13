@@ -1,5 +1,5 @@
 import type { Database } from "../database.types";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../supabase-client";
 
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
 type AddressInsert = Database["public"]["Tables"]["addresses"]["Insert"];

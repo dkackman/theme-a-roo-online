@@ -7,7 +7,7 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../lib/supabase-client";
 import type { UserRole } from "../lib/types";
 
 interface AuthContextType {

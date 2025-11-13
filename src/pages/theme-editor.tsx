@@ -346,12 +346,11 @@ export default function ThemeEditor() {
       } else {
         savedJson = JSON.stringify(theme.theme, null, 2);
       }
-      // Only update if it's different to avoid unnecessary re-renders
-      if (savedJson !== savedThemeJson) {
-        setSavedThemeJson(savedJson);
-      }
+      // Always update savedThemeJson when theme changes to ensure it matches what's in the database
+      // This is critical for accurate isDirty detection after saves
+      setSavedThemeJson(savedJson);
     }
-  }, [theme, savedThemeJson]);
+  }, [theme]);
 
   const handleToggleSideBySide = () => {
     if (layoutMode !== "maximized") {
@@ -386,7 +385,8 @@ export default function ThemeEditor() {
       themeStatus !== "published";
     if (canSave) {
       await saveTheme(themeJson);
-      setSavedThemeJson(themeJson);
+      // Don't set savedThemeJson here - let the effect handle it when theme updates
+      // This ensures we use the normalized JSON from the database, not the user's input
     }
   }, [isSaving, theme, validationError, themeStatus, themeJson, saveTheme]);
 
@@ -438,9 +438,9 @@ export default function ThemeEditor() {
           currentThemeStatus !== "minted" &&
           currentThemeStatus !== "published";
         if (canSave) {
-          currentSaveTheme(currentThemeJson).then(() => {
-            setSavedThemeJson(currentThemeJson);
-          });
+          // Don't set savedThemeJson here - let the effect handle it when theme updates
+          // This ensures we use the normalized JSON from the database, not the user's input
+          void currentSaveTheme(currentThemeJson);
         }
         return true;
       }
@@ -508,9 +508,9 @@ export default function ThemeEditor() {
           currentThemeStatus !== "minted" &&
           currentThemeStatus !== "published";
         if (canSave) {
-          currentSaveTheme(currentThemeJson).then(() => {
-            setSavedThemeJson(currentThemeJson);
-          });
+          // Don't set savedThemeJson here - let the effect handle it when theme updates
+          // This ensures we use the normalized JSON from the database, not the user's input
+          void currentSaveTheme(currentThemeJson);
         }
         return originalPushRef.current.call(router, url, as, options);
       }
@@ -559,9 +559,9 @@ export default function ThemeEditor() {
           currentThemeStatus !== "minted" &&
           currentThemeStatus !== "published";
         if (canSave) {
-          currentSaveTheme(currentThemeJson).then(() => {
-            setSavedThemeJson(currentThemeJson);
-          });
+          // Don't set savedThemeJson here - let the effect handle it when theme updates
+          // This ensures we use the normalized JSON from the database, not the user's input
+          void currentSaveTheme(currentThemeJson);
         }
         return;
       }
@@ -589,7 +589,8 @@ export default function ThemeEditor() {
       themeStatus !== "published";
     if (canSave) {
       await saveTheme(themeJson);
-      setSavedThemeJson(themeJson);
+      // Don't set savedThemeJson here - let the effect handle it when theme updates
+      // This ensures we use the normalized JSON from the database, not the user's input
     }
     if (pendingNavigation) {
       // Use original router.push to bypass our wrapper and navigate after saving

@@ -1,5 +1,5 @@
 import type { Database } from "../database.types";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../supabase-client";
 import { addressesApi } from "./addresses";
 import { didsApi } from "./dids";
 import { usersApi } from "./users";

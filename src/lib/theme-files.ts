@@ -1,4 +1,4 @@
-import { supabase } from "./supabaseClient";
+import { supabase } from "./supabase-client";
 
 export type FileUseType = "background" | "preview" | "banner";
 

@@ -1,5 +1,5 @@
 import type { Database } from "../database.types";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../supabase-client";
 
 type DID = Database["public"]["Tables"]["dids"]["Row"];
 type DIDInsert = Database["public"]["Tables"]["dids"]["Insert"];

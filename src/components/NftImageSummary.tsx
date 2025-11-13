@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { ImagePreview } from "./ImagePreview";
+import { CopyButton } from "./ui/copy-button";
 
 export interface ImageItem {
   label: string;
@@ -69,14 +70,14 @@ export function NftImageSummary({
                           }
                         />
                         {ipfsUrl && (
-                          <div className="px-3 py-2 border-t">
+                          <div className="px-3 py-2 border-t flex items-center justify-between gap-2">
                             <Tooltip>
                               <TooltipTrigger asChild>
                                 <a
                                   href={ipfsUrl}
                                   target="_blank"
                                   rel="noopener noreferrer"
-                                  className="text-xs text-primary hover:underline"
+                                  className="text-xs text-primary hover:underline flex-1 min-w-0"
                                 >
                                   IPFS link
                                 </a>
@@ -85,6 +86,11 @@ export function NftImageSummary({
                                 <p className="max-w-xs break-all">{ipfsUrl}</p>
                               </TooltipContent>
                             </Tooltip>
+                            <CopyButton
+                              value={ipfsUrl}
+                              className="h-6 w-6 shrink-0"
+                              aria-label="Copy IPFS URL"
+                            />
                           </div>
                         )}
                       </>

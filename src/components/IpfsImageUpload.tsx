@@ -32,6 +32,7 @@ interface IpfsImageUploadProps {
     preview?: string;
     banner?: string;
   }) => void;
+  onCanProceedChange?: (canProceed: boolean) => void;
 }
 
 export default function IpfsImageUpload({
@@ -39,6 +40,7 @@ export default function IpfsImageUpload({
   themeId,
   themeName,
   onIpfsUrlsChange,
+  onCanProceedChange,
 }: IpfsImageUploadProps) {
   const [apiKey, setApiKey] = useState<string>("");
   const [gatewayUrl, setGatewayUrl] = useState<string>("");
@@ -106,6 +108,28 @@ export default function IpfsImageUpload({
 
     loadIpfsUrls();
   }, [themeId, onIpfsUrlsChange]);
+
+  // Check if all present theme images have IPFS links
+  const canProceed = (() => {
+    const imagesToCheck = [
+      { type: "background" as const, hasImage: !!themeFiles.background },
+      { type: "preview" as const, hasImage: !!themeFiles.preview },
+      { type: "banner" as const, hasImage: !!themeFiles.banner },
+    ];
+
+    for (const { type, hasImage } of imagesToCheck) {
+      if (hasImage && !uploadedUrls[type]) {
+        return false;
+      }
+    }
+
+    return true;
+  })();
+
+  // Notify parent when canProceed changes
+  useEffect(() => {
+    onCanProceedChange?.(canProceed);
+  }, [canProceed, onCanProceedChange]);
 
   // Save uploaded URLs to localStorage for next step
   useEffect(() => {
