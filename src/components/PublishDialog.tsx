@@ -33,7 +33,7 @@ type ThemeStatus = Database["public"]["Enums"]["theme_status"];
 interface PublishDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  themeName: string;
+  themeDisplayName: string;
   themeStatus: ThemeStatus;
   validationError: string | null;
   hasUnsavedChanges: boolean;
@@ -62,7 +62,7 @@ interface PublishDialogProps {
 export function PublishDialog({
   open,
   onOpenChange,
-  themeName,
+  themeDisplayName,
   themeStatus,
   validationError,
   hasUnsavedChanges,
@@ -152,7 +152,7 @@ export function PublishDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] flex flex-col">
         <DialogHeader>
-          <DialogTitle>Publish "{themeName}"</DialogTitle>
+          <DialogTitle>Publish "{themeDisplayName}"</DialogTitle>
           <DialogDescription>
             Publishing will mark this theme as read-only while it awaits
             minting. Double-check everything before continuing.
@@ -174,6 +174,7 @@ export function PublishDialog({
           {canPublish ? (
             <>
               <NftSummary
+                name={themeDisplayName}
                 description={description}
                 authorName={authorName}
                 sponsor={sponsor}

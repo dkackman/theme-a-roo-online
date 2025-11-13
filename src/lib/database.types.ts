@@ -19,6 +19,7 @@ export type Database = {
           address: string;
           created_at: string | null;
           id: string;
+          is_default: boolean;
           name: string | null;
           network: number;
           notes: string | null;
@@ -29,6 +30,7 @@ export type Database = {
           address: string;
           created_at?: string | null;
           id?: string;
+          is_default?: boolean;
           name?: string | null;
           network?: number;
           notes?: string | null;
@@ -39,6 +41,7 @@ export type Database = {
           address?: string;
           created_at?: string | null;
           id?: string;
+          is_default?: boolean;
           name?: string | null;
           network?: number;
           notes?: string | null;
@@ -60,6 +63,7 @@ export type Database = {
           avatar_uri: string | null;
           created_at: string | null;
           id: string;
+          is_default: boolean;
           launcher_id: string;
           name: string | null;
           network: number;
@@ -71,6 +75,7 @@ export type Database = {
           avatar_uri?: string | null;
           created_at?: string | null;
           id?: string;
+          is_default?: boolean;
           launcher_id: string;
           name?: string | null;
           network?: number;
@@ -82,6 +87,7 @@ export type Database = {
           avatar_uri?: string | null;
           created_at?: string | null;
           id?: string;
+          is_default?: boolean;
           launcher_id?: string;
           name?: string | null;
           network?: number;
@@ -104,6 +110,7 @@ export type Database = {
           created_at: string | null;
           file_use_type: Database["public"]["Enums"]["file_use_type"];
           id: string;
+          ipfs_url: string | null;
           mime_type: string | null;
           size: number | null;
           storage_path: string | null;
@@ -115,6 +122,7 @@ export type Database = {
           created_at?: string | null;
           file_use_type: Database["public"]["Enums"]["file_use_type"];
           id?: string;
+          ipfs_url?: string | null;
           mime_type?: string | null;
           size?: number | null;
           storage_path?: string | null;
@@ -126,6 +134,7 @@ export type Database = {
           created_at?: string | null;
           file_use_type?: Database["public"]["Enums"]["file_use_type"];
           id?: string;
+          ipfs_url?: string | null;
           mime_type?: string | null;
           size?: number | null;
           storage_path?: string | null;

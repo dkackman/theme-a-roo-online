@@ -2,6 +2,10 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { uploadFile, type UploadedFile } from "../lib/ipfs";
+import {
+  getThemeFileIpfsUrls,
+  updateThemeFileIpfsUrl,
+} from "../lib/theme-files";
 import { NftImageSummary } from "./NftImageSummary";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -23,12 +27,18 @@ interface IpfsImageUploadProps {
   };
   themeId: string;
   themeName: string;
+  onIpfsUrlsChange?: (urls: {
+    background?: string;
+    preview?: string;
+    banner?: string;
+  }) => void;
 }
 
 export default function IpfsImageUpload({
   themeFiles,
   themeId,
   themeName,
+  onIpfsUrlsChange,
 }: IpfsImageUploadProps) {
   const [apiKey, setApiKey] = useState<string>("");
   const [gatewayUrl, setGatewayUrl] = useState<string>("");
@@ -80,6 +90,23 @@ export default function IpfsImageUpload({
     }
   }, [apiKey]);
 
+  // Load IPFS URLs from database on mount
+  useEffect(() => {
+    const loadIpfsUrls = async () => {
+      try {
+        const urls = await getThemeFileIpfsUrls(themeId);
+        if (Object.keys(urls).length > 0) {
+          setUploadedUrls(urls);
+          onIpfsUrlsChange?.(urls);
+        }
+      } catch (error) {
+        console.error("Failed to load IPFS URLs:", error);
+      }
+    };
+
+    loadIpfsUrls();
+  }, [themeId, onIpfsUrlsChange]);
+
   // Save uploaded URLs to localStorage for next step
   useEffect(() => {
     if (Object.keys(uploadedUrls).length > 0) {
@@ -106,10 +133,9 @@ export default function IpfsImageUpload({
 
     try {
       // Create a basename from theme name (sanitize for filename)
-      const basename = themeName
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "");
+      const basename = themeName.toLowerCase();
+      // .replace(/[^a-z0-9]+/g, "-")
+      // .replace(/^-+|-+$/g, "");
 
       // Upload each image if present
       const uploads = [
@@ -171,12 +197,32 @@ export default function IpfsImageUpload({
       }
 
       if (results.length > 0) {
-        // Store uploaded URLs by fileUseType
-        const newUploadedUrls: typeof uploadedUrls = {};
+        // Store uploaded URLs by fileUseType, merging with existing URLs
+        const newUploadedUrls: typeof uploadedUrls = { ...uploadedUrls };
         for (const result of results) {
           newUploadedUrls[result.fileUseType] = result.url;
         }
         setUploadedUrls(newUploadedUrls);
+        onIpfsUrlsChange?.(newUploadedUrls);
+
+        // Save IPFS URLs to database
+        const dbUpdatePromises = results.map(async (result) => {
+          try {
+            await updateThemeFileIpfsUrl(
+              themeId,
+              result.fileUseType,
+              result.url
+            );
+          } catch (error) {
+            console.error(
+              `Failed to save IPFS URL for ${result.fileUseType}:`,
+              error
+            );
+            // Don't throw - we still want to show success for the upload
+          }
+        });
+
+        await Promise.all(dbUpdatePromises);
 
         toast.success(
           `Successfully uploaded ${results.length} image(s) to IPFS`,
@@ -235,9 +281,21 @@ export default function IpfsImageUpload({
       <div className="space-y-4">
         <NftImageSummary
           images={[
-            { label: "Background", url: themeFiles.background },
-            { label: "NFT Preview", url: themeFiles.preview },
-            { label: "NFT Banner", url: themeFiles.banner },
+            {
+              label: "Background",
+              url: themeFiles.background,
+              ipfsUrl: uploadedUrls.background,
+            },
+            {
+              label: "NFT Preview",
+              url: themeFiles.preview,
+              ipfsUrl: uploadedUrls.preview,
+            },
+            {
+              label: "NFT Banner",
+              url: themeFiles.banner,
+              ipfsUrl: uploadedUrls.banner,
+            },
           ]}
         />
         <div className="flex justify-end">

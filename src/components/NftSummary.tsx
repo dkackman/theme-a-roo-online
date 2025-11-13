@@ -14,6 +14,7 @@ interface NftSummaryProps {
   sponsor: string;
   twitter?: string;
   website?: string;
+  name?: string;
   did?: string;
   royaltyAddress?: string;
 }
@@ -24,10 +25,17 @@ export function NftSummary({
   sponsor,
   twitter,
   website,
+  name,
   did,
   royaltyAddress,
 }: NftSummaryProps) {
   const requiredDetails = [
+    {
+      label: "Collection Name",
+      value: name,
+      required: true,
+      shouldWrap: false,
+    },
     {
       label: "Description",
       value: description,

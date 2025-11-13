@@ -347,3 +347,99 @@ export async function getThemeFilePublicUrl(
     return undefined;
   }
 }
+
+export async function updateThemeFileIpfsUrl(
+  theme_id: string,
+  file_use_type: FileUseType,
+  ipfs_url: string
+): Promise<void> {
+  try {
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      throw new Error(`Session error: ${sessionError.message}`);
+    }
+
+    if (!session?.user) {
+      throw new Error("Not authenticated");
+    }
+
+    const { error: updateError } = await supabase
+      .from("theme_files")
+      .update({ ipfs_url })
+      .eq("theme_id", theme_id)
+      .eq("file_use_type", file_use_type)
+      .eq("user_id", session.user.id);
+
+    if (updateError) {
+      throw new Error(`Failed to update IPFS URL: ${updateError.message}`);
+    }
+  } catch (error) {
+    console.error("Error updating theme file IPFS URL:", error);
+    throw error;
+  }
+}
+
+export async function getThemeFileIpfsUrls(theme_id: string): Promise<{
+  background?: string;
+  preview?: string;
+  banner?: string;
+}> {
+  try {
+    const {
+      data: { session },
+      error: sessionError,
+    } = await supabase.auth.getSession();
+
+    if (sessionError) {
+      throw new Error(`Session error: ${sessionError.message}`);
+    }
+
+    if (!session?.user) {
+      throw new Error("Not authenticated");
+    }
+
+    const { data: files, error: filesError } = await supabase
+      .from("theme_files")
+      .select("file_use_type, ipfs_url")
+      .eq("theme_id", theme_id)
+      .eq("user_id", session.user.id);
+
+    if (filesError) {
+      throw new Error(`Failed to fetch IPFS URLs: ${filesError.message}`);
+    }
+
+    const result: {
+      background?: string;
+      preview?: string;
+      banner?: string;
+    } = {};
+
+    if (files) {
+      for (const file of files) {
+        if (file.ipfs_url) {
+          const fileType = file.file_use_type as FileUseType;
+          switch (fileType) {
+            case "background":
+              result.background = file.ipfs_url;
+              break;
+            case "preview":
+              result.preview = file.ipfs_url;
+              break;
+            case "banner":
+              result.banner = file.ipfs_url;
+              break;
+          }
+        }
+      }
+    }
+
+    return result;
+  } catch (error) {
+    console.error("Error fetching theme file IPFS URLs:", error);
+    return {};
+  }
+}

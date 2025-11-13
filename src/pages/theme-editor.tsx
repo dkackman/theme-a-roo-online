@@ -888,7 +888,7 @@ export default function ThemeEditor() {
       <PublishDialog
         open={isPublishDialogOpen}
         onOpenChange={setIsPublishDialogOpen}
-        themeName={theme.display_name}
+        themeDisplayName={theme.display_name}
         themeStatus={themeStatus}
         isPublishing={isPublishing}
         isSaving={isSaving}
