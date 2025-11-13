@@ -208,4 +208,35 @@ export const themesApi = {
       } | null;
     })[];
   },
+
+  /**
+   * Get all minted themes with user information (admin only)
+   */
+  async getMintedWithUsers() {
+    const { data, error } = await supabase
+      .from("themes")
+      .select(
+        `
+        *,
+        user_profiles:user_id (
+          id,
+          email,
+          name
+        )
+      `
+      )
+      .eq("status", "minted")
+      .order("updated_at", { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+    return data as (Theme & {
+      user_profiles: {
+        id: string;
+        email: string;
+        name: string | null;
+      } | null;
+    })[];
+  },
 };
