@@ -18,15 +18,24 @@ import {
   EmptyMedia,
   EmptyTitle,
 } from "@/components/ui/empty";
+import {
+  Banner,
+  BannerAction,
+  BannerClose,
+  BannerIcon,
+  BannerTitle,
+} from "@/components/ui/shadcn-io/banner";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Download, Palette, Plus } from "lucide-react";
+import { Download, Palette, Plus, User } from "lucide-react";
 import { useRouter } from "next/router";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "../Contexts/AuthContext";
 import { useUserThemes } from "../hooks/useUserThemes";
-import { themesApi } from "../lib/data-access";
+import { themesApi, usersApi } from "../lib/data-access";
 import { validateThemeJson } from "../lib/themes";
+
+const PROFILE_BANNER_DISMISSED_KEY = "profile-completion-banner-dismissed";
 
 export default function Home() {
   const { user, loading } = useAuth();
@@ -38,6 +47,7 @@ export default function Home() {
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
+  const [showProfileBanner, setShowProfileBanner] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -45,6 +55,65 @@ export default function Home() {
       router.push("/auth");
     }
   }, [user, loading, router]);
+
+  // Check if user has a display name and show banner if needed
+  useEffect(() => {
+    const checkProfileAndBanner = async () => {
+      if (!user || loading) {
+        return;
+      }
+
+      try {
+        // Check if banner was previously dismissed (only on client side)
+        if (typeof window !== "undefined") {
+          const wasDismissed =
+            localStorage.getItem(PROFILE_BANNER_DISMISSED_KEY) === "true";
+          if (wasDismissed) {
+            setShowProfileBanner(false);
+            return;
+          }
+        }
+
+        // Fetch user profile
+        let profile;
+        try {
+          profile = await usersApi.getById(user.id);
+        } catch (fetchError: unknown) {
+          // Handle case where profile doesn't exist yet (PGRST116: 0 rows)
+          if (
+            fetchError &&
+            typeof fetchError === "object" &&
+            "code" in fetchError &&
+            fetchError.code === "PGRST116"
+          ) {
+            setShowProfileBanner(true);
+            return;
+          }
+          // Re-throw other errors
+          throw fetchError;
+        }
+
+        // Show banner if user doesn't have a display name
+        if (!profile.name || profile.name.trim() === "") {
+          setShowProfileBanner(true);
+        } else {
+          setShowProfileBanner(false);
+        }
+      } catch {
+        // On error, don't show banner to avoid annoying users
+        setShowProfileBanner(false);
+      }
+    };
+
+    checkProfileAndBanner();
+  }, [user, loading]);
+
+  const handleBannerDismiss = () => {
+    setShowProfileBanner(false);
+    if (typeof window !== "undefined") {
+      localStorage.setItem(PROFILE_BANNER_DISMISSED_KEY, "true");
+    }
+  };
 
   const handleCreateTheme = async () => {
     if (!user) {
@@ -209,6 +278,27 @@ export default function Home() {
         style={{ display: "none" }}
       />
       <div className="space-y-6">
+        {showProfileBanner && (
+          <Banner
+            visible={showProfileBanner}
+            onClose={handleBannerDismiss}
+            inset
+            className="relative z-10"
+          >
+            <BannerIcon icon={User} />
+            <BannerTitle>
+              Complete your profile! Add a display name, XCH address, and DID on
+              your profile page.
+            </BannerTitle>
+            <BannerAction
+              onClick={() => router.push("/profile")}
+              variant="secondary"
+            >
+              Go to Profile
+            </BannerAction>
+            <BannerClose onClick={handleBannerDismiss} />
+          </Banner>
+        )}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold">My Themes</h1>

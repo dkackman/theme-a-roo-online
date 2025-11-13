@@ -80,8 +80,9 @@ export default function UserProfileProperties({
   return (
     <Sheet open={isOpen} onOpenChange={onOpenChange}>
       <SheetTrigger asChild>
-        <Button variant="outline" size="icon">
-          <Pencil className="w-4 h-4" />
+        <Button variant="outline" size="sm">
+          <Pencil className="w-4 h-4 mr-2" />
+          Edit Profile
         </Button>
       </SheetTrigger>
       <SheetContent className="w-full sm:max-w-md bg-popover flex flex-col">
