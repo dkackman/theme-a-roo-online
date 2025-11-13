@@ -43,7 +43,7 @@ export async function uploadFile(
     group ? { groupId: group.id } : undefined
   );
 
-  const url = await pinata.gateways.public.convert(uploadResult.cid)
+  const url = await pinata.gateways.public.convert(uploadResult.cid);
   return {
     url,
     fileUseType: file.fileUseType,

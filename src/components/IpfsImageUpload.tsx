@@ -1,13 +1,13 @@
+import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
-import { Button } from "./ui/button";
+import { toast } from "sonner";
+import { uploadFile, type UploadedFile } from "../lib/ipfs";
 import { NftImageSummary } from "./NftImageSummary";
+import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
-import { uploadFile, type UploadedFile } from "../lib/ipfs";
-import { toast } from "sonner";
-import { Loader2 } from "lucide-react";
 
 const STORAGE_KEYS = {
   PINATA_GATEWAY: "pinata-gateway",
@@ -127,8 +127,10 @@ export default function IpfsImageUpload({
         },
       ].filter((item) => item.url);
 
-      for (const { url, fileUseType } of uploads) {
-        if (!url) continue;
+      const uploadPromises = uploads.map(async ({ url, fileUseType }) => {
+        if (!url) {
+          return null;
+        }
 
         try {
           const result = await uploadFile(
@@ -139,19 +141,33 @@ export default function IpfsImageUpload({
             fileUseType,
             url
           );
-          results.push(result);
+          return { success: true, result } as const;
         } catch (error) {
           const errorMessage =
             error instanceof Error ? error.message : "Unknown error";
-          errors.push(`${fileUseType}: ${errorMessage}`);
+          return {
+            success: false,
+            error: `${fileUseType}: ${errorMessage}`,
+          } as const;
+        }
+      });
+
+      const uploadResults = await Promise.all(uploadPromises);
+      for (const result of uploadResults) {
+        if (result === null) {
+          continue;
+        }
+        if (result.success) {
+          results.push(result.result);
+        } else {
+          errors.push(result.error);
         }
       }
 
       if (errors.length > 0) {
-        toast.error(
-          `Some uploads failed: ${errors.join(", ")}`,
-          { duration: 5000 }
-        );
+        toast.error(`Some uploads failed: ${errors.join(", ")}`, {
+          duration: 5000,
+        });
       }
 
       if (results.length > 0) {
