@@ -2,7 +2,7 @@ import { cn } from "@/lib/utils";
 import * as DialogPrimitive from "@radix-ui/react-dialog";
 import { XIcon } from "lucide-react";
 import * as React from "react";
-import { useSimpleTheme } from "theme-o-rama";
+import { type Theme, useSimpleTheme } from "theme-o-rama";
 
 const Dialog = DialogPrimitive.Root;
 
@@ -32,23 +32,28 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName;
 
 const DialogContent = React.forwardRef<
   React.ComponentRef<typeof DialogPrimitive.Content>,
-  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, style, ...props }, ref) => {
+  React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content> & {
+    theme?: Theme | null;
+  }
+>(({ className, children, style, theme: themeProp, ...props }, ref) => {
   const { currentTheme } = useSimpleTheme();
+
+  // Use provided theme if available, otherwise fallback to currentTheme
+  const theme = themeProp ?? currentTheme;
 
   // Apply theme-aware background styles
   const themeStyles: React.CSSProperties = {
-    backgroundImage: currentTheme?.backgroundImage
-      ? `url(${currentTheme.backgroundImage})`
+    backgroundImage: theme?.backgroundImage
+      ? `url(${theme.backgroundImage})`
       : undefined,
-    backgroundSize: currentTheme?.backgroundImage ? "cover" : undefined,
-    backgroundPosition: currentTheme?.backgroundImage ? "center" : undefined,
-    backgroundRepeat: currentTheme?.backgroundImage ? "no-repeat" : undefined,
+    backgroundSize: theme?.backgroundImage ? "cover" : undefined,
+    backgroundPosition: theme?.backgroundImage ? "center" : undefined,
+    backgroundRepeat: theme?.backgroundImage ? "no-repeat" : undefined,
   };
 
-  if (currentTheme?.backgroundImage) {
+  if (theme?.backgroundImage) {
     themeStyles.backgroundColor =
-      currentTheme?.mostLike === "dark"
+      theme?.mostLike === "dark"
         ? "rgba(0, 0, 0, 0.5)"
         : "rgba(255, 255, 255, 0.5)";
 

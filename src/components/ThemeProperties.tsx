@@ -25,7 +25,6 @@ import {
   Sheet,
   SheetClose,
   SheetContent,
-  SheetDescription,
   SheetFooter,
   SheetHeader,
   SheetTitle,
@@ -259,17 +258,15 @@ export function ThemeProperties({
       <SheetContent className="w-full sm:max-w-md bg-popover flex flex-col">
         <SheetHeader className="px-6 pt-6 flex-shrink-0">
           <SheetTitle>Theme Properties</SheetTitle>
-          <SheetDescription>{statusMessage}</SheetDescription>
         </SheetHeader>
         <div className="flex-1 overflow-y-auto px-6 space-y-6">
           <Card>
             <CardHeader>
               <CardTitle className="text-sm">Status</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="space-y-2">
               <FieldGroup>
                 <Field orientation="vertical">
-                  <FieldLabel htmlFor="status">Status</FieldLabel>
                   <FieldContent>
                     <Select
                       value={status}
@@ -299,6 +296,7 @@ export function ThemeProperties({
                   </FieldContent>
                 </Field>
               </FieldGroup>
+              <CardDescription>{statusMessage}</CardDescription>
             </CardContent>
           </Card>
 
@@ -384,7 +382,7 @@ export function ThemeProperties({
             <CardHeader>
               <CardTitle className="text-sm">Optional Information</CardTitle>
               <CardDescription>
-                Additional details that can be included with your theme.
+                Additional details that can be included with your theme NFT.
               </CardDescription>
             </CardHeader>
             <CardContent>
