@@ -9,8 +9,8 @@ import {
 import { NftImageSummary } from "./NftImageSummary";
 import { Button } from "./ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import { Field, FieldContent, FieldGroup, FieldLabel } from "./ui/field";
 import { Input } from "./ui/input";
-import { Label } from "./ui/label";
 import { Textarea } from "./ui/textarea";
 
 const STORAGE_KEYS = {
@@ -266,40 +266,48 @@ export default function IpfsImageUpload({
     <>
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Pinata Configuration</CardTitle>
+          <CardTitle className="text-sm">Pinata Configuration</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="api-key">JWT Token</Label>
-            <Textarea
-              id="api-key"
-              placeholder="Enter your Pinata JWT token"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              className="font-mono text-sm resize-none"
-              rows={3}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="gateway-url">Gateway URL</Label>
-              <Input
-                id="gateway-url"
-                placeholder="some-random-words-887.mypinata.cloud"
-                value={gatewayUrl}
-                onChange={(e) => setGatewayUrl(e.target.value)}
-              />
+        <CardContent>
+          <FieldGroup>
+            <Field orientation="vertical">
+              <FieldLabel htmlFor="api-key">JWT Token</FieldLabel>
+              <FieldContent>
+                <Textarea
+                  id="api-key"
+                  placeholder="Enter your Pinata JWT token"
+                  value={apiKey}
+                  onChange={(e) => setApiKey(e.target.value)}
+                  className="font-mono text-sm resize-none"
+                  rows={3}
+                />
+              </FieldContent>
+            </Field>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <Field orientation="vertical">
+                <FieldLabel htmlFor="gateway-url">Gateway URL</FieldLabel>
+                <FieldContent>
+                  <Input
+                    id="gateway-url"
+                    placeholder="some-random-words-887.mypinata.cloud"
+                    value={gatewayUrl}
+                    onChange={(e) => setGatewayUrl(e.target.value)}
+                  />
+                </FieldContent>
+              </Field>
+              <Field orientation="vertical">
+                <FieldLabel htmlFor="group-name">Group Name</FieldLabel>
+                <FieldContent>
+                  <Input
+                    id="group-name"
+                    placeholder="Enter an optional group name"
+                    value={groupName}
+                    onChange={(e) => setGroupName(e.target.value)}
+                  />
+                </FieldContent>
+              </Field>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="group-name">Group Name</Label>
-              <Input
-                id="group-name"
-                placeholder="Enter an optional group name"
-                value={groupName}
-                onChange={(e) => setGroupName(e.target.value)}
-              />
-            </div>
-          </div>
+          </FieldGroup>
         </CardContent>
       </Card>
       <div className="space-y-4">

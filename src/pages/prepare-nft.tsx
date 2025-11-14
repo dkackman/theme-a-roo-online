@@ -253,13 +253,6 @@ export default function PrepareNft() {
       case "preview":
         return (
           <div className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold mb-2">NFT Summary</h2>
-              <p className="text-muted-foreground mb-4">
-                Review the theme details and imagery that will be used for the
-                NFT.
-              </p>
-            </div>
             {dbTheme && (
               <NftSummary
                 name={dbTheme.display_name}
@@ -277,12 +270,6 @@ export default function PrepareNft() {
       case "upload-images":
         return (
           <div className="space-y-4">
-            <div>
-              <h2 className="text-xl font-semibold mb-2">Upload Images</h2>
-              <p className="text-muted-foreground mb-4">
-                Upload theme images for this NFT.
-              </p>
-            </div>
             {dbTheme && (
               <IpfsImageUpload
                 themeFiles={themeFiles}

@@ -1,5 +1,17 @@
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  Field,
+  FieldContent,
+  FieldGroup,
+  FieldLabel,
+} from "@/components/ui/field";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -185,39 +197,39 @@ export function NftMetadataStep({
 
   return (
     <div className="space-y-4">
-      <div>
-        <h2 className="text-xl font-semibold mb-2">Configure Metadata</h2>
-        <p className="text-muted-foreground mb-4">
-          Review and upload the NFT metadata to IPFS.
-        </p>
-      </div>
       <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
-            <div>
-              <label className="text-sm font-medium mb-2 block">
-                Generated Metadata JSON
-              </label>
-              <pre className="bg-muted p-4 rounded-md overflow-auto text-xs max-h-96">
-                {metadataJson}
-              </pre>
-            </div>
+        <CardHeader>
+          <CardTitle className="text-sm">Configure Metadata</CardTitle>
+          <CardDescription>
+            Review and upload the NFT metadata to IPFS.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <FieldGroup>
+            <Field orientation="vertical">
+              <FieldLabel>Generated Metadata JSON</FieldLabel>
+              <FieldContent>
+                <pre className="bg-muted p-4 rounded-md overflow-auto text-xs max-h-96">
+                  {metadataJson}
+                </pre>
+              </FieldContent>
+            </Field>
             {metadataIpfsUrl && (
-              <div className="pt-2 border-t">
-                <p className="text-sm text-muted-foreground mb-2">
-                  Metadata IPFS URL:
-                </p>
-                <a
-                  href={metadataIpfsUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-primary hover:underline break-all"
-                >
-                  {metadataIpfsUrl}
-                </a>
-              </div>
+              <Field orientation="vertical">
+                <FieldLabel>Metadata IPFS URL</FieldLabel>
+                <FieldContent>
+                  <a
+                    href={metadataIpfsUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-primary hover:underline break-all"
+                  >
+                    {metadataIpfsUrl}
+                  </a>
+                </FieldContent>
+              </Field>
             )}
-            <div className="flex justify-end">
+            <div className="flex justify-end pt-2">
               <Button
                 onClick={handleUploadMetadata}
                 disabled={isUploadingMetadata}
@@ -232,7 +244,7 @@ export function NftMetadataStep({
                 {!isUploadingMetadata && !metadataIpfsUrl && "Upload to IPFS"}
               </Button>
             </div>
-          </div>
+          </FieldGroup>
         </CardContent>
       </Card>
       {!canProceed && (
