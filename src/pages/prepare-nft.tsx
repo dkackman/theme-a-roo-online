@@ -15,7 +15,7 @@ import { useAuth } from "../Contexts/AuthContext";
 import { ThemeEditorProvider } from "../Contexts/ThemeEditorContext";
 import { themesApi } from "../lib/data-access";
 import type { Database } from "../lib/database.types";
-import { getThemeFiles } from "../lib/theme-files";
+import { getThemeFileIpfsUrls, getThemeFiles } from "../lib/theme-files";
 
 type Step = "preview" | "upload-images" | "metadata" | "review";
 
@@ -140,11 +140,48 @@ export default function PrepareNft() {
       setThemeJson(JSON.stringify(initializedTheme, null, 2));
 
       // Load theme files
+      let loadedFiles: {
+        background?: string;
+        preview?: string;
+        banner?: string;
+      } = {};
       try {
-        const files = await getThemeFiles(themeId);
-        setThemeFiles(files);
+        loadedFiles = await getThemeFiles(themeId, isAdmin);
+        setThemeFiles(loadedFiles);
       } catch (error) {
         console.error("Failed to load theme files:", error);
+      }
+
+      // Load IPFS URLs from database and check if we can proceed
+      try {
+        const dbIpfsUrls = await getThemeFileIpfsUrls(themeId, isAdmin);
+        setIpfsUrls(dbIpfsUrls);
+
+        // Check if all present theme images have IPFS links in the database
+        // Specifically require preview image to exist if loadedFiles.preview exists
+        const imagesToCheck = [
+          { type: "background" as const, hasImage: !!loadedFiles.background },
+          { type: "preview" as const, hasImage: !!loadedFiles.preview },
+          { type: "banner" as const, hasImage: !!loadedFiles.banner },
+        ];
+
+        let canProceed = true;
+        for (const { type, hasImage } of imagesToCheck) {
+          if (hasImage && !dbIpfsUrls[type]) {
+            canProceed = false;
+            break;
+          }
+        }
+
+        // Specifically require preview image if it exists in loadedFiles
+        if (loadedFiles.preview && !dbIpfsUrls.preview) {
+          canProceed = false;
+        }
+
+        setCanProceedFromUpload(canProceed);
+      } catch (error) {
+        console.error("Failed to load IPFS URLs:", error);
+        setCanProceedFromUpload(false);
       }
 
       // Load metadata IPFS URL if it exists (for ReviewStep)
@@ -184,6 +221,51 @@ export default function PrepareNft() {
       // Invalid JSON, keep current theme
     }
   }, []);
+
+  // Check database for IPFS URLs when ipfsUrls change from IpfsImageUpload
+  const handleIpfsUrlsChange = useCallback(
+    (urls: { background?: string; preview?: string; banner?: string }) => {
+      setIpfsUrls(urls);
+
+      // Also verify against database to ensure consistency
+      const checkDatabase = async () => {
+        if (!themeId || !user) {
+          return;
+        }
+
+        try {
+          const dbIpfsUrls = await getThemeFileIpfsUrls(themeId, isAdmin);
+
+          // Check if all present theme images have IPFS links in the database
+          const imagesToCheck = [
+            { type: "background" as const, hasImage: !!themeFiles.background },
+            { type: "preview" as const, hasImage: !!themeFiles.preview },
+            { type: "banner" as const, hasImage: !!themeFiles.banner },
+          ];
+
+          let canProceed = true;
+          for (const { type, hasImage } of imagesToCheck) {
+            if (hasImage && !dbIpfsUrls[type]) {
+              canProceed = false;
+              break;
+            }
+          }
+
+          // Specifically require preview image if it exists in themeFiles
+          if (themeFiles.preview && !dbIpfsUrls.preview) {
+            canProceed = false;
+          }
+
+          setCanProceedFromUpload(canProceed);
+        } catch (error) {
+          console.error("Failed to verify IPFS URLs in database:", error);
+        }
+      };
+
+      checkDatabase();
+    },
+    [themeId, user, isAdmin, themeFiles]
+  );
 
   if (authLoading || !user || isLoadingTheme) {
     return (
@@ -275,7 +357,7 @@ export default function PrepareNft() {
                 themeFiles={themeFiles}
                 themeId={themeId!}
                 themeName={dbTheme.display_name}
-                onIpfsUrlsChange={setIpfsUrls}
+                onIpfsUrlsChange={handleIpfsUrlsChange}
                 onCanProceedChange={setCanProceedFromUpload}
               />
             )}

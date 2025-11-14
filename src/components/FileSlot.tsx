@@ -1,3 +1,4 @@
+import { useAuth } from "@/Contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -41,6 +42,7 @@ export function FileSlot({
   readonly = false,
 }: FileSlotProps) {
   const { upload, progress, loading } = useUploadThemeFile();
+  const { isAdmin } = useAuth();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDrop = async (acceptedFiles: File[]) => {
@@ -70,7 +72,7 @@ export function FileSlot({
   const confirmDelete = async () => {
     setIsDeleting(true);
     try {
-      await deleteThemeFile(themeId, fileType);
+      await deleteThemeFile(themeId, fileType, isAdmin);
 
       // For background files, clear the background image from theme when deleted
       if (fileType === "background" && onInsertBackground) {

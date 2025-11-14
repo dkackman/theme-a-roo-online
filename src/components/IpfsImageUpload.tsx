@@ -1,3 +1,4 @@
+import { useAuth } from "../Contexts/AuthContext";
 import { Loader2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
@@ -42,6 +43,7 @@ export default function IpfsImageUpload({
   onIpfsUrlsChange,
   onCanProceedChange,
 }: IpfsImageUploadProps) {
+  const { isAdmin } = useAuth();
   const [apiKey, setApiKey] = useState<string>("");
   const [gatewayUrl, setGatewayUrl] = useState<string>("");
   const [groupName, setGroupName] = useState<string>("");
@@ -96,7 +98,7 @@ export default function IpfsImageUpload({
   useEffect(() => {
     const loadIpfsUrls = async () => {
       try {
-        const urls = await getThemeFileIpfsUrls(themeId);
+        const urls = await getThemeFileIpfsUrls(themeId, isAdmin);
         if (Object.keys(urls).length > 0) {
           setUploadedUrls(urls);
           onIpfsUrlsChange?.(urls);
@@ -107,7 +109,7 @@ export default function IpfsImageUpload({
     };
 
     loadIpfsUrls();
-  }, [themeId, onIpfsUrlsChange]);
+  }, [themeId, onIpfsUrlsChange, isAdmin]);
 
   // Check if all present theme images have IPFS links
   const canProceed = (() => {
@@ -235,7 +237,8 @@ export default function IpfsImageUpload({
             await updateThemeFileIpfsUrl(
               themeId,
               result.fileUseType,
-              result.url
+              result.url,
+              isAdmin
             );
           } catch (error) {
             console.error(

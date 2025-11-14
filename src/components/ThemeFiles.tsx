@@ -1,3 +1,4 @@
+import { useAuth } from "@/Contexts/AuthContext";
 import { useThemeEditor } from "@/Contexts/ThemeEditorContext";
 import {
   getThemeFilePublicUrl,
@@ -23,6 +24,7 @@ export function ThemeFiles({
 }: ThemeFilesProps) {
   // Get theme editor context to update backgroundImage
   const { theme, updateTheme } = useThemeEditor();
+  const { isAdmin } = useAuth();
   const themeRef = useRef(theme);
   const updateThemeRef = useRef(updateTheme);
   const onPreviewChangeRef = useRef(onPreviewChange);
@@ -57,7 +59,7 @@ export function ThemeFiles({
 
     try {
       // Fetch signed URLs for display (thumbnails)
-      const filesData = await getThemeFiles(themeId);
+      const filesData = await getThemeFiles(themeId, isAdmin);
 
       // Check if component was unmounted or themeId changed during fetch
       if (cancelledRef.current) {
@@ -100,14 +102,14 @@ export function ThemeFiles({
         setIsLoading(false);
       }
     }
-  }, [themeId]);
+  }, [themeId, isAdmin]);
 
   const refreshFile = useCallback(
     async (type: FileUseType) => {
       cancelledRef.current = false;
 
       try {
-        const url = await getThemeFilePublicUrl(themeId, type);
+        const url = await getThemeFilePublicUrl(themeId, type, isAdmin);
 
         // Check if component was unmounted or themeId changed during fetch
         if (cancelledRef.current) {
@@ -152,7 +154,7 @@ export function ThemeFiles({
         }
       }
     },
-    [themeId]
+    [themeId, isAdmin]
   );
 
   useEffect(() => {

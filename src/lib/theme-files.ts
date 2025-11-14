@@ -154,7 +154,8 @@ export async function uploadThemeFile({
 
 export async function deleteThemeFile(
   theme_id: string,
-  file_use_type: FileUseType
+  file_use_type: FileUseType,
+  allowAdminAccess: boolean = false
 ): Promise<void> {
   // Get JWT token from supabase client
   const {
@@ -171,17 +172,27 @@ export async function deleteThemeFile(
     throw new Error("Not authenticated");
   }
 
-  // Find the file ID by theme_id, file_use_type, and user_id
-  const { data: file, error: fileError } = await supabase
+  // Find the file ID by theme_id, file_use_type, and optionally user_id
+  let query = supabase
     .from("theme_files")
-    .select("id")
+    .select("id, user_id")
     .eq("theme_id", theme_id)
-    .eq("file_use_type", file_use_type)
-    .eq("user_id", session.user.id)
-    .single();
+    .eq("file_use_type", file_use_type);
+
+  // If not allowing admin access, enforce ownership check
+  if (!allowAdminAccess) {
+    query = query.eq("user_id", session.user.id);
+  }
+
+  const { data: file, error: fileError } = await query.single();
 
   if (fileError || !file) {
     throw new Error(`File not found: ${fileError?.message || "No file found"}`);
+  }
+
+  // Security check: if admin access is not allowed, verify ownership
+  if (!allowAdminAccess && file.user_id !== session.user.id) {
+    throw new Error("Unauthorized: You do not have access to this file");
   }
 
   // Call the edge function to delete the file
@@ -230,7 +241,10 @@ async function getThemeFileUrl(
   }
 }
 
-export async function getThemeFiles(theme_id: string): Promise<{
+export async function getThemeFiles(
+  theme_id: string,
+  allowAdminAccess: boolean = false
+): Promise<{
   background?: string;
   preview?: string;
   banner?: string;
@@ -250,12 +264,18 @@ export async function getThemeFiles(theme_id: string): Promise<{
       throw new Error("Not authenticated");
     }
 
-    // Fetch theme files for this user/theme
-    const { data: files, error: filesError } = await supabase
+    // Fetch theme files for this theme, optionally filtered by user_id
+    let query = supabase
       .from("theme_files")
       .select("id, file_use_type")
-      .eq("theme_id", theme_id)
-      .eq("user_id", session.user.id);
+      .eq("theme_id", theme_id);
+
+    // If not allowing admin access, enforce ownership check
+    if (!allowAdminAccess) {
+      query = query.eq("user_id", session.user.id);
+    }
+
+    const { data: files, error: filesError } = await query;
 
     if (filesError) {
       throw new Error(`Failed to fetch theme files: ${filesError.message}`);
@@ -308,7 +328,8 @@ export async function getThemeFiles(theme_id: string): Promise<{
 
 export async function getThemeFilePublicUrl(
   theme_id: string,
-  file_use_type: FileUseType
+  file_use_type: FileUseType,
+  allowAdminAccess: boolean = false
 ): Promise<string | undefined> {
   try {
     const {
@@ -325,19 +346,29 @@ export async function getThemeFilePublicUrl(
       throw new Error("Not authenticated");
     }
 
-    const { data: file, error: fileError } = await supabase
+    let query = supabase
       .from("theme_files")
-      .select("id")
+      .select("id, user_id")
       .eq("theme_id", theme_id)
-      .eq("file_use_type", file_use_type)
-      .eq("user_id", session.user.id)
-      .maybeSingle();
+      .eq("file_use_type", file_use_type);
+
+    // If not allowing admin access, enforce ownership check
+    if (!allowAdminAccess) {
+      query = query.eq("user_id", session.user.id);
+    }
+
+    const { data: file, error: fileError } = await query.maybeSingle();
 
     if (fileError) {
       throw new Error(fileError.message);
     }
 
     if (!file) {
+      return undefined;
+    }
+
+    // Security check: if admin access is not allowed, verify ownership
+    if (!allowAdminAccess && file.user_id !== session.user.id) {
       return undefined;
     }
 
@@ -351,7 +382,8 @@ export async function getThemeFilePublicUrl(
 export async function updateThemeFileIpfsUrl(
   theme_id: string,
   file_use_type: FileUseType,
-  ipfs_url: string
+  ipfs_url: string,
+  allowAdminAccess: boolean = false
 ): Promise<void> {
   try {
     const {
@@ -367,12 +399,18 @@ export async function updateThemeFileIpfsUrl(
       throw new Error("Not authenticated");
     }
 
-    const { error: updateError } = await supabase
+    let query = supabase
       .from("theme_files")
       .update({ ipfs_url })
       .eq("theme_id", theme_id)
-      .eq("file_use_type", file_use_type)
-      .eq("user_id", session.user.id);
+      .eq("file_use_type", file_use_type);
+
+    // If not allowing admin access, enforce ownership check
+    if (!allowAdminAccess) {
+      query = query.eq("user_id", session.user.id);
+    }
+
+    const { error: updateError } = await query;
 
     if (updateError) {
       throw new Error(`Failed to update IPFS URL: ${updateError.message}`);
@@ -383,7 +421,10 @@ export async function updateThemeFileIpfsUrl(
   }
 }
 
-export async function getThemeFileIpfsUrls(theme_id: string): Promise<{
+export async function getThemeFileIpfsUrls(
+  theme_id: string,
+  allowAdminAccess: boolean = false
+): Promise<{
   background?: string;
   preview?: string;
   banner?: string;
@@ -402,11 +443,17 @@ export async function getThemeFileIpfsUrls(theme_id: string): Promise<{
       throw new Error("Not authenticated");
     }
 
-    const { data: files, error: filesError } = await supabase
+    let query = supabase
       .from("theme_files")
       .select("file_use_type, ipfs_url")
-      .eq("theme_id", theme_id)
-      .eq("user_id", session.user.id);
+      .eq("theme_id", theme_id);
+
+    // If not allowing admin access, enforce ownership check
+    if (!allowAdminAccess) {
+      query = query.eq("user_id", session.user.id);
+    }
+
+    const { data: files, error: filesError } = await query;
 
     if (filesError) {
       throw new Error(`Failed to fetch IPFS URLs: ${filesError.message}`);

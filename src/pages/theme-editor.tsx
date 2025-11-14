@@ -280,13 +280,13 @@ export default function ThemeEditor() {
       return;
     }
     try {
-      const files = await getThemeFiles(themeId);
+      const files = await getThemeFiles(themeId, isAdmin);
       setHasPreviewImage(Boolean(files.preview));
       setThemeFiles(files);
     } catch (error) {
       console.error("Failed to load preview status:", error);
     }
-  }, [themeId, userId]);
+  }, [themeId, userId, isAdmin]);
 
   const handlePreviewChange = useCallback((previewUrl?: string) => {
     setHasPreviewImage(Boolean(previewUrl));
