@@ -44,7 +44,7 @@ const LAYOUT_STORAGE_KEY = "theme-editor-layout";
 const SIDE_BY_SIDE_STORAGE_KEY = "theme-editor-side-by-side";
 
 export default function ThemeEditor() {
-  const { user, loading } = useAuth();
+  const { user, loading, isAdmin } = useAuth();
   const router = useRouter();
   const { id } = router.query;
   const themeId = typeof id === "string" ? id : null;
@@ -242,7 +242,16 @@ export default function ThemeEditor() {
 
     setIsLoadingTheme(true);
     try {
-      const data = await themesApi.getById(themeId, userId);
+      // Allow admins to access any theme, regular users can only access their own
+      const data = await themesApi.getById(themeId, userId, isAdmin);
+
+      // Security check: non-admins can only access their own themes
+      if (!isAdmin && data.user_id !== userId) {
+        toast.error("You do not have permission to access this theme");
+        router.push("/");
+        return;
+      }
+
       setTheme(data);
       let themeJsonString = "";
       if (typeof data.theme === "string") {
@@ -264,7 +273,7 @@ export default function ThemeEditor() {
     } finally {
       setIsLoadingTheme(false);
     }
-  }, [themeId, userId]);
+  }, [themeId, userId, isAdmin, router]);
 
   const loadThemeFiles = useCallback(async () => {
     if (!themeId || !userId) {
@@ -738,6 +747,9 @@ export default function ThemeEditor() {
   const hasSponsor = sponsor.trim().length > 0;
   const hasRoyaltyAddress = royaltyAddress.trim().length > 0;
 
+  // Check if admin is editing someone else's theme
+  const isEditingOtherUsersTheme = isAdmin && theme && theme.user_id !== userId;
+
   // Common props for ThemeEditorHeader
   const headerProps = {
     title: theme.display_name,
@@ -768,6 +780,7 @@ export default function ThemeEditor() {
     validationError,
     readonly: isReadonly,
     themeStatus,
+    isEditingOtherUsersTheme,
     onSave: handleSaveTheme,
     validateTheme,
     onPreviewChange: handlePreviewChange,

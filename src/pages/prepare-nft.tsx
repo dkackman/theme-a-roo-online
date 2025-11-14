@@ -4,6 +4,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Loader2 } from "lucide-react";
 import { useRouter } from "next/router";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 import { useSimpleTheme, type Theme } from "theme-o-rama";
 import IpfsImageUpload from "../components/IpfsImageUpload";
 import { NftMetadataStep } from "../components/NftMetadataStep";
@@ -44,7 +45,7 @@ const steps: { id: Step; label: string; description: string }[] = [
 type DbTheme = Database["public"]["Tables"]["themes"]["Row"];
 
 export default function PrepareNft() {
-  const { user, loading: authLoading } = useAuth();
+  const { user, loading: authLoading, isAdmin } = useAuth();
   const router = useRouter();
   const { id } = router.query;
   const themeId = typeof id === "string" ? id : null;
@@ -96,7 +97,16 @@ export default function PrepareNft() {
 
     setIsLoadingTheme(true);
     try {
-      const data = await themesApi.getById(themeId, user.id);
+      // Allow admins to access any theme, regular users can only access their own
+      const data = await themesApi.getById(themeId, user.id, isAdmin);
+
+      // Security check: non-admins can only access their own themes
+      if (!isAdmin && data.user_id !== user.id) {
+        toast.error("You do not have permission to access this theme");
+        router.push("/");
+        return;
+      }
+
       setDbTheme(data);
 
       // Convert database theme to Theme-o-rama format
@@ -149,7 +159,7 @@ export default function PrepareNft() {
     } finally {
       setIsLoadingTheme(false);
     }
-  }, [themeId, user]);
+  }, [themeId, user, isAdmin, router]);
 
   useEffect(() => {
     if (user && themeId) {

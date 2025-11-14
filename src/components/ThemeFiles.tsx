@@ -199,7 +199,7 @@ export function ThemeFiles({
         <div className="flex flex-col gap-3">
           <FileSlot
             title="NFT Preview"
-            description="Small image for NFT previews"
+            description="Small image for NFT previews. Should be 320x320px."
             fileType="preview"
             publicUrl={files.publicPreviewUrl}
             themeId={themeId}
@@ -223,7 +223,7 @@ export function ThemeFiles({
         </div>
         <FileSlot
           title="NFT Banner"
-          description="Large image for NFT showcases"
+          description="Banner image for your collection. Should be 4:1 aspect ratio."
           fileType="banner"
           publicUrl={files.publicBannerUrl}
           themeId={themeId}

@@ -29,18 +29,33 @@ export const themesApi = {
 
   /**
    * Get a single theme by ID (with user ownership check)
+   * @param themeId - The theme ID to fetch
+   * @param userId - The user ID (required for non-admin users)
+   * @param allowAdminAccess - If true, allows admins to access any theme regardless of ownership
    */
-  async getById(themeId: string, userId: string) {
-    const { data, error } = await supabase
-      .from("themes")
-      .select("*")
-      .eq("id", themeId)
-      .eq("user_id", userId)
-      .single();
+  async getById(
+    themeId: string,
+    userId: string,
+    allowAdminAccess: boolean = false
+  ) {
+    let query = supabase.from("themes").select("*").eq("id", themeId);
+
+    // If not allowing admin access, enforce ownership check
+    if (!allowAdminAccess) {
+      query = query.eq("user_id", userId);
+    }
+
+    const { data, error } = await query.single();
 
     if (error) {
       throw error;
     }
+
+    // Security check: if admin access is not allowed, verify ownership
+    if (!allowAdminAccess && data.user_id !== userId) {
+      throw new Error("Unauthorized: You do not have access to this theme");
+    }
+
     return data as Theme;
   },
 

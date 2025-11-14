@@ -13,6 +13,7 @@ import {
   CheckCircle2,
   FileText,
   ImageIcon,
+  Shield,
   TriangleAlert,
   XCircle,
 } from "lucide-react";
@@ -30,6 +31,7 @@ interface ThemeEditorTabsProps {
   validationError?: string | null;
   readonly?: boolean;
   themeStatus?: "draft" | "ready" | "published" | "minted";
+  isEditingOtherUsersTheme?: boolean;
   onSave?: () => void;
   onPreviewChange?: (previewUrl?: string) => void;
 }
@@ -62,6 +64,7 @@ export function ThemeEditorTabs({
   validationError,
   readonly = false,
   themeStatus,
+  isEditingOtherUsersTheme = false,
   onSave,
   onPreviewChange,
 }: ThemeEditorTabsProps) {
@@ -190,6 +193,29 @@ export function ThemeEditorTabs({
           </TabsTrigger>
         </TabsList>
         <div className="flex items-center gap-2">
+          {isEditingOtherUsersTheme && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <span>
+                    <Badge
+                      variant="outline"
+                      className="cursor-pointer flex items-center gap-1 border-purple-500/30 bg-purple-500/10 text-xs font-normal text-purple-700 dark:text-purple-400"
+                    >
+                      <Shield className="h-3 w-3" />
+                      Admin View
+                    </Badge>
+                  </span>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>
+                    You are viewing and editing another user&apos;s theme as an
+                    administrator.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
           {themeStatus && statusMessage && (
             <TooltipProvider>
               <Tooltip>
