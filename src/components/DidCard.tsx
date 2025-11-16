@@ -1,4 +1,4 @@
-import { Copy, Pencil, User } from "lucide-react";
+import { Copy, Pencil, Star, User } from "lucide-react";
 import type { Database } from "../lib/database.types";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -40,23 +40,33 @@ export default function DidCard({
   onDelete,
 }: DidCardProps) {
   return (
-    <Card className="border rounded-lg hover:bg-accent/50 transition-colors">
+    <Card
+      className={`border rounded-lg hover:bg-accent/50 transition-colors ${
+        did.is_default ? "border-primary/50 bg-primary/5" : ""
+      }`}
+    >
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           {did.avatar_uri?.trim() ? (
             <img
               src={did.avatar_uri}
               alt="Avatar preview"
-              className="w-8 h-8 rounded-lg object-cover border border-border"
+              className="w-8 h-8 rounded-lg object-cover border border-border flex-shrink-0"
               onError={(e) => {
                 // Hide image on error
                 e.currentTarget.style.display = "none";
               }}
             />
           ) : (
-            <User className="w-4 h-4" />
+            <User className="w-4 h-4 flex-shrink-0" />
           )}
-          <span className="truncate">{did.name || did.launcher_id}</span>
+          <span className="truncate flex-1">{did.name || did.launcher_id}</span>
+          {did.is_default && (
+            <Badge variant="default" className="flex-shrink-0">
+              <Star className="w-3 h-3 mr-1 fill-current" />
+              Default
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>

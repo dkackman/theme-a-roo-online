@@ -22,6 +22,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "./ui/sheet";
+import { Switch } from "./ui/switch";
 import { Textarea } from "./ui/textarea";
 
 type Did = Database["public"]["Tables"]["dids"]["Row"];
@@ -38,6 +39,7 @@ interface DidPropertiesProps {
       avatar_uri: string | null;
       notes: string | null;
       network: number;
+      is_default: boolean;
     }
   ) => Promise<void>;
 }
@@ -53,6 +55,7 @@ export default function DidProperties({
   const [editAvatarUri, setEditAvatarUri] = useState("");
   const [editNotes, setEditNotes] = useState("");
   const [editNetwork, setEditNetwork] = useState<number>(0);
+  const [editIsDefault, setEditIsDefault] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -64,12 +67,14 @@ export default function DidProperties({
       setEditAvatarUri(did.avatar_uri || "");
       setEditNotes(did.notes || "");
       setEditNetwork(did.network);
+      setEditIsDefault(did.is_default);
     } else {
       setEditName("");
       setEditLauncherId("");
       setEditAvatarUri("");
       setEditNotes("");
       setEditNetwork(0);
+      setEditIsDefault(false);
     }
   }, [did]);
 
@@ -86,6 +91,7 @@ export default function DidProperties({
         avatar_uri: editAvatarUri.trim() || null,
         notes: editNotes.trim() || null,
         network: editNetwork,
+        is_default: editIsDefault,
       });
       onClose();
     } catch (err) {
@@ -247,6 +253,19 @@ export default function DidProperties({
                       rows={3}
                     />
                   </FieldContent>
+                </Field>
+                <Field orientation="vertical">
+                  <div className="flex items-center justify-between">
+                    <FieldLabel htmlFor="is-default">Set as Default</FieldLabel>
+                    <FieldContent>
+                      <Switch
+                        id="is-default"
+                        checked={editIsDefault}
+                        onCheckedChange={setEditIsDefault}
+                        className="ml-2"
+                      />
+                    </FieldContent>
+                  </div>
                 </Field>
               </FieldGroup>
             </CardContent>

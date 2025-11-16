@@ -106,6 +106,7 @@ export default function ProfileDIDs() {
       avatar_uri: string | null;
       notes: string | null;
       network: number;
+      is_default: boolean;
     }
   ) => {
     try {

@@ -121,12 +121,20 @@ export const themesApi = {
         themeToInsert.website = website && website.length > 0 ? website : null;
       }
       if (needsDid) {
-        const firstDid = Array.isArray(dids) ? dids[0] : null;
-        themeToInsert.did = firstDid?.launcher_id ?? null;
+        // Prefer default DID, fall back to first DID
+        const defaultDid =
+          Array.isArray(dids) && dids.length > 0
+            ? dids.find((d) => d.is_default) || dids[0]
+            : null;
+        themeToInsert.did = defaultDid?.launcher_id ?? null;
       }
       if (needsAddress) {
-        const firstAddress = Array.isArray(addresses) ? addresses[0] : null;
-        themeToInsert.royalty_address = firstAddress?.address ?? null;
+        // Prefer default address, fall back to first address
+        const defaultAddress =
+          Array.isArray(addresses) && addresses.length > 0
+            ? addresses.find((a) => a.is_default) || addresses[0]
+            : null;
+        themeToInsert.royalty_address = defaultAddress?.address ?? null;
       }
     }
 

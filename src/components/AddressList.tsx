@@ -22,6 +22,7 @@ interface AddressListProps {
       name: string | null;
       notes: string | null;
       network: number;
+      is_default: boolean;
     }
   ) => Promise<void>;
 }
@@ -51,6 +52,7 @@ export default function AddressList({
       name: string | null;
       notes: string | null;
       network: number;
+      is_default: boolean;
     }
   ) => {
     if (!onUpdate) {

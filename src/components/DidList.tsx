@@ -23,6 +23,7 @@ interface DidListProps {
       avatar_uri: string | null;
       notes: string | null;
       network: number;
+      is_default: boolean;
     }
   ) => Promise<void>;
 }
@@ -53,6 +54,7 @@ export default function DidList({
       avatar_uri: string | null;
       notes: string | null;
       network: number;
+      is_default: boolean;
     }
   ) => {
     if (!onUpdate) {

@@ -20,6 +20,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "./ui/sheet";
+import { Switch } from "./ui/switch";
 import { Textarea } from "./ui/textarea";
 
 type Address = Database["public"]["Tables"]["addresses"]["Row"];
@@ -35,6 +36,7 @@ interface AddressPropertiesProps {
       name: string | null;
       notes: string | null;
       network: number;
+      is_default: boolean;
     }
   ) => Promise<void>;
 }
@@ -49,6 +51,7 @@ export default function AddressProperties({
   const [editName, setEditName] = useState("");
   const [editNotes, setEditNotes] = useState("");
   const [editNetwork, setEditNetwork] = useState<number>(0);
+  const [editIsDefault, setEditIsDefault] = useState<boolean>(false);
   const [isSaving, setIsSaving] = useState(false);
 
   // Initialize form when address changes
@@ -58,11 +61,13 @@ export default function AddressProperties({
       setEditName(address.name || "");
       setEditNotes(address.notes || "");
       setEditNetwork(address.network);
+      setEditIsDefault(address.is_default);
     } else {
       setEditAddress("");
       setEditName("");
       setEditNotes("");
       setEditNetwork(0);
+      setEditIsDefault(false);
     }
   }, [address]);
 
@@ -78,6 +83,7 @@ export default function AddressProperties({
         name: editName.trim() || null,
         notes: editNotes.trim() || null,
         network: editNetwork,
+        is_default: editIsDefault,
       });
       onClose();
     } catch (err) {
@@ -172,6 +178,19 @@ export default function AddressProperties({
                       rows={3}
                     />
                   </FieldContent>
+                </Field>
+                <Field orientation="vertical">
+                  <div className="flex items-center justify-between">
+                    <FieldLabel htmlFor="is-default">Set as Default</FieldLabel>
+                    <FieldContent>
+                      <Switch
+                        id="is-default"
+                        checked={editIsDefault}
+                        onCheckedChange={setEditIsDefault}
+                        className="ml-2"
+                      />
+                    </FieldContent>
+                  </div>
                 </Field>
               </FieldGroup>
             </CardContent>

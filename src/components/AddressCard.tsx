@@ -1,4 +1,4 @@
-import { Copy, Pencil, Wallet } from "lucide-react";
+import { Copy, Pencil, Star, Wallet } from "lucide-react";
 import type { Database } from "../lib/database.types";
 import { Badge } from "./ui/badge";
 import { Button } from "./ui/button";
@@ -42,11 +42,21 @@ export default function AddressCard({
   onDelete,
 }: AddressCardProps) {
   return (
-    <Card className="border rounded-lg hover:bg-accent/50 transition-colors">
+    <Card
+      className={`border rounded-lg hover:bg-accent/50 transition-colors ${
+        address.is_default ? "border-primary/50 bg-primary/5" : ""
+      }`}
+    >
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 truncate">
-          <Wallet className="w-4 h-4" />
-          <span className="truncate">{name || address.address}</span>
+        <CardTitle className="flex items-center gap-2">
+          <Wallet className="w-4 h-4 flex-shrink-0" />
+          <span className="truncate flex-1">{name || address.address}</span>
+          {address.is_default && (
+            <Badge variant="default" className="flex-shrink-0">
+              <Star className="w-3 h-3 mr-1 fill-current" />
+              Default
+            </Badge>
+          )}
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -79,9 +89,11 @@ export default function AddressCard({
           <Field orientation="vertical">
             <FieldLabel>Network</FieldLabel>
             <FieldContent>
-              <Badge variant={getNetworkBadgeVariant(address.network)}>
-                {getNetworkLabel(address.network)}
-              </Badge>
+              <div className="flex items-center gap-2">
+                <Badge variant={getNetworkBadgeVariant(address.network)}>
+                  {getNetworkLabel(address.network)}
+                </Badge>
+              </div>
             </FieldContent>
           </Field>
 

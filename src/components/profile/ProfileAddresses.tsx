@@ -102,8 +102,10 @@ export default function ProfileAddresses() {
     id: string,
     updates: {
       address: string;
+      name: string | null;
       notes: string | null;
       network: number;
+      is_default: boolean;
     }
   ) => {
     try {
