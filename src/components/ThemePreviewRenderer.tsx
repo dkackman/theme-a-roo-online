@@ -124,6 +124,7 @@ export function ThemePreviewRenderer({
         filter: "none",
         backdropFilter: "none",
         backgroundColor: backgroundColor,
+        all: "initial",
       }}
     >
       <iframe

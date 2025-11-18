@@ -324,17 +324,6 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
                   </SelectContent>
                 </Select>
               </div>
-
-              <div className="space-y-4">
-                <Label className="text-base font-semibold block">Buttons</Label>
-                <div className="flex flex-col sm:flex-row gap-2 flex-wrap">
-                  <Button>Primary</Button>
-                  <Button variant="outline">Outline</Button>
-                  <Button variant="destructive">Destructive</Button>
-                  <Button variant="ghost">Ghost</Button>
-                  <Button variant="link">Link</Button>
-                </div>
-              </div>
             </div>
           </div>
         </CardContent>
