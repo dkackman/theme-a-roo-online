@@ -124,11 +124,9 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
   return (
     <div className="max-w-6xl mx-auto space-y-8 p-6">
       {/* Header */}
-      <div className="text-center space-y-4">
-        <h1 className="text-4xl font-bold">
-          {theme?.displayName ?? "Theme"} Preview
-        </h1>
-      </div>
+      <h1 className="text-4xl font-bold text-center space-y-4">
+        {theme?.displayName ?? "Theme"} Preview
+      </h1>
 
       {/* Current Theme Info */}
       <Card>
@@ -164,23 +162,25 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
             Various test components to preview the theme
           </CardDescription>
           {/* Buttons */}
-          <div className="space-y-2">
-            <Label>Buttons</Label>
-            <div className="flex flex-wrap gap-2">
-              <Button variant="default">Default</Button>
-              <Button variant="secondary">Secondary</Button>
-              <Button variant="destructive">Destructive</Button>
-              <Button variant="outline">Outline</Button>
-              <Button variant="ghost">Ghost</Button>
-              <Button variant="link">Link</Button>
-            </div>
+          <Label htmlFor="buttons" className="font-medium">
+            Buttons
+          </Label>
+          <div id="buttons" className="flex flex-wrap gap-2">
+            <Button variant="default">Default</Button>
+            <Button variant="secondary">Secondary</Button>
+            <Button variant="destructive">Destructive</Button>
+            <Button variant="outline">Outline</Button>
+            <Button variant="ghost">Ghost</Button>
+            <Button variant="link">Link</Button>
           </div>
 
           {/* Cards */}
           <div className="space-y-2">
-            <Label>Cards</Label>
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-              <Card className="space-y-2">
+            <Label htmlFor="cards" className="font-medium">
+              Cards
+            </Label>
+            <div id="cards" className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <Card>
                 <CardHeader>
                   <CardTitle>Card 1</CardTitle>
                 </CardHeader>
@@ -205,8 +205,13 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
 
           {/* Colors */}
           <div className="space-y-2">
-            <Label className="font-medium">Color Palette</Label>
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <Label htmlFor="color-palette" className="font-medium">
+              Color Palette
+            </Label>
+            <div
+              id="color-palette"
+              className="grid grid-cols-2 gap-2 sm:grid-cols-4"
+            >
               <div className="rounded-sm bg-primary p-3 text-primary-foreground">
                 Primary
               </div>
@@ -223,20 +228,18 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
           </div>
 
           <div>
-            <Label>Border Radius</Label>
-            <div className="space-y-4">
-              <div className="mt-2 flex gap-2">
-                <div className="w-8 h-8 bg-primary rounded-none" />
-                <div className="w-8 h-8 bg-primary rounded-sm" />
-                <div className="w-8 h-8 bg-primary rounded-md" />
-                <div className="w-8 h-8 bg-primary rounded-lg" />
-                <div className="w-8 h-8 bg-primary rounded-xl" />
-              </div>
+            <Label htmlFor="border-radius-preview">Border Radius</Label>
+            <div id="border-radius-preview" className="mt-2 flex gap-2">
+              <div className="w-8 h-8 bg-primary rounded-none" />
+              <div className="w-8 h-8 bg-primary rounded-sm" />
+              <div className="w-8 h-8 bg-primary rounded-md" />
+              <div className="w-8 h-8 bg-primary rounded-lg" />
+              <div className="w-8 h-8 bg-primary rounded-xl" />
             </div>
           </div>
 
-          <div>
-            <Label className="text-base font-semibold mb-3 block">
+          <div className="space-y-4">
+            <Label className="text-base font-semibold">
               Component Examples
             </Label>
             <DropdownMenu>
@@ -275,42 +278,34 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
-            <div className="space-y-4">
-              <div className="mt-4">
-                <Input placeholder="Input field" />
-              </div>
+            <Input placeholder="Input field" />
 
-              <div className="flex items-center gap-2 my-2">
-                <Label htmlFor="toggleExample">Toggle Switch</Label>
-                <Switch id="toggleExample" />
-              </div>
-              <div>
-                <Label htmlFor="checkboxExample" className="mr-2">
-                  Checkbox
-                </Label>
-                <Checkbox id="checkboxExample" />
-              </div>
-              <div>
-                <Label htmlFor="selectExample" className="mr-2">
-                  Select
-                </Label>
-                <Select>
-                  <SelectTrigger id="selectExample">
-                    <SelectValue placeholder="Select a value" />
-                  </SelectTrigger>
-                  <SelectContent className="max-w-[var(--radix-select-trigger-width)]">
-                    <SelectItem key="none" value="none">
-                      None
-                    </SelectItem>
-                    <SelectItem key="one" value="one">
-                      One
-                    </SelectItem>
-                    <SelectItem key="two" value="two">
-                      Two
-                    </SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="toggleExample">Toggle Switch</Label>
+              <Switch id="toggleExample" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="checkboxExample">Checkbox</Label>
+              <Checkbox id="checkboxExample" />
+            </div>
+            <div className="flex items-center gap-2">
+              <Label htmlFor="selectExample">Select</Label>
+              <Select>
+                <SelectTrigger id="selectExample">
+                  <SelectValue placeholder="Select a value" />
+                </SelectTrigger>
+                <SelectContent className="max-w-[var(--radix-select-trigger-width)]">
+                  <SelectItem key="none" value="none">
+                    None
+                  </SelectItem>
+                  <SelectItem key="one" value="one">
+                    One
+                  </SelectItem>
+                  <SelectItem key="two" value="two">
+                    Two
+                  </SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
         </CardContent>
@@ -363,101 +358,99 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
             Preview of the current theme&apos;s fonts.
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4">
           {/* Fonts */}
-          <div className="space-y-4">
-            {theme?.fonts && (
-              <>
-                {theme.fonts.heading && (
-                  <div className="space-y-1">
-                    <Label className="text-sm text-muted-foreground">
-                      Heading Font
-                    </Label>
-                    <div
-                      className="text-2xl font-semibold"
-                      style={{ fontFamily: theme.fonts.heading }}
-                    >
-                      The quick brown fox jumps over the lazy dog
-                    </div>
-                    <p className="text-xs text-muted-foreground font-mono">
-                      {theme.fonts.heading}
-                    </p>
+          {theme?.fonts && (
+            <>
+              {theme.fonts.heading && (
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Heading Font
+                  </Label>
+                  <div
+                    className="text-2xl font-semibold"
+                    style={{ fontFamily: theme.fonts.heading }}
+                  >
+                    The quick brown fox jumps over the lazy dog
                   </div>
-                )}
-                {theme.fonts.body && (
-                  <div className="space-y-1">
-                    <Label className="text-sm text-muted-foreground">
-                      Body Font
-                    </Label>
-                    <div
-                      className="text-base"
-                      style={{ fontFamily: theme.fonts.body }}
-                    >
-                      The quick brown fox jumps over the lazy dog
-                    </div>
-                    <p className="text-xs text-muted-foreground font-mono">
-                      {theme.fonts.body}
-                    </p>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {theme.fonts.heading}
+                  </p>
+                </div>
+              )}
+              {theme.fonts.body && (
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Body Font
+                  </Label>
+                  <div
+                    className="text-base"
+                    style={{ fontFamily: theme.fonts.body }}
+                  >
+                    The quick brown fox jumps over the lazy dog
                   </div>
-                )}
-                {theme.fonts.sans && (
-                  <div className="space-y-1">
-                    <Label className="text-sm text-muted-foreground">
-                      Sans Font
-                    </Label>
-                    <div
-                      className="text-base"
-                      style={{ fontFamily: theme.fonts.sans }}
-                    >
-                      The quick brown fox jumps over the lazy dog
-                    </div>
-                    <p className="text-xs text-muted-foreground font-mono">
-                      {theme.fonts.sans}
-                    </p>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {theme.fonts.body}
+                  </p>
+                </div>
+              )}
+              {theme.fonts.sans && (
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Sans Font
+                  </Label>
+                  <div
+                    className="text-base"
+                    style={{ fontFamily: theme.fonts.sans }}
+                  >
+                    The quick brown fox jumps over the lazy dog
                   </div>
-                )}
-                {theme.fonts.serif && (
-                  <div className="space-y-1">
-                    <Label className="text-sm text-muted-foreground">
-                      Serif Font
-                    </Label>
-                    <div
-                      className="text-base"
-                      style={{ fontFamily: theme.fonts.serif }}
-                    >
-                      The quick brown fox jumps over the lazy dog
-                    </div>
-                    <p className="text-xs text-muted-foreground font-mono">
-                      {theme.fonts.serif}
-                    </p>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {theme.fonts.sans}
+                  </p>
+                </div>
+              )}
+              {theme.fonts.serif && (
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Serif Font
+                  </Label>
+                  <div
+                    className="text-base"
+                    style={{ fontFamily: theme.fonts.serif }}
+                  >
+                    The quick brown fox jumps over the lazy dog
                   </div>
-                )}
-                {theme.fonts.mono && (
-                  <div className="space-y-1">
-                    <Label className="text-sm text-muted-foreground">
-                      Monospace Font
-                    </Label>
-                    <div
-                      className="text-base font-mono"
-                      style={{ fontFamily: theme.fonts.mono }}
-                    >
-                      The quick brown fox jumps over the lazy dog
-                    </div>
-                    <p className="text-xs text-muted-foreground font-mono">
-                      {theme.fonts.mono}
-                    </p>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {theme.fonts.serif}
+                  </p>
+                </div>
+              )}
+              {theme.fonts.mono && (
+                <div>
+                  <Label className="text-sm text-muted-foreground">
+                    Monospace Font
+                  </Label>
+                  <div
+                    className="text-base font-mono"
+                    style={{ fontFamily: theme.fonts.mono }}
+                  >
+                    The quick brown fox jumps over the lazy dog
                   </div>
-                )}
-              </>
-            )}
-            {(!theme?.fonts ||
-              Object.keys(theme.fonts).length === 0 ||
-              Object.values(theme.fonts).every((f) => !f)) && (
-              <p className="text-sm text-muted-foreground">
-                No custom fonts defined in this theme.
-              </p>
-            )}
-          </div>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {theme.fonts.mono}
+                  </p>
+                </div>
+              )}
+            </>
+          )}
+          {(!theme?.fonts ||
+            Object.keys(theme.fonts).length === 0 ||
+            Object.values(theme.fonts).every((f) => !f)) && (
+            <p className="text-sm text-muted-foreground">
+              No custom fonts defined in this theme.
+            </p>
+          )}
         </CardContent>
       </Card>
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
