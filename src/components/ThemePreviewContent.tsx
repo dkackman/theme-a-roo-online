@@ -131,7 +131,7 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
       </div>
 
       {/* Current Theme Info */}
-      <Card className="space-y-4">
+      <Card>
         <CardHeader>
           <CardTitle>Theme Details</CardTitle>
         </CardHeader>
@@ -165,7 +165,7 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
           </CardDescription>
           {/* Buttons */}
           <div className="space-y-2">
-            <h3 className="font-medium">Buttons</h3>
+            <Label>Buttons</Label>
             <div className="flex flex-wrap gap-2">
               <Button variant="default">Default</Button>
               <Button variant="secondary">Secondary</Button>
@@ -178,7 +178,7 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
 
           {/* Cards */}
           <div className="space-y-2">
-            <h3 className="font-medium">Cards</h3>
+            <Label>Cards</Label>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <Card className="space-y-2">
                 <CardHeader>
@@ -205,7 +205,7 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
 
           {/* Colors */}
           <div className="space-y-2">
-            <h3 className="font-medium">Color Palette</h3>
+            <Label className="font-medium">Color Palette</Label>
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
               <div className="rounded-sm bg-primary p-3 text-primary-foreground">
                 Primary
@@ -223,19 +223,14 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
           </div>
 
           <div>
-            <Label className="text-base font-semibold mb-3 block">
-              Border Radius
-            </Label>
+            <Label>Border Radius</Label>
             <div className="space-y-4">
-              <div>
-                Border Radius:{" "}
-                <div className="mt-2 flex gap-2">
-                  <div className="w-8 h-8 bg-primary rounded-none" />
-                  <div className="w-8 h-8 bg-primary rounded-sm" />
-                  <div className="w-8 h-8 bg-primary rounded-md" />
-                  <div className="w-8 h-8 bg-primary rounded-lg" />
-                  <div className="w-8 h-8 bg-primary rounded-xl" />
-                </div>
+              <div className="mt-2 flex gap-2">
+                <div className="w-8 h-8 bg-primary rounded-none" />
+                <div className="w-8 h-8 bg-primary rounded-sm" />
+                <div className="w-8 h-8 bg-primary rounded-md" />
+                <div className="w-8 h-8 bg-primary rounded-lg" />
+                <div className="w-8 h-8 bg-primary rounded-xl" />
               </div>
             </div>
           </div>
@@ -244,69 +239,61 @@ export function ThemePreviewContent({ theme }: ThemePreviewContentProps) {
             <Label className="text-base font-semibold mb-3 block">
               Component Examples
             </Label>
-            <div>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <span>Drop down menu</span>
-                    <MoreVertical className="h-5 w-5" aria-hidden="true" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuGroup>
-                    <DropdownMenuItem className="cursor-pointer">
-                      <SendIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                      <span>Transfer</span>
-                    </DropdownMenuItem>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="outline" onClick={(e) => e.stopPropagation()}>
+                  <span>Drop down menu</span>
+                  <MoreVertical className="h-5 w-5" aria-hidden="true" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <SendIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+                    <span>Transfer</span>
+                  </DropdownMenuItem>
 
-                    <DropdownMenuItem
-                      className="cursor-pointer"
-                      disabled={true}
-                    >
-                      <UserRoundPlus
-                        className="mr-2 h-4 w-4"
-                        aria-hidden="true"
-                      />
-                      <span>Disabled</span>
-                    </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer" disabled={true}>
+                    <UserRoundPlus
+                      className="mr-2 h-4 w-4"
+                      aria-hidden="true"
+                    />
+                    <span>Disabled</span>
+                  </DropdownMenuItem>
 
-                    <DropdownMenuItem className="cursor-pointer">
-                      <LinkIcon className="mr-2 h-4 w-4" aria-hidden="true" />
-                      <span>Item</span>
-                    </DropdownMenuItem>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <LinkIcon className="mr-2 h-4 w-4" aria-hidden="true" />
+                    <span>Item</span>
+                  </DropdownMenuItem>
 
-                    <DropdownMenuSeparator />
+                  <DropdownMenuSeparator />
 
-                    <DropdownMenuItem className="cursor-pointer">
-                      <Copy className="mr-2 h-4 w-4" aria-hidden="true" />
-                      <span>Copy</span>
-                    </DropdownMenuItem>
-                  </DropdownMenuGroup>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
+                  <DropdownMenuItem className="cursor-pointer">
+                    <Copy className="mr-2 h-4 w-4" aria-hidden="true" />
+                    <span>Copy</span>
+                  </DropdownMenuItem>
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
             <div className="space-y-4">
               <div className="mt-4">
                 <Input placeholder="Input field" />
               </div>
 
               <div className="flex items-center gap-2 my-2">
-                <label htmlFor="toggleExample">Toggle Switch</label>
+                <Label htmlFor="toggleExample">Toggle Switch</Label>
                 <Switch id="toggleExample" />
               </div>
               <div>
-                <label htmlFor="checkboxExample" className="mr-2">
+                <Label htmlFor="checkboxExample" className="mr-2">
                   Checkbox
-                </label>
+                </Label>
                 <Checkbox id="checkboxExample" />
               </div>
               <div>
-                <label htmlFor="selectExample" className="mr-2">
+                <Label htmlFor="selectExample" className="mr-2">
                   Select
-                </label>
+                </Label>
                 <Select>
                   <SelectTrigger id="selectExample">
                     <SelectValue placeholder="Select a value" />
