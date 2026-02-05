@@ -186,3 +186,11 @@ thumb
 sketch
 
 # End of https://www.toptal.com/developers/gitignore/api/nextjs,react,node
+
+# Docker secrets
+docker/.env
+docker/*.sql
+
+# Keep example files
+!docker/.env.example
+!.env.local.example
