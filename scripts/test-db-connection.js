@@ -5,9 +5,10 @@
 // & -> %26, @ -> %40, # -> %23, ^ -> %5E
 
 const { createClient } = require('@supabase/supabase-js');
+const path = require('path');
 
 // Read from environment variable or .env.local
-require('dotenv').config({ path: '../.env.local' });
+require('dotenv').config({ path: path.join(__dirname, '../.env.local') });
 
 const DB_URL = process.env.DATABASE_URL;
 
