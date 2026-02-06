@@ -11,17 +11,20 @@ All Supabase services are running on Docker server 192.168.1.162, connected to P
 ## Quick Reference
 
 ### Access URLs
+
 - **Supabase API Gateway:** <http://192.168.1.162:8000>
 - **Supabase Studio (Web UI):** <http://192.168.1.162:3001>
 - **Portainer (Docker UI):** <https://192.168.1.162:9443>
 
 ### Current Configuration
+
 - **Docker Server:** 192.168.1.162
 - **PostgreSQL Server:** 192.168.1.75:5432
 - **Database:** devdb
 - **JWT Secret:** vgm7bGcL9uLr2urv360SJEVYHdTFXGhwQAHTr3VRSSE=
 
 ### All Services Running
+
 ✅ Kong (API Gateway) - Port 8000
 ✅ PostgREST (REST API) - Port 3000
 ✅ GoTrue (Auth) - Port 9999
@@ -33,6 +36,7 @@ All Supabase services are running on Docker server 192.168.1.162, connected to P
 ✅ Portainer - Ports 9000, 9443
 
 ### Manage Services
+
 ```bash
 # View all containers
 ssh root@192.168.1.162 'docker ps'
@@ -51,6 +55,7 @@ ssh root@192.168.1.162 'cd /home/don/supabase && docker compose up -d'
 ```
 
 ### ⚠️ Next Steps Required
+
 1. Generate proper API keys with current JWT_SECRET
 2. Recreate RLS policies (dropped during schema rebuild)
 3. Create test user in new auth schema
@@ -145,12 +150,14 @@ nano .env
 ```
 
 **Important values to set:**
+
 - `POSTGRES_PASSWORD`: Your actual postgres password
 - `JWT_SECRET`: Generate with `openssl rand -base64 32`
 - `API_EXTERNAL_URL`: `http://192.168.1.75:8000`
 - `SITE_URL`: `http://localhost:3000` (or your frontend URL)
 
 **For production**, generate proper API keys:
+
 ```bash
 # Generate JWT tokens with your JWT_SECRET
 # See: https://supabase.com/docs/guides/self-hosting/docker#generate-api-keys
@@ -267,17 +274,20 @@ docker-compose up -d --force-recreate
 If containers can't reach the PostgreSQL server, you may need to:
 
 1. **Update PostgreSQL's `pg_hba.conf`** to allow connections from Docker network:
+
    ```
    host    devdb    authenticator    172.0.0.0/8    md5
    host    devdb    supabase_*       172.0.0.0/8    md5
    ```
 
 2. **Update PostgreSQL's `postgresql.conf`**:
+
    ```
    listen_addresses = '*'
    ```
 
 3. **Restart PostgreSQL**:
+
    ```bash
    sudo systemctl restart postgresql
    ```
@@ -290,9 +300,10 @@ If containers can't reach the PostgreSQL server, you may need to:
 ### Port conflicts
 
 If ports are already in use, edit `docker-compose.yml` to use different ports:
+
 ```yaml
 ports:
-  - "8001:8000"  # Use 8001 instead of 8000
+  - "8001:8000" # Use 8001 instead of 8000
 ```
 
 ### Authentication issues
@@ -371,6 +382,7 @@ docker-compose down --rmi all
 ## Next Steps
 
 Once deployed:
+
 1. Test authentication with test user
 2. Test database operations (create theme, etc.)
 3. Set up edge functions (Phase 2)

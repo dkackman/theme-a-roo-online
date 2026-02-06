@@ -32,5 +32,14 @@
     "react-hooks/exhaustive-deps": "warn",
     "@typescript-eslint/no-explicit-any": "warn",
     "@typescript-eslint/explicit-module-boundary-types": "off"
-  }
+  },
+  "overrides": [
+    {
+      "files": ["**/scripts/**", "scripts/**"],
+      "rules": {
+        "no-console": "off",
+        "require-await": "off"
+      }
+    }
+  ]
 }

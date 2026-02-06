@@ -21,6 +21,7 @@ psql -U postgres -d devdb -f docker/setup-db-users.sql
 ```
 
 This creates:
+
 - `anon` - Anonymous access role
 - `authenticated` - Authenticated users role
 - `service_role` - Service account role
@@ -39,6 +40,7 @@ psql -U devuser -d devdb -f docs/sql/00_create_schema.sql
 ```
 
 This creates:
+
 - All public schema tables in correct order
 - Indexes and constraints
 - Required PostgreSQL extensions
@@ -54,6 +56,7 @@ docker compose up -d auth
 ```
 
 GoTrue creates the `auth` schema with tables:
+
 - `auth.users`
 - `auth.identities`
 - `auth.sessions`
@@ -61,6 +64,7 @@ GoTrue creates the `auth` schema with tables:
 - And other auth-related tables
 
 **Wait** for migrations to complete (check logs):
+
 ```bash
 docker logs supabase-auth --tail 50
 ```
@@ -108,6 +112,7 @@ EOF
 ```
 
 This creates:
+
 - `get_user_role()` helper function
 - RLS policies for all tables
 - User profile sync trigger
@@ -160,6 +165,7 @@ node scripts/create-test-user.js
 ```
 
 Or via Auth API:
+
 ```bash
 curl -X POST "http://YOUR_SUPABASE_URL/auth/v1/signup" \
   -H "apikey: YOUR_ANON_KEY" \
@@ -203,6 +209,7 @@ node scripts/setup-database.js
 ```
 
 This script will:
+
 1. Check prerequisites
 2. Run all SQL files in order
 3. Create users and schemas
@@ -234,34 +241,39 @@ psql -U postgres -d devdb -c "DROP SCHEMA IF EXISTS auth CASCADE; CREATE SCHEMA 
 ## Troubleshooting
 
 ### "permission denied for schema auth"
+
 - Run step 4 to grant auth schema access to devuser
 
 ### "relation does not exist" when creating tables
+
 - Ensure auth.users exists (GoTrue must run first)
 - Check that auth schema is accessible
 
 ### "new row violates row-level security policy"
+
 - Temporarily disable RLS for data operations
 - Ensure user has proper role in JWT token
 
 ### Trigger creation fails
+
 - Triggers on auth.users need supabase_auth_admin privileges
 - Cannot be created by devuser
 
 ## Files Reference
 
-| File | Purpose | Run As |
-|------|---------|--------|
-| `docker/setup-db-users.sql` | Create all database users | postgres |
-| `docs/sql/00_create_schema.sql` | Create tables and indexes | devuser |
-| `docs/sql/01_setup_rls.sql` | RLS policies and functions | devuser |
-| `docs/sql/ROLE_SETUP.sql` | Original RLS reference | devuser |
-| `scripts/create-test-user.js` | Create test user | node |
-| `scripts/setup-database.js` | Automated setup | node |
+| File                            | Purpose                    | Run As   |
+| ------------------------------- | -------------------------- | -------- |
+| `docker/setup-db-users.sql`     | Create all database users  | postgres |
+| `docs/sql/00_create_schema.sql` | Create tables and indexes  | devuser  |
+| `docs/sql/01_setup_rls.sql`     | RLS policies and functions | devuser  |
+| `docs/sql/ROLE_SETUP.sql`       | Original RLS reference     | devuser  |
+| `scripts/create-test-user.js`   | Create test user           | node     |
+| `scripts/setup-database.js`     | Automated setup            | node     |
 
 ## Next Steps
 
 After setup is complete:
+
 1. Update `.env.local` with connection details
 2. Start the Next.js frontend: `npm run dev`
 3. Test authentication flow

@@ -12,13 +12,15 @@
 **Problem:** Scripts contained hardcoded database credentials that would be committed to version control.
 
 **Files Fixed:**
+
 - ✅ `scripts/test-db-connection.js` - Now uses `DATABASE_URL` from environment
 - ✅ `scripts/create-test-user.js` - Now uses `DATABASE_URL` from environment
 - ✅ `scripts/apply-migration.js` - Now uses `DATABASE_URL` from environment
 
 **Solution:** All scripts now use `dotenv` to read from `.env.local`:
+
 ```javascript
-require('dotenv').config({ path: '../.env.local' });
+require("dotenv").config({ path: "../.env.local" });
 const DB_URL = process.env.DATABASE_URL;
 ```
 
@@ -27,6 +29,7 @@ const DB_URL = process.env.DATABASE_URL;
 **Problem:** Docker secrets were not properly excluded from version control.
 
 **Fixed:**
+
 ```gitignore
 # Docker secrets
 docker/.env
@@ -38,12 +41,14 @@ docker/*.sql
 ```
 
 **What's Protected:**
+
 - ✅ `.env` files (already covered)
 - ✅ `.env.local` files (already covered)
 - ✅ `docker/.env` (now explicitly excluded)
 - ✅ SQL files in docker/ directory (deployment scripts with potential secrets)
 
 **What's Committed:**
+
 - ✅ `docker/.env.example` - Template without real secrets
 - ✅ `.env.local.example` - Template without real secrets
 
@@ -54,20 +59,24 @@ docker/*.sql
 ### Sensitive Data Locations
 
 #### Protected (Not in Git)
+
 - ✅ `.env.local` - Frontend database connection
 - ✅ `docker/.env` - Docker stack secrets
 - ✅ `docker/*.sql` - SQL scripts with potential credentials
 
 #### Committed (Templates Only)
+
 - ✅ `docker/.env.example` - Template with placeholder values
 - ✅ `.env.local.example` - Template with placeholder values
 
 #### Documentation Files (Contains Deployment Info)
+
 - ⚠️ `docker/README.md` - Contains JWT_SECRET in quick reference section
 - ⚠️ `docker/DEPLOYMENT_LOG.md` - Contains deployment history with configuration
 - ⚠️ `docker/DOCKER_HOST_CHANGES.md` - Contains host configuration details
 
 **Note:** Documentation files contain real values used during deployment. These are acceptable because:
+
 1. They document the actual deployed configuration
 2. They're needed for operational reference
 3. The deployment is on private infrastructure (192.168.1.x)
@@ -78,6 +87,7 @@ docker/*.sql
 ## Environment Variables Required
 
 ### For Scripts
+
 ```bash
 # .env.local (frontend and scripts)
 DATABASE_URL=postgresql://user:password@host:port/database
@@ -88,6 +98,7 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
 ```
 
 ### For Docker Stack
+
 ```bash
 # docker/.env
 POSTGRES_PASSWORD=your-password
@@ -104,20 +115,23 @@ SITE_URL=http://localhost:3000
 ## Security Checklist
 
 ### ✅ Completed
+
 - [x] Removed hardcoded connection strings from scripts
 - [x] Updated .gitignore to exclude docker/.env
-- [x] Updated .gitignore to exclude docker/*.sql files
+- [x] Updated .gitignore to exclude docker/\*.sql files
 - [x] Verified .env and .env.local are excluded
 - [x] Scripts now use environment variables
 - [x] Template files (.env.example) are kept in repo
 
 ### 🔄 Ongoing
+
 - [ ] Rotate JWT_SECRET if this repo becomes public
 - [ ] Rotate database passwords if this repo becomes public
 - [ ] Generate new API keys before production deployment
 - [ ] Consider moving deployment docs to private repo
 
 ### 📋 Future Considerations
+
 - [ ] Use Docker secrets for sensitive values
 - [ ] Implement secret rotation policy
 - [ ] Add pre-commit hooks to scan for secrets
@@ -139,12 +153,14 @@ SITE_URL=http://localhost:3000
 ## How to Add New Secrets
 
 ### For Scripts
+
 1. Add to `.env.local` (never commit this file)
 2. Add to `.env.local.example` with placeholder value
 3. Update SECURITY.md with new variable description
 4. Use `process.env.VARIABLE_NAME` in scripts
 
 ### For Docker Stack
+
 1. Add to `docker/.env` (never commit this file)
 2. Add to `docker/.env.example` with placeholder value
 3. Update docker-compose.yml to use: `${VARIABLE_NAME}`
@@ -155,6 +171,7 @@ SITE_URL=http://localhost:3000
 ## Verification Commands
 
 ### Check for Potential Secret Leaks
+
 ```bash
 # Search for connection strings
 grep -r "postgresql://.*:.*@" --exclude-dir=node_modules --exclude-dir=.git .
@@ -171,6 +188,7 @@ git add -A --dry-run
 ```
 
 ### Verify Gitignore
+
 ```bash
 # Test if files are ignored
 git check-ignore -v docker/.env
@@ -191,6 +209,7 @@ git check-ignore -v .env.local
    - API keys
 
 2. **Clean History:**
+
    ```bash
    # Use BFG Repo Cleaner or filter-branch
    # Or create new repo and fresh start
@@ -212,6 +231,7 @@ git check-ignore -v .env.local
 ## Contact
 
 **For Security Issues:**
+
 - Review this document
 - Check DEPLOYMENT_LOG.md
 - Update secrets immediately if compromised

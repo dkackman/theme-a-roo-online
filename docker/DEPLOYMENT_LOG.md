@@ -3,6 +3,7 @@
 ## Date: February 5, 2026
 
 ## Overview
+
 Successfully deployed Supabase local stack to Docker server at 192.168.1.162, connecting to PostgreSQL database at 192.168.1.75:5432.
 
 ---
@@ -10,6 +11,7 @@ Successfully deployed Supabase local stack to Docker server at 192.168.1.162, co
 ## Architecture
 
 ### Two-Server Setup
+
 ```
 ┌─────────────────────────────────────────────────────────────┐
 │  Development Machine (Mac)                                  │
@@ -53,17 +55,17 @@ Successfully deployed Supabase local stack to Docker server at 192.168.1.162, co
 
 All services running on Docker server (192.168.1.162):
 
-| Service | Image | Port | Purpose |
-|---------|-------|------|---------|
-| Kong | kong:2.8.1 | 8000, 8443 | API Gateway - main entry point |
-| PostgREST | postgrest/postgrest:v12.0.2 | 3000 | Auto-generated REST API |
-| GoTrue | supabase/gotrue:v2.143.0 | 9999 | Authentication service |
-| Storage | supabase/storage-api:v0.43.11 | 5000 | File storage service |
-| Realtime | supabase/realtime:v2.25.50 | 4000 | WebSocket subscriptions |
-| Meta | supabase/postgres-meta:v0.68.0 | 8080 | Database management API |
-| Studio | supabase/studio:latest | 3001 | Web UI for database |
-| imgproxy | darthsim/imgproxy:v3.8.0 | 5001 | Image transformation |
-| Portainer | portainer/portainer-ce:latest | 9000, 9443 | Docker management UI |
+| Service   | Image                          | Port       | Purpose                        |
+| --------- | ------------------------------ | ---------- | ------------------------------ |
+| Kong      | kong:2.8.1                     | 8000, 8443 | API Gateway - main entry point |
+| PostgREST | postgrest/postgrest:v12.0.2    | 3000       | Auto-generated REST API        |
+| GoTrue    | supabase/gotrue:v2.143.0       | 9999       | Authentication service         |
+| Storage   | supabase/storage-api:v0.43.11  | 5000       | File storage service           |
+| Realtime  | supabase/realtime:v2.25.50     | 4000       | WebSocket subscriptions        |
+| Meta      | supabase/postgres-meta:v0.68.0 | 8080       | Database management API        |
+| Studio    | supabase/studio:latest         | 3001       | Web UI for database            |
+| imgproxy  | darthsim/imgproxy:v3.8.0       | 5001       | Image transformation           |
+| Portainer | portainer/portainer-ce:latest  | 9000, 9443 | Docker management UI           |
 
 ---
 
@@ -72,12 +74,14 @@ All services running on Docker server (192.168.1.162):
 ### 1. AppArmor Permission Errors
 
 **Problem:**
+
 ```
 Error response from daemon: Could not check if docker-default AppArmor profile
 was loaded: open /sys/kernel/security/apparmor/profiles: permission denied
 ```
 
 **Root Cause:**
+
 - AppArmor service was disabled but kernel module still loaded
 - Docker daemon checking AppArmor profiles for container security
 - Containers created without AppArmor profile failed to start
@@ -97,6 +101,7 @@ services:
 Applied to all 8 Supabase services and Portainer.
 
 **Commands Used:**
+
 ```bash
 # Check AppArmor status
 lsmod | grep apparmor
@@ -112,6 +117,7 @@ cat /sys/module/apparmor/parameters/enabled  # Returns "Y" if enabled
 
 **Problem:**
 Services failing to connect to PostgreSQL with errors like:
+
 - Auth: `failed to connect to host=/tmp` (Unix socket instead of TCP)
 - Storage: `connect ECONNREFUSED ::1:5432` (connecting to localhost)
 
@@ -121,12 +127,14 @@ When used in PostgreSQL connection URIs, these characters broke URL parsing.
 
 **Resolution:**
 Created URL-encoded version of password in .env file:
+
 ```bash
 POSTGRES_PASSWORD=Xa&n@#iKE^VW3RfYx9@
 POSTGRES_PASSWORD_ENCODED=Xa%26n%40%23iKE%5EVW3RfYx9%40
 ```
 
 Updated docker-compose.yml to use encoded password in connection strings:
+
 ```yaml
 # For services using full PostgreSQL URIs
 PGRST_DB_URI: postgresql://authenticator:${POSTGRES_PASSWORD_ENCODED}@192.168.1.75:5432/devdb
@@ -138,6 +146,7 @@ DB_PASSWORD: ${POSTGRES_PASSWORD}
 ```
 
 **Encoding Rules:**
+
 - `&` → `%26`
 - `@` → `%40`
 - `#` → `%23`
@@ -148,6 +157,7 @@ DB_PASSWORD: ${POSTGRES_PASSWORD}
 ### 3. Database Permission Errors
 
 **Problem:**
+
 ```
 ERROR: permission denied for schema public
 ERROR: must be owner of table objects
@@ -155,12 +165,14 @@ ERROR: must be owner of table objects
 
 **Root Cause:**
 Supabase service users (supabase_auth_admin, supabase_storage_admin) lacked permissions to:
+
 - Create tables in schemas
 - Modify existing tables
 - Run migrations
 
 **Resolution:**
 Created and executed `fix-permissions.sql`:
+
 ```sql
 -- Grant schema permissions
 GRANT ALL ON SCHEMA public TO supabase_auth_admin;
@@ -188,6 +200,7 @@ ALTER DEFAULT PRIVILEGES IN SCHEMA storage GRANT ALL ON TABLES TO supabase_stora
 ```
 
 **Execution:**
+
 ```bash
 scp fix-permissions.sql root@192.168.1.75:/tmp/
 ssh root@192.168.1.75 'su - postgres -c "psql -d devdb -f /tmp/fix-permissions.sql"'
@@ -198,6 +211,7 @@ ssh root@192.168.1.75 'su - postgres -c "psql -d devdb -f /tmp/fix-permissions.s
 ### 4. Schema Ownership and Migration Conflicts
 
 **Problem:**
+
 - GoTrue: `column "instance_id" does not exist` - Schema mismatch
 - Storage: `column "public" already exists` - Migration conflict
 
@@ -207,7 +221,9 @@ Initial migration created simplified auth and storage schemas that didn't match 
 **Resolution:**
 
 #### Auth Schema
+
 Dropped and let GoTrue create its own schema:
+
 ```bash
 ssh root@192.168.1.75 'su - postgres -c "psql -d devdb -c \"DROP SCHEMA IF EXISTS auth CASCADE; CREATE SCHEMA auth; ALTER SCHEMA auth OWNER TO supabase_auth_admin;\""'
 ```
@@ -215,7 +231,9 @@ ssh root@192.168.1.75 'su - postgres -c "psql -d devdb -c \"DROP SCHEMA IF EXIST
 **Impact:** Lost test user and RLS policies (need to recreate)
 
 #### Storage Schema
+
 Created minimal base tables that Storage service migrations can build upon:
+
 ```sql
 -- Minimal buckets table
 CREATE TABLE storage.buckets (
@@ -251,6 +269,7 @@ ALTER TABLE storage.objects OWNER TO supabase_storage_admin;
 ### 5. Realtime Service Binary Path Error
 
 **Problem:**
+
 ```
 bash: line 1: ./prod/rel/realtime/bin/realtime: No such file or directory
 ```
@@ -260,6 +279,7 @@ Custom command in docker-compose.yml specified incorrect binary path for Realtim
 
 **Resolution:**
 Removed custom command and used image's default entrypoint:
+
 ```yaml
 # REMOVED:
 command: >
@@ -278,6 +298,7 @@ Portainer was configured to use port 8000, conflicting with Kong API Gateway.
 
 **Resolution:**
 Recreated Portainer with standard ports and AppArmor fix:
+
 ```bash
 docker rm portainer
 docker run -d \
@@ -298,6 +319,7 @@ docker run -d \
 ### System-Level Changes on 192.168.1.162
 
 #### 1. AppArmor Status
+
 ```bash
 # AppArmor service disabled (but kernel module still active)
 systemctl disable apparmor
@@ -311,14 +333,18 @@ cat /sys/module/apparmor/parameters/enabled  # Shows: Y (still enabled at kernel
 **Note:** AppArmor kernel module remains active, requiring `security_opt` in container configs.
 
 #### 2. Docker Containers
+
 All containers recreated with AppArmor security option:
+
 - 8 Supabase services via docker-compose
 - Portainer via docker run
 
 #### 3. Network Configuration
+
 All services connected to Docker bridge network `supabase_supabase`
 
 #### 4. Port Mappings
+
 ```
 8000  → Kong API Gateway (HTTP)
 8443  → Kong API Gateway (HTTPS)
@@ -340,6 +366,7 @@ All services connected to Docker bridge network `supabase_supabase`
 ### Changes on 192.168.1.75
 
 #### 1. Database Users Created
+
 ```sql
 -- Authenticator (used by PostgREST)
 CREATE USER authenticator WITH NOINHERIT CREATEROLE;
@@ -360,6 +387,7 @@ GRANT supabase_admin TO supabase_storage_admin;
 ```
 
 #### 2. Schema Ownership
+
 ```sql
 -- Auth schema owned by GoTrue
 ALTER SCHEMA auth OWNER TO supabase_auth_admin;
@@ -372,11 +400,13 @@ ALTER SCHEMA _realtime OWNER TO supabase_admin;
 ```
 
 #### 3. Permissions Granted
+
 - Full permissions on schemas: auth, public, storage
 - All permissions on tables, sequences, functions
 - Default privileges for future objects
 
 #### 4. Schemas
+
 - `auth` - Managed by GoTrue (authentication)
 - `storage` - Managed by Storage service (file storage)
 - `public` - Application tables
@@ -389,12 +419,14 @@ ALTER SCHEMA _realtime OWNER TO supabase_admin;
 ### docker-compose.yml Key Changes
 
 1. **Added security_opt to all services:**
+
    ```yaml
    security_opt:
      - apparmor=unconfined
    ```
 
 2. **Updated database connection strings with URL-encoded passwords:**
+
    ```yaml
    PGRST_DB_URI: postgresql://authenticator:${POSTGRES_PASSWORD_ENCODED}@192.168.1.75:5432/devdb
    GOTRUE_DB_DATABASE_URL: postgresql://supabase_auth_admin:${POSTGRES_PASSWORD_ENCODED}@192.168.1.75:5432/devdb
@@ -436,15 +468,19 @@ ENABLE_EMAIL_AUTOCONFIRM=true
 ## SQL Scripts Created
 
 ### 1. setup-db-users.sql
+
 Creates all Supabase database users and roles with proper permissions.
 
 ### 2. fix-permissions.sql
+
 Grants permissions and transfers ownership after initial setup issues.
 
 ### 3. transfer-ownership.sql
+
 Transfers schema and table ownership to appropriate Supabase service users.
 
 ### 4. create-storage-tables.sql
+
 Creates minimal storage.buckets and storage.objects tables for Storage service.
 
 ---
@@ -452,12 +488,14 @@ Creates minimal storage.buckets and storage.objects tables for Storage service.
 ## Access URLs
 
 ### Docker Server (192.168.1.162)
+
 - **Supabase API Gateway:** http://192.168.1.162:8000
 - **Supabase Studio:** http://192.168.1.162:3001
 - **Portainer (HTTP):** http://192.168.1.162:9000
 - **Portainer (HTTPS):** https://192.168.1.162:9443
 
 ### API Endpoints
+
 - **REST API:** http://192.168.1.162:8000/rest/v1/
 - **Auth API:** http://192.168.1.162:8000/auth/v1/
 - **Storage API:** http://192.168.1.162:8000/storage/v1/
@@ -468,27 +506,32 @@ Creates minimal storage.buckets and storage.objects tables for Storage service.
 ## Verification Commands
 
 ### Check Container Status
+
 ```bash
 ssh root@192.168.1.162 'docker ps'
 ```
 
 ### Check Logs
+
 ```bash
 ssh root@192.168.1.162 'cd /home/don/supabase && docker compose logs -f [service-name]'
 ```
 
 ### Test API Gateway
+
 ```bash
 curl http://192.168.1.162:8000/
 # Expected: {"message":"no Route matched with those values"}
 ```
 
 ### Test REST API
+
 ```bash
 curl -H "apikey: YOUR_ANON_KEY" http://192.168.1.162:8000/rest/v1/
 ```
 
 ### Check Database Users
+
 ```bash
 ssh root@192.168.1.75 'su - postgres -c "psql -d devdb -c \"SELECT usename, usesuper, usecreatedb FROM pg_user WHERE usename LIKE '\''supabase%'\'' OR usename = '\''authenticator'\'';\""'
 ```
@@ -498,6 +541,7 @@ ssh root@192.168.1.75 'su - postgres -c "psql -d devdb -c \"SELECT usename, uses
 ## Remaining Tasks
 
 ### Critical
+
 1. **Generate proper API keys** with current JWT_SECRET
    - Current ANON_KEY and SERVICE_ROLE_KEY are demo keys
    - Don't match the JWT_SECRET in .env
@@ -511,7 +555,9 @@ ssh root@192.168.1.75 'su - postgres -c "psql -d devdb -c \"SELECT usename, uses
    - Need user for testing authentication
 
 ### Configuration
+
 4. **Update frontend .env.local**
+
    ```bash
    NEXT_PUBLIC_SUPABASE_URL=http://192.168.1.162:8000
    NEXT_PUBLIC_SUPABASE_ANON_KEY=<new-anon-key>
@@ -520,6 +566,7 @@ ssh root@192.168.1.75 'su - postgres -c "psql -d devdb -c \"SELECT usename, uses
 5. **Test Next.js application** with local Supabase
 
 ### Optional
+
 6. **Configure SMTP** for email functionality
 7. **Set up SSL/HTTPS** (nginx or Caddy reverse proxy)
 8. **Configure backups** (database + storage volumes)

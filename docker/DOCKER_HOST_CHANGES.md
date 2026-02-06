@@ -11,6 +11,7 @@
 ### 1. AppArmor Configuration
 
 #### Service Status
+
 ```bash
 # Disabled AppArmor service
 systemctl disable apparmor
@@ -22,6 +23,7 @@ systemctl status apparmor
 ```
 
 #### Kernel Module Status
+
 ```bash
 # Check kernel parameter
 cat /sys/module/apparmor/parameters/enabled
@@ -48,6 +50,7 @@ security_opt:
 ```
 
 **Applied to:**
+
 - supabase-rest
 - supabase-kong
 - supabase-auth
@@ -61,11 +64,13 @@ security_opt:
 ### Portainer Reconfiguration
 
 **Original Configuration:**
+
 - Port 8000 (HTTP) - conflicted with Kong
 - Port 9443 (HTTPS)
 - Missing AppArmor security option
 
 **New Configuration:**
+
 ```bash
 docker run -d \
   --name portainer \
@@ -79,6 +84,7 @@ docker run -d \
 ```
 
 **Changes:**
+
 - ✅ Port 8000 changed to 9000 (HTTP)
 - ✅ Added AppArmor security option
 - ✅ Container now starts successfully
@@ -90,12 +96,14 @@ docker run -d \
 ### Docker Networks
 
 **Supabase Network:**
+
 ```
 Network: supabase_supabase
 Driver: bridge
 ```
 
 **Connected Services:**
+
 - Kong
 - PostgREST
 - GoTrue
@@ -107,19 +115,19 @@ Driver: bridge
 
 ### Port Mappings
 
-| Port | Service | Purpose |
-|------|---------|---------|
-| 8000 | Kong | API Gateway (HTTP) |
-| 8443 | Kong | API Gateway (HTTPS) |
-| 3000 | PostgREST | REST API |
-| 9999 | GoTrue | Authentication |
-| 5000 | Storage | File Storage |
-| 4000 | Realtime | WebSocket Subscriptions |
-| 8080 | Meta | Database Management |
-| 3001 | Studio | Web UI |
-| 5001 | imgproxy | Image Transformation |
-| 9000 | Portainer | Docker UI (HTTP) |
-| 9443 | Portainer | Docker UI (HTTPS) |
+| Port | Service   | Purpose                 |
+| ---- | --------- | ----------------------- |
+| 8000 | Kong      | API Gateway (HTTP)      |
+| 8443 | Kong      | API Gateway (HTTPS)     |
+| 3000 | PostgREST | REST API                |
+| 9999 | GoTrue    | Authentication          |
+| 5000 | Storage   | File Storage            |
+| 4000 | Realtime  | WebSocket Subscriptions |
+| 8080 | Meta      | Database Management     |
+| 3001 | Studio    | Web UI                  |
+| 5001 | imgproxy  | Image Transformation    |
+| 9000 | Portainer | Docker UI (HTTP)        |
+| 9443 | Portainer | Docker UI (HTTPS)       |
 
 **Firewall/Network Access:**
 No firewall changes were required. All ports are accessible on the local network (192.168.1.x).
@@ -131,6 +139,7 @@ No firewall changes were required. All ports are accessible on the local network
 ### Docker Volumes
 
 **Created Volumes:**
+
 ```bash
 # Check volumes
 docker volume ls | grep supabase
@@ -161,6 +170,7 @@ portainer_data            # Portainer configuration
 **Location:** `/home/don/supabase/`
 
 **Contents:**
+
 ```
 /home/don/supabase/
 ├── docker-compose.yml
@@ -174,6 +184,7 @@ portainer_data            # Portainer configuration
 ```
 
 **Ownership:**
+
 - All files owned by root
 - Permissions: 644 (readable by all, writable by root)
 
@@ -187,6 +198,7 @@ portainer_data            # Portainer configuration
 **Compose File:** `/home/don/supabase/docker-compose.yml`
 
 **Management Commands:**
+
 ```bash
 # From Docker server
 cd /home/don/supabase
@@ -211,6 +223,7 @@ docker compose up -d --force-recreate [service-name]
 ```
 
 **From Remote (Mac):**
+
 ```bash
 # Start all
 ssh root@192.168.1.162 'cd /home/don/supabase && docker compose up -d'
@@ -229,6 +242,7 @@ ssh root@192.168.1.162 'cd /home/don/supabase && docker compose logs -f [service
 **File:** `/home/don/supabase/.env`
 
 **Key Variables:**
+
 - `POSTGRES_PASSWORD` - Plain text password
 - `POSTGRES_PASSWORD_ENCODED` - URL-encoded for connection strings
 - `JWT_SECRET` - JWT signing secret
@@ -245,6 +259,7 @@ ssh root@192.168.1.162 'cd /home/don/supabase && docker compose logs -f [service
 All containers configured with: `restart: unless-stopped`
 
 **Behavior:**
+
 - Containers automatically restart on failure
 - Containers automatically restart on system reboot
 - Containers do NOT restart if manually stopped
@@ -377,6 +392,7 @@ scp root@192.168.1.162:/home/don/supabase/*.yml \
 ### February 5, 2026
 
 **Initial Deployment:**
+
 - Deployed all 8 Supabase services
 - Configured two-server architecture
 - Fixed AppArmor permission issues
@@ -385,6 +401,7 @@ scp root@192.168.1.162:/home/don/supabase/*.yml \
 - Reconfigured Portainer
 
 **Issues Resolved:**
+
 - AppArmor blocking container startup
 - Special characters in passwords breaking connection strings
 - Database permission denied errors
@@ -397,10 +414,12 @@ scp root@192.168.1.162:/home/don/supabase/*.yml \
 ## Contact and Support
 
 **Primary Documentation:**
+
 - [DEPLOYMENT_LOG.md](./DEPLOYMENT_LOG.md) - Complete deployment details
 - [README.md](./README.md) - User guide and operations
 
 **Server Access:**
+
 - Docker Server: root@192.168.1.162
 - PostgreSQL Server: root@192.168.1.75
 

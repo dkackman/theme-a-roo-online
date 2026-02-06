@@ -10,6 +10,7 @@ Theme-a-roo Online is a Next.js application for creating, editing, and managing 
 ## Current Architecture (Production)
 
 ### Frontend
+
 - **Framework**: Next.js 16.0.7 (Pages Router)
 - **React**: 19.2.0
 - **UI**: Radix UI + Tailwind CSS 4.x
@@ -22,6 +23,7 @@ Theme-a-roo Online is a Next.js application for creating, editing, and managing 
   - `html2canvas-pro` - Preview generation
 
 ### Backend
+
 - **Database**: Supabase Postgres
   - Project ID: `vpmlokamxveoskhprxep`
   - URL: `vpmlokamxveoskhprxep.supabase.co`
@@ -32,6 +34,7 @@ Theme-a-roo Online is a Next.js application for creating, editing, and managing 
   - JWT-based authentication
 
 ### External Services
+
 - **Pinata**: IPFS storage for NFT images and metadata
 - **Vercel Analytics**: Performance monitoring
 - **Vercel Speed Insights**: Performance tracking
@@ -43,25 +46,30 @@ See [docs/sql/01_intial.sql](docs/sql/01_intial.sql) for full schema.
 ### Core Tables
 
 #### `user_profiles`
+
 - Links to Supabase `auth.users`
 - Fields: `id`, `email`, `role`, `created_at`, `last_sign_in_at`
 - Roles managed via [docs/guides/ROLES_GUIDE.md](docs/guides/ROLES_GUIDE.md)
 
 #### `themes`
+
 - User-created themes
 - Fields: `id`, `user_id`, `name`, `display_name`, `theme` (JSONB), `is_draft`, `notes`
 - Unique constraint: `(user_id, name)`
 
 #### `theme_files`
+
 - Binary file storage for themes
 - Fields: `id`, `theme_id`, `file_use_type` (enum), `mime_type`, `file` (bytea)
 - Unique constraint: `(theme_id, file_use_type)`
 
 #### `addresses`
+
 - Chia blockchain addresses per user
 - Fields: `id`, `user_id`, `address`, `network`, `metadata` (JSONB), `notes`
 
 #### `dids`
+
 - Decentralized Identifiers per user
 - Fields: `id`, `user_id`, `launcher_id`, `name`, `network`, `metadata` (JSONB), `notes`
 
@@ -103,10 +111,13 @@ PORT=3000
 ## Migration Path: Production → Local Development
 
 ### Phase 1: Local Database Setup
+
 **Goal**: Run Postgres locally instead of Supabase cloud
 
 **Tasks**:
+
 1. Install and initialize Supabase CLI
+
    ```bash
    npm install -g supabase
    supabase init
@@ -114,6 +125,7 @@ PORT=3000
    ```
 
 2. Export production schema
+
    ```bash
    # Already documented in README.md
    npx supabase gen types typescript --project-id vpmlokamxveoskhprxep > src/lib/database.types.ts
@@ -132,6 +144,7 @@ PORT=3000
    - Create sample users, themes, addresses, DIDs
 
 **Files to Modify**:
+
 - [src/lib/supabase-client.ts](src/lib/supabase-client.ts) - Connection config
 - [next.config.js](next.config.js) - Image domain allowlist
 - `.env.local` (create) - Local environment config
@@ -139,18 +152,22 @@ PORT=3000
 ---
 
 ### Phase 2: Local Edge Functions
+
 **Goal**: Run Deno edge functions locally
 
 **Tasks**:
+
 1. Install Deno locally: https://deno.land/manual/getting_started/installation
 
 2. Convert [edge-src/](edge-src/) to Supabase Edge Functions
+
    ```bash
    supabase functions new theme-files
    # Move edge-src code to supabase/functions/theme-files/
    ```
 
 3. Test edge functions locally
+
    ```bash
    supabase functions serve
    ```
@@ -160,6 +177,7 @@ PORT=3000
    - Check [src/lib/data-access/themes.ts](src/lib/data-access/themes.ts)
 
 **Files to Review**:
+
 - [edge-src/index.ts](edge-src/index.ts) - Main edge function entry
 - [edge-src/upload.ts](edge-src/upload.ts) - File upload logic
 - [edge-src/delete.ts](edge-src/delete.ts) - File deletion
@@ -168,9 +186,11 @@ PORT=3000
 ---
 
 ### Phase 3: Local Storage
+
 **Goal**: Use local Supabase storage instead of cloud
 
 **Tasks**:
+
 1. Configure Supabase storage buckets locally
    - `supabase storage` commands
    - Match production bucket configuration
@@ -184,14 +204,17 @@ PORT=3000
 ---
 
 ### Phase 4: IPFS/Pinata (Optional)
+
 **Goal**: Decide on local IPFS strategy
 
 **Options**:
+
 1. **Keep Pinata**: Continue using production Pinata for IPFS uploads (simplest)
 2. **Local IPFS Node**: Run local IPFS node (more complex, fully local)
 3. **Mock IPFS**: Mock uploads for development (no real IPFS)
 
 **Files Using IPFS**:
+
 - [src/lib/ipfs.ts](src/lib/ipfs.ts) - Pinata SDK wrapper
 - [src/components/IpfsImageUpload.tsx](src/components/IpfsImageUpload.tsx)
 - [src/pages/prepare-nft.tsx](src/pages/prepare-nft.tsx)
@@ -199,10 +222,13 @@ PORT=3000
 ---
 
 ### Phase 5: Local Development Workflow
+
 **Goal**: Streamlined local development experience
 
 **Tasks**:
+
 1. Update [package.json](package.json) scripts
+
    ```json
    "dev:local": "supabase start && next dev",
    "db:reset": "supabase db reset",
@@ -283,34 +309,40 @@ theme-a-roo-online/
 ## Key Pages & Features
 
 ### [src/pages/index.tsx](src/pages/index.tsx)
+
 - Theme gallery/dashboard
 - List user's themes
 - Quick actions (create, edit, delete)
 
 ### [src/pages/theme-editor.tsx](src/pages/theme-editor.tsx)
+
 - Monaco-based theme editor
 - Live preview with [src/components/ThemePreview.tsx](src/components/ThemePreview.tsx)
 - File upload via [src/components/ThemeFiles.tsx](src/components/ThemeFiles.tsx)
 - Color picker integration
 
 ### [src/pages/prepare-nft.tsx](src/pages/prepare-nft.tsx)
+
 - Multi-step NFT metadata wizard
 - IPFS upload integration
 - Theme selection and image generation
 - JSON metadata output
 
 ### [src/pages/profile.tsx](src/pages/profile.tsx)
+
 - User profile management
 - Blockchain addresses ([src/components/profile/ProfileAddresses.tsx](src/components/profile/ProfileAddresses.tsx))
 - DIDs ([src/components/profile/ProfileDIDs.tsx](src/components/profile/ProfileDIDs.tsx))
 
 ### [src/pages/admin.tsx](src/pages/admin.tsx)
+
 - Admin-only page (role-based access)
 - Uses [src/components/RoleProtected.tsx](src/components/RoleProtected.tsx) for authorization
 
 ## Authentication & Authorization
 
 ### Authentication Flow
+
 1. User signs in via [src/pages/auth.tsx](src/pages/auth.tsx)
 2. Supabase Auth creates JWT token
 3. Token stored in localStorage via [src/Contexts/AuthContext.tsx](src/Contexts/AuthContext.tsx)
@@ -318,6 +350,7 @@ theme-a-roo-online/
 5. Edge functions validate JWT via `supabase.auth.getUser(jwt)`
 
 ### Role-Based Access Control (RBAC)
+
 - Roles stored in `user_profiles.role` column
 - Setup guide: [docs/guides/ROLES_GUIDE.md](docs/guides/ROLES_GUIDE.md)
 - SQL: [docs/sql/ROLE_SETUP.sql](docs/sql/ROLE_SETUP.sql)
@@ -338,6 +371,7 @@ const address = await createAddress(userId, addressData);
 ```
 
 **Benefits**:
+
 - Centralized database logic
 - Type-safe queries with [src/lib/database.types.ts](src/lib/database.types.ts)
 - Easy to mock for testing
@@ -346,12 +380,14 @@ const address = await createAddress(userId, addressData);
 ## Development Workflow
 
 ### Current (Production Connected)
+
 ```bash
 npm install
 npm run dev  # Connects to production Supabase
 ```
 
 ### Future (Local Development)
+
 ```bash
 # Start local Supabase
 supabase start
@@ -368,6 +404,7 @@ npm run dev
 **Current State**: No automated tests
 
 **Recommended Testing Approach**:
+
 1. **Unit Tests**: Core utilities in [src/lib/](src/lib/)
    - Color manipulation ([src/lib/color.ts](src/lib/color.ts))
    - Theme validation ([src/lib/themes.ts](src/lib/themes.ts))
@@ -382,6 +419,7 @@ npm run dev
    - Prepare NFT → Upload to IPFS → Generate metadata
 
 **Recommended Tools**:
+
 - Jest + React Testing Library (unit/integration)
 - Playwright or Cypress (E2E)
 - MSW (Mock Service Worker) for API mocking
@@ -389,6 +427,7 @@ npm run dev
 ## Common Tasks
 
 ### Generate Database Types
+
 ```bash
 # Production
 npx supabase gen types typescript --project-id vpmlokamxveoskhprxep > src/lib/database.types.ts
@@ -398,6 +437,7 @@ npx supabase gen types typescript --local > src/lib/database.types.ts
 ```
 
 ### Add New Database Table
+
 1. Create migration: `supabase migration new add_table_name`
 2. Write SQL in `supabase/migrations/`
 3. Apply: `supabase db push`
@@ -405,6 +445,7 @@ npx supabase gen types typescript --local > src/lib/database.types.ts
 5. Add data access functions in [src/lib/data-access/](src/lib/data-access/)
 
 ### Deploy Edge Function
+
 ```bash
 # Current (manual)
 # Deploy via Supabase dashboard or CLI
@@ -414,6 +455,7 @@ supabase functions deploy theme-files
 ```
 
 ### Update Dependencies
+
 ```bash
 npm update              # Update all packages
 npm outdated            # Check for outdated packages
@@ -423,20 +465,24 @@ npm run check           # Lint + format + build
 ## Known Issues & Gotchas
 
 ### Next.js 16 + React 19
+
 - Uses latest Next.js with Pages Router (not App Router)
 - React 19 has breaking changes from React 18
 - Some third-party components may have compatibility issues
 
 ### Supabase Image Optimization
+
 - [next.config.js](next.config.js) has hardcoded Supabase hostname: `vpmlokamxveoskhprxep.supabase.co`
 - Must update this for local development (use `localhost:54321`)
 
 ### Edge Functions
+
 - Currently deployed separately from main app
 - Uses Deno runtime (different from Node.js)
 - [edge-src/deno.json](edge-src/deno.json) and [edge-src/deno.lock](edge-src/deno.lock) manage Deno dependencies
 
 ### IPFS Uploads
+
 - Pinata SDK v2.5.1 used in [src/lib/ipfs.ts](src/lib/ipfs.ts)
 - Uploads are public by default
 - Group management requires separate API calls
@@ -444,12 +490,14 @@ npm run check           # Lint + format + build
 ## Future Enhancements
 
 ### Performance
+
 - [ ] Add React Query for data fetching/caching
 - [ ] Implement optimistic UI updates
 - [ ] Add service worker for offline support
 - [ ] Optimize bundle size (currently ~63 dependencies)
 
 ### Features
+
 - [ ] Theme marketplace/sharing
 - [ ] Collaborative editing
 - [ ] Version control for themes
@@ -457,6 +505,7 @@ npm run check           # Lint + format + build
 - [ ] Batch NFT preparation
 
 ### Developer Experience
+
 - [ ] Add Storybook for component development
 - [ ] Set up automated testing (unit + E2E)
 - [ ] Add commit hooks (husky + lint-staged)
@@ -464,6 +513,7 @@ npm run check           # Lint + format + build
 - [ ] Add error tracking (Sentry)
 
 ### Infrastructure
+
 - [ ] Migrate to App Router (Next.js 13+ feature)
 - [ ] Add Redis for session caching
 - [ ] Implement rate limiting
@@ -473,6 +523,7 @@ npm run check           # Lint + format + build
 ## Resources
 
 ### Documentation
+
 - [Supabase Docs](https://supabase.com/docs)
 - [Next.js Pages Router](https://nextjs.org/docs/pages)
 - [Radix UI](https://www.radix-ui.com/)
@@ -480,6 +531,7 @@ npm run check           # Lint + format + build
 - [Pinata Docs](https://docs.pinata.cloud/)
 
 ### Related Projects
+
 - [theme-o-rama](https://www.npmjs.com/package/theme-o-rama) - Core theme library
 - Theme-a-roo desktop (if exists - link here)
 

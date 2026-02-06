@@ -8,6 +8,7 @@
 ## Changes Made
 
 ### 1. Updated .gitignore
+
 ```diff
 + # Docker secrets
 + docker/.env
@@ -21,6 +22,7 @@
 ### 2. Sanitized Example Files
 
 #### docker/.env.example
+
 ```diff
 - POSTGRES_PASSWORD=Xa&n@#iKE^VW3RfYx9@
 + POSTGRES_PASSWORD=your-secure-postgres-password-here
@@ -28,6 +30,7 @@
 ```
 
 #### .env.local.example
+
 ```diff
 - DATABASE_URL=postgresql://devuser:Xa%26n%40%23iKE%5EVW3RfYx9%40@192.168.1.75:5432/devdb
 + DATABASE_URL=postgresql://username:password@host:port/database
@@ -36,6 +39,7 @@
 ### 3. Updated Scripts to Use Environment Variables
 
 #### scripts/test-db-connection.js
+
 ```diff
 - const DB_URL = 'postgresql://devuser:Xa%26n%40%23iKE%5EVW3RfYx9%40@192.168.1.75:5432/devdb';
 + require('dotenv').config({ path: '../.env.local' });
@@ -44,6 +48,7 @@
 ```
 
 #### scripts/create-test-user.js
+
 ```diff
 - const DB_URL = 'postgresql://devuser:Xa%26n%40%23iKE%5EVW3RfYx9%40@192.168.1.75:5432/devdb';
 + require('dotenv').config({ path: '../.env.local' });
@@ -52,6 +57,7 @@
 ```
 
 #### scripts/apply-migration.js
+
 ```diff
 - const DB_URL = 'postgresql://devuser:Xa%26n%40%23iKE%5EVW3RfYx9%40@192.168.1.75:5432/devdb';
 + require('dotenv').config({ path: '../.env.local' });
@@ -64,6 +70,7 @@
 ## Files Status
 
 ### ✅ IGNORED (Not Committed)
+
 - `docker/.env` - Contains real secrets
 - `docker/setup-db-users.sql` - Contains database passwords
 - `docker/fix-permissions.sql` - Database operations
@@ -72,6 +79,7 @@
 - `.env.local` - Frontend database connection
 
 ### ✅ COMMITTED (No Secrets)
+
 - `docker/docker-compose.yml` - Uses environment variables
 - `docker/kong.yml` - Routing configuration only
 - `docker/deploy.sh` - Deployment script (no secrets)
@@ -86,18 +94,22 @@
 - `scripts/run-superuser-setup.sh` - Shell wrapper
 
 ### ⚠️ DOCUMENTATION FILES
+
 The following documentation files contain deployment details:
+
 - `docker/README.md` - Contains JWT_SECRET in quick reference
 - `docker/DEPLOYMENT_LOG.md` - Contains full deployment history
 - `docker/DOCKER_HOST_CHANGES.md` - Contains configuration details
 
 **These are acceptable because:**
+
 1. They document actual deployed configuration
 2. Needed for operational reference
 3. Deployment is on private infrastructure (192.168.1.x)
 4. Not exposed publicly
 
 **If repo becomes public, consider:**
+
 - Moving these to a separate private docs repo
 - Removing/redacting sensitive values
 - Keeping only generic templates
@@ -107,6 +119,7 @@ The following documentation files contain deployment details:
 ## Verification Steps Performed
 
 ### 1. Check Gitignore Rules
+
 ```bash
 ✅ git check-ignore -v docker/.env
    Output: .gitignore:191:docker/.env	docker/.env
@@ -119,6 +132,7 @@ The following documentation files contain deployment details:
 ```
 
 ### 2. Search for Hardcoded Secrets
+
 ```bash
 ✅ Searched for: postgresql://.*:.*@
    Found only in documentation (acceptable)
@@ -131,6 +145,7 @@ The following documentation files contain deployment details:
 ```
 
 ### 3. Verify Scripts Use Environment
+
 ```bash
 ✅ All scripts/**.js files use process.env
 ✅ All scripts have error handling for missing vars
@@ -142,6 +157,7 @@ The following documentation files contain deployment details:
 ## Dependencies Added
 
 Scripts now require `dotenv` package:
+
 ```json
 {
   "devDependencies": {
@@ -151,6 +167,7 @@ Scripts now require `dotenv` package:
 ```
 
 Install with:
+
 ```bash
 npm install dotenv --save-dev
 ```
@@ -162,11 +179,13 @@ npm install dotenv --save-dev
 ### For Developers
 
 1. **Copy environment template:**
+
    ```bash
    cp .env.local.example .env.local
    ```
 
 2. **Fill in your credentials:**
+
    ```bash
    # Edit .env.local
    DATABASE_URL=postgresql://user:password@host:port/database
@@ -183,12 +202,14 @@ npm install dotenv --save-dev
 ### For Deployment
 
 1. **Copy Docker env template:**
+
    ```bash
    cd docker
    cp .env.example .env
    ```
 
 2. **Fill in deployment secrets:**
+
    ```bash
    # Edit docker/.env with real values
    ```
@@ -224,6 +245,7 @@ git push
 ```
 
 **What will be committed:**
+
 - Updated .gitignore
 - Updated scripts (using environment variables)
 - New documentation (SECURITY.md, this file)
@@ -231,8 +253,9 @@ git push
 - Template files (.env.example)
 
 **What will NOT be committed:**
+
 - docker/.env (real secrets)
-- docker/*.sql (database scripts)
+- docker/\*.sql (database scripts)
 - .env.local (local secrets)
 
 ---
@@ -240,6 +263,7 @@ git push
 ## Contact
 
 For questions about secrets management, see:
+
 - [SECURITY.md](./SECURITY.md) - Full security documentation
 - [docker/README.md](./docker/README.md) - Deployment guide
 
