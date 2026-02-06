@@ -173,6 +173,8 @@ CREATE TABLE IF NOT EXISTS public.addresses (
   network smallint NOT NULL DEFAULT 0,
   metadata jsonb DEFAULT '{}'::jsonb,
   notes text,
+  name text,
+  is_default boolean NOT NULL DEFAULT false,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );
@@ -190,6 +192,8 @@ CREATE TABLE IF NOT EXISTS public.dids (
   network smallint NOT NULL DEFAULT 0,
   metadata jsonb DEFAULT '{}'::jsonb,
   notes text,
+  avatar_uri text,
+  is_default boolean NOT NULL DEFAULT false,
   created_at timestamptz DEFAULT now(),
   updated_at timestamptz DEFAULT now()
 );

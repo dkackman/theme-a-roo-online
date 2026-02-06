@@ -10,6 +10,8 @@ CREATE TABLE public.addresses (
   updated_at timestamp with time zone DEFAULT now(),
   notes text,
   network smallint NOT NULL DEFAULT '0'::smallint,
+  name text,
+  is_default boolean NOT NULL DEFAULT false,
   CONSTRAINT addresses_pkey PRIMARY KEY (id),
   CONSTRAINT addresses_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user_profiles(id)
 );
@@ -23,6 +25,8 @@ CREATE TABLE public.dids (
   notes text,
   network smallint NOT NULL DEFAULT '0'::smallint,
   name text,
+  avatar_uri text,
+  is_default boolean NOT NULL DEFAULT false,
   CONSTRAINT dids_pkey PRIMARY KEY (id),
   CONSTRAINT dids_user_id_fkey FOREIGN KEY (user_id) REFERENCES public.user_profiles(id)
 );
